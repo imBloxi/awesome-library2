@@ -12,10 +12,14 @@ function required(name) {
 
 const POSTGRES_URL = /^postgres(ql)?:\/\//i;
 
+// The Neon integration on Vercel sets DATABASE_URL (pooled) and
+// DATABASE_URL_UNPOOLED. The unpooled one also works with the HTTP driver, so
+// fall back to it when only that one is present on a target.
 export function getDatabaseUrl() {
-  const url = required("DATABASE_URL");
+  const name = process.env.DATABASE_URL?.trim() || !process.env.DATABASE_URL_UNPOOLED?.trim() ? "DATABASE_URL" : "DATABASE_URL_UNPOOLED";
+  const url = required(name);
   if (!POSTGRES_URL.test(url)) {
-    throw new Error("DATABASE_URL must be a Postgres connection string (postgres://...).");
+    throw new Error(`${name} must be a Postgres connection string (postgres://...).`);
   }
   return url;
 }

@@ -7,7 +7,7 @@ const GOOD_SECRET = "x".repeat(32);
 
 function withEnv(env, fn) {
   const saved = { ...process.env };
-  for (const k of ["DATABASE_URL", "NEON_AUTH_BASE_URL", "NEON_AUTH_COOKIE_SECRET"]) delete process.env[k];
+  for (const k of ["DATABASE_URL", "DATABASE_URL_UNPOOLED", "NEON_AUTH_BASE_URL", "NEON_AUTH_COOKIE_SECRET"]) delete process.env[k];
   Object.assign(process.env, env);
   try {
     return fn();
@@ -20,6 +20,11 @@ test("DATABASE_URL: missing, wrong scheme, ok", () => {
   withEnv({}, () => assert.throws(getDatabaseUrl, /DATABASE_URL is not set/));
   withEnv({ DATABASE_URL: "https://example.com" }, () => assert.throws(getDatabaseUrl, /Postgres connection string/));
   withEnv({ DATABASE_URL: PG }, () => assert.equal(getDatabaseUrl(), PG));
+});
+
+test("DATABASE_URL_UNPOOLED is used when DATABASE_URL is absent", () => {
+  withEnv({ DATABASE_URL_UNPOOLED: PG }, () => assert.equal(getDatabaseUrl(), PG));
+  withEnv({ DATABASE_URL_UNPOOLED: "https://example.com" }, () => assert.throws(getDatabaseUrl, /DATABASE_URL_UNPOOLED must be a Postgres/));
 });
 
 test("NEON_AUTH_BASE_URL set to the Postgres URL gives a clear error without leaking it", () => {
