@@ -37,7 +37,8 @@ pnpm dev
 ## Deploying (Vercel)
 
 - `vercel.json` pins functions to `fra1` (Frankfurt), next to the database. Keep both in the same region.
-- Add the four env vars from `.env.example` in the Vercel project settings.
+- Add the four env vars from `.env.example` in the Vercel project settings, with the **Production** target ticked, then redeploy. The app checks them on first use and fails with a message naming the variable that's wrong (never its value).
+- `NEON_AUTH_BASE_URL` is the Auth URL (`https://...`) from Neon Console > Auth. It is not the database connection string.
 - In Neon, turn off **scale to zero** for the production branch, so the first request after idle isn't slow.
 - A daily cron (`/api/cron/expire`) marks lapsed holds as expired. It's housekeeping only: availability and the 10-book limit already ignore expired holds.
 
@@ -45,7 +46,13 @@ pnpm dev
 
 `src/lib/queries/reserve-sql.mjs` runs three statements in one transaction: a per-user lock, a lock on the book row, then an insert that only succeeds if the user has fewer than 10 active reservations, a copy is free, and they don't already hold that book. Parallel clicks can't get past the limits.
 
-Check it against a **throwaway** database:
+Env checks:
+
+```bash
+pnpm test:env
+```
+
+Check the reserve logic against a **throwaway** database:
 
 ```bash
 DATABASE_URL=postgres://... pnpm test:reserve

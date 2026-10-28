@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 import { getAuth } from "@/lib/auth/server";
 
@@ -14,7 +14,10 @@ function hasAdminRole(role) {
 // Current user or null. Cached per request, so calling it from several
 // components costs one session read.
 export const getUser = cache(async () => {
-  await cookies(); // marks this as request-time before touching the auth client
+  // Wait for a real request. Without this the session lookup also runs during
+  // prerender/prefetch passes, where Next cancels it (logged as an error by
+  // neon-auth) and the auth server gets called for every prefetch.
+  await connection();
   const { data } = await getAuth().getSession();
   const u = data?.user;
   if (!u) return null;

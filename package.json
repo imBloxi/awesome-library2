@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/migrate.mjs --optional && next build",
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
     "db:seed": "node --env-file=.env.local db/seed.mjs",
-    "test:reserve": "node scripts/test-reserve.mjs"
+    "test:reserve": "node scripts/test-reserve.mjs",
+    "test:env": "node --test scripts/test-env.mjs"
   },
   "dependencies": {
     "@neondatabase/auth": "0.7.0-beta",
