@@ -60,7 +60,7 @@ export async function deleteUserReservation(userId, id) {
 export async function returnBook(id, userId = null) {
   const rows = await db().query(
     `update reservations set status = 'returned', returned_at = now()
-     where id = $1 and status = 'picked_up' and ($2::text is null or user_id = $2)
+     where id = $1 and status = 'picked_up' and ($2 is null or user_id = $2)
      returning id`,
     [id, userId]
   );
