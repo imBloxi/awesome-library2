@@ -1,9 +1,16 @@
-// Applies db/migrations/*.sql in order, once each. Usage: node --env-file=.env.local scripts/migrate.mjs
+// Applies db/migrations/*.sql in order, once each. Usage: node --env-file=.env.local scripts/migrate.mjs [--optional]
 import { readdir, readFile } from "node:fs/promises";
 import pg from "pg";
 
+// `--optional` is for the Vercel build: previews without a database skip migrating instead of failing.
 const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
-if (!url) throw new Error("DATABASE_URL is not set");
+if (!url) {
+  if (process.argv.includes("--optional")) {
+    console.log("No database URL set, skipping migrations");
+    process.exit(0);
+  }
+  throw new Error("DATABASE_URL is not set");
+}
 
 const client = new pg.Client({ connectionString: url });
 await client.connect();
