@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Library
 
-## Getting Started
+Book search and reservations on Next.js 16, Neon Postgres and Neon Auth.
 
-First, run the development server:
+- **Users:** register, sign in, search, reserve (max 10 active), return, cancel or delete reservations.
+- **Admins:** add, edit and delete books, browse reservations, mark books as picked up or returned.
+- A reservation is a hold until pickup. Holds not picked up within 7 days stop counting automatically.
+
+## Setup
+
+1. Create a Neon project in **AWS Europe Central (Frankfurt)** and enable **Neon Auth** (with the admin plugin) in the Console.
+2. Copy `.env.example` to `.env.local` and fill in the values.
+3. Install, migrate and (optionally) seed sample books:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+pnpm db:migrate
+```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```bash
+pnpm db:seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run it:
 
-## Learn More
+```bash
+pnpm dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Make yourself admin: register in the app, then in the Neon SQL editor run
+   `update neon_auth."user" set role = 'admin' where email = 'you@example.com';`
+   and sign out and back in.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploying (Vercel)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `vercel.json` pins functions to `fra1` (Frankfurt), next to the database. Keep both in the same region.
+- Add the four env vars from `.env.example` in the Vercel project settings.
+- In Neon, turn off **scale to zero** for the production branch, so the first request after idle isn't slow.
+- A daily cron (`/api/cron/expire`) marks lapsed holds as expired. It's housekeeping only: availability and the 10-book limit already ignore expired holds.
 
-## Deploy on Vercel
+## How reservations stay correct
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`src/lib/queries/reserve-sql.mjs` runs three statements in one transaction: a per-user lock, a lock on the book row, then an insert that only succeeds if the user has fewer than 10 active reservations, a copy is free, and they don't already hold that book. Parallel clicks can't get past the limits.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Check it against a **throwaway** database:
+
+```bash
+DATABASE_URL=postgres://... pnpm test:reserve
+```
+
+## Layout
+
+- `db/migrations/`: SQL schema, applied by `scripts/migrate.mjs`
+- `src/lib/queries/`: all SQL
+- `src/lib/dal.js`: `getUser` / `requireUser` / `requireAdmin`, called by every private page and action
+- `src/proxy.js`: early redirect for logged-out visitors (not the security boundary)
+- `src/app/actions.js`, `src/app/admin/actions.js`: server actions
