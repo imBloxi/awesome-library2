@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { LOAN_DAYS } from "@/lib/constants";
 
 export const PAGE_SIZE = 20;
 
@@ -72,10 +73,40 @@ export async function deleteBook(id) {
   return rows.length === 1;
 }
 
+export async function listDeletedBooks() {
+  return db().query(
+    `select id, title, author, total_copies, deleted_at from books
+     where deleted_at is not null order by deleted_at desc limit 100`
+  );
+}
+
+// Undo a soft delete. The ISBN was cleared on delete, so it has to be entered again.
+export async function restoreBook(id) {
+  const rows = await db().query(
+    `update books set deleted_at = null, updated_at = now()
+     where id = $1 and deleted_at is not null returning id`,
+    [id]
+  );
+  return rows.length === 1;
+}
+
+export async function listBooksForExport() {
+  return db().query(
+    `select b.id, b.title, b.author, b.isbn, b.published_year, b.total_copies,
+       ${AVAILABLE} as available, b.created_at
+     from books b where b.deleted_at is null order by b.title, b.id`
+  );
+}
+
 export async function getStats() {
   const rows = await db().query(
     `select
        (select count(*)::int from books where deleted_at is null) as books,
+       (select count(*)::int from neon_auth."user") as users,
+       (select count(*)::int from active_reservations
+          where status = 'picked_up' and picked_up_at < now() - interval '${LOAN_DAYS} days') as overdue,
+       (select count(*)::int from books b where b.deleted_at is null and b.total_copies > 0
+          and ${AVAILABLE} = 0) as out_of_stock,
        (select count(*)::int from active_reservations where status = 'reserved') as holds,
        (select count(*)::int from active_reservations where status = 'picked_up') as loans,
        (select count(*)::int from active_reservations

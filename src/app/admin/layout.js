@@ -7,6 +7,7 @@ export default function AdminLayout({ children }) {
         <Link href="/admin" className="hover:underline">Overview</Link>
         <Link href="/admin/books" className="hover:underline">Books</Link>
         <Link href="/admin/reservations" className="hover:underline">Reservations</Link>
+        <Link href="/admin/users" className="hover:underline">Users</Link>
       </nav>
       {children}
     </>

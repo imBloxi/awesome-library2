@@ -3,7 +3,11 @@
 Book search and reservations on Next.js 16, Neon Postgres and Neon Auth.
 
 - **Users:** register, sign in, search, reserve (max 10 active), return, cancel or delete reservations.
-- **Admins:** add, edit and delete books, browse reservations, mark books as picked up or returned.
+- **Admins** (`/admin`):
+  - Books: add, edit, delete and restore, see who currently holds a copy, export to CSV.
+  - Reservations: mark picked up or returned, extend or cancel a hold, filter overdue loans (over 28 days, see `src/lib/constants.js`), export to CSV.
+  - Users: search, make or remove admins (role changes apply at the user's next sign-in; you can't change your own).
+  - Overview: totals, overdue loans, holds about to lapse, recent activity.
 - A reservation is a hold until pickup. Holds not picked up within 7 days stop counting automatically.
 
 ## Setup
