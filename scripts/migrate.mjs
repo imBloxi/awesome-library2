@@ -3,7 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 import pg from "pg";
 
 // `--optional` is for the Vercel build: previews without a database skip migrating instead of failing.
-const url = process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL;
+const url = process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED; // same precedence as src/lib/env.mjs
 if (!url) {
   if (process.argv.includes("--optional")) {
     console.log("No database URL set, skipping migrations");

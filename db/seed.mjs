@@ -14,7 +14,7 @@ const books = Array.from({ length: 200 }, (_, i) => ({
   copies: 1 + (i % 4),
 }));
 
-const client = new pg.Client({ connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL });
+const client = new pg.Client({ connectionString: process.env.DATABASE_URL || process.env.DATABASE_URL_UNPOOLED });
 await client.connect();
 try {
   let added = 0;
