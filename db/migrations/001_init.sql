@@ -23,17 +23,28 @@ do $$ begin
 exception when duplicate_object then null;
 end $$;
 
-create table if not exists reservations (
-  id             bigint generated always as identity primary key,
-  user_id        text not null references neon_auth."user"(id) on delete cascade,
-  book_id        bigint not null references books(id),
-  status         reservation_status not null default 'reserved',
-  reserved_at    timestamptz not null default now(),
-  expires_at     timestamptz not null default now() + interval '7 days',
-  picked_up_at   timestamptz,
-  returned_at    timestamptz,
-  hidden_by_user boolean not null default false
-);
+-- user_id takes the type of neon_auth."user".id (uuid or text depending on the Neon Auth version),
+-- otherwise the foreign key can't be created.
+do $$
+declare id_type text;
+begin
+  select format_type(a.atttypid, a.atttypmod) into id_type
+  from pg_attribute a
+  where a.attrelid = 'neon_auth."user"'::regclass and a.attname = 'id' and not a.attisdropped;
+
+  execute format($f$
+    create table if not exists reservations (
+      id             bigint generated always as identity primary key,
+      user_id        %s not null references neon_auth."user"(id) on delete cascade,
+      book_id        bigint not null references books(id),
+      status         reservation_status not null default 'reserved',
+      reserved_at    timestamptz not null default now(),
+      expires_at     timestamptz not null default now() + interval '7 days',
+      picked_up_at   timestamptz,
+      returned_at    timestamptz,
+      hidden_by_user boolean not null default false
+    )$f$, id_type);
+end $$;
 
 create index if not exists res_user_active on reservations (user_id) where status in ('reserved', 'picked_up');
 create index if not exists res_book_active on reservations (book_id) where status in ('reserved', 'picked_up');
