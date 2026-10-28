@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { LOAN_DAYS } from "@/lib/constants";
 import { reserveSteps, reserveFailureReason, explainFailure } from "./reserve-sql.mjs";
 
 // Returns { ok: true } or { ok: false, error }.
@@ -77,12 +78,39 @@ export async function markPickedUp(id) {
   return rows.length === 1;
 }
 
-export const STATUSES = ["active", "reserved", "picked_up", "returned", "cancelled", "expired", "all"];
+// Admin: cancel a hold that is still within its pickup window. Frees the copy.
+export async function cancelHold(id) {
+  const rows = await db().query(
+    `update reservations set status = 'cancelled'
+     where id = $1 and status = 'reserved' and expires_at > now() returning id`,
+    [id]
+  );
+  return rows.length === 1;
+}
 
-export async function listAllReservations({ status = "active", q = "" }) {
+// Admin: give a live hold a fresh 7-day pickup window. A lapsed hold can't be revived,
+// because its copy may already have gone to someone else.
+export async function extendHold(id) {
+  const rows = await db().query(
+    `update reservations set expires_at = now() + interval '7 days'
+     where id = $1 and status = 'reserved' and expires_at > now() returning id`,
+    [id]
+  );
+  return rows.length === 1;
+}
+
+export const STATUSES = ["active", "reserved", "picked_up", "overdue", "returned", "cancelled", "expired", "all"];
+
+export async function listAllReservations({ status = "active", q = "", bookId = null, limit = 200 }) {
   const params = [];
   const where = [];
+  if (bookId) {
+    params.push(bookId);
+    where.push(`r.book_id = $${params.length}`);
+  }
   if (status === "active") where.push(`(${DISPLAY_STATUS}) in ('reserved', 'picked_up')`);
+  else if (status === "overdue")
+    where.push(`r.status = 'picked_up' and r.picked_up_at < now() - interval '${LOAN_DAYS} days'`);
   else if (status !== "all") {
     params.push(status);
     where.push(`(${DISPLAY_STATUS}) = $${params.length}`);
@@ -94,13 +122,15 @@ export async function listAllReservations({ status = "active", q = "" }) {
   return db().query(
     `select r.id, r.reserved_at, r.expires_at, r.picked_up_at, r.returned_at,
        ${DISPLAY_STATUS} as status, ${DAYS_LEFT} as days_left,
+       case when r.picked_up_at is not null and r.status = 'picked_up'
+         then floor(extract(epoch from (now() - r.picked_up_at)) / 86400)::int end as loan_days,
        b.id as book_id, b.title, u.name as user_name, u.email as user_email
      from reservations r
      join books b on b.id = r.book_id
      join neon_auth."user" u on u.id = r.user_id
      ${where.length ? "where " + where.join(" and ") : ""}
      order by r.reserved_at desc
-     limit 200`,
+     limit ${Number(limit)}`,
     params
   );
 }

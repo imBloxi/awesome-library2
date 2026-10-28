@@ -4,8 +4,9 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/dal";
-import { createBook, updateBook, deleteBook, getBook } from "@/lib/queries/books";
-import { markPickedUp, returnBook } from "@/lib/queries/reservations";
+import { createBook, updateBook, deleteBook, getBook, restoreBook } from "@/lib/queries/books";
+import { markPickedUp, returnBook, cancelHold, extendHold } from "@/lib/queries/reservations";
+import { setUserRole } from "@/lib/queries/users";
 
 const idSchema = z.coerce.number().int().positive();
 const emptyToNull = (v) => (v === "" ? null : v);
@@ -98,3 +99,50 @@ export async function adminReturnAction(_prev, formData) {
   refresh();
   return {};
 }
+
+export async function cancelHoldAction(_prev, formData) {
+  await requireAdmin();
+  const id = idSchema.safeParse(formData.get("id"));
+  if (!id.success) return { error: "Invalid reservation." };
+  const ok = await cancelHold(id.data);
+  if (!ok) return { error: "Only holds that are still waiting for pickup can be cancelled." };
+  refresh();
+  return {};
+}
+
+export async function extendHoldAction(_prev, formData) {
+  await requireAdmin();
+  const id = idSchema.safeParse(formData.get("id"));
+  if (!id.success) return { error: "Invalid reservation." };
+  const ok = await extendHold(id.data);
+  if (!ok) return { error: "Only holds that haven't lapsed can be extended." };
+  refresh();
+  return {};
+}
+
+export async function restoreBookAction(_prev, formData) {
+  await requireAdmin();
+  const id = idSchema.safeParse(formData.get("id"));
+  if (!id.success) return { error: "Invalid book." };
+  const ok = await restoreBook(id.data);
+  if (!ok) return { error: "This book isn't deleted." };
+  refresh();
+  return {};
+}
+
+const userIdSchema = z.string().trim().min(1).max(200);
+
+async function changeRole(formData, role) {
+  const me = await requireAdmin();
+  const id = userIdSchema.safeParse(formData.get("id"));
+  if (!id.success) return { error: "Invalid user." };
+  // Keeps at least one admin around: you can't remove your own access.
+  if (id.data === String(me.id)) return { error: "You can't change your own role." };
+  const ok = await setUserRole(id.data, role);
+  if (!ok) return { error: "User not found." };
+  refresh();
+  return { message: "Saved. Applies at their next sign-in." };
+}
+
+export const makeAdminAction = async (_prev, formData) => changeRole(formData, "admin");
+export const removeAdminAction = async (_prev, formData) => changeRole(formData, "user");
