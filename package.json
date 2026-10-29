@@ -10,7 +10,8 @@
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
     "db:seed": "node --env-file=.env.local db/seed.mjs",
     "test:reserve": "node scripts/test-reserve.mjs",
-    "test:env": "node --test scripts/test-env.mjs scripts/test-csv.mjs"
+    "test:env": "node --test scripts/test-env.mjs scripts/test-csv.mjs scripts/test-search.mjs",
+    "test:search-db": "node --test scripts/test-search-db.mjs"
   },
   "dependencies": {
     "@neondatabase/auth": "0.7.0-beta",
