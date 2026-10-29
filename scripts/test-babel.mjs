@@ -11,6 +11,21 @@ test("a title always opens the same Babel page, independently of previous calls"
   assert.notDeepEqual(babelPassage("A Different Door"), passage);
 });
 
+test("a passage treats the full title as one book rather than quoting random title words", () => {
+  const paragraphs = babelPassage("The Hitchhiker’s Guide to the Galaxy");
+  assert.ok(paragraphs[0].includes("the hitchhiker’s guide to the galaxy"));
+  assert.doesNotMatch(paragraphs.join(" "), /“(?:the|to|a|of|and)”/i);
+});
+
+test("all three paragraphs follow the same named reader", () => {
+  for (const title of ["The Amber Library", "Moby Dick", "The Secret Garden", "Dune", "A Different Door"]) {
+    const paragraphs = babelPassage(title);
+    const name = paragraphs[0].match(/^(\p{Lu}[\p{L}\p{M}]+)/u)?.[1];
+    assert.ok(name, "Introduce the reader at the start of the story");
+    for (const paragraph of paragraphs) assert.ok(paragraph.includes(name), `Lost the story's reader: ${name}`);
+  }
+});
+
 test("case, Unicode normalization, and whitespace share a seed", () => {
   assert.deepEqual(babelPassage("  THE\nAmber   Library "), babelPassage("the amber library"));
   assert.deepEqual(babelPassage("Café"), babelPassage("Cafe\u0301"));
@@ -31,7 +46,7 @@ test("blank and punctuation-only titles have a stable fallback", () => {
 });
 
 test("output stays short even for very long titles", () => {
-  for (const title of ["", "Moby Dick", "x".repeat(100000)]) {
+  for (const title of ["", "Moby Dick", "x".repeat(100000), "\uFDFA".repeat(300)]) {
     const paragraphs = babelPassage(title);
     assert.equal(paragraphs.length, 3);
     for (const paragraph of paragraphs) {

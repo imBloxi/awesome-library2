@@ -6,4 +6,6 @@ Add a collapsed "Open a Babel page" section below the existing book details. Ope
 
 Keep generation bounded to a few short paragraphs. Handle empty, long and Unicode titles; React escapes all output. Test repeatability, different titles, Unicode, bounds, and absence of external effects. Existing reservation controls and descriptions stay intact.
 
+The user requested more logical prose after trying the first version. Choose one complete narrative with a stable reader, place, problem and resolution for all three paragraphs. Use the full title as a book, rather than sampling isolated title words or independently combining unrelated nouns. Keep one understandable magical premise per story. Preserve normalization, deterministic seeding and the local generator architecture.
+
 This small feature is separate from the database optimization. Approved in chat and implemented; see the implementation plan and validation report.
