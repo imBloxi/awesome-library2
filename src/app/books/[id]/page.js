@@ -81,7 +81,7 @@ async function BookDetails({ params }) {
             <p className="mt-3 text-xs text-muted">
               An imagined back-cover blurb inspired by this book’s title and description.
             </p>
-            <div className="mt-4 space-y-4 leading-relaxed">
+            <div className="mt-4 space-y-4 leading-relaxed [overflow-wrap:anywhere]">
               {babelPassage(book.title, book.id, book.description).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
             </div>
           </details>

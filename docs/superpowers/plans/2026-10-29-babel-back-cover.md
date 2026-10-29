@@ -1,6 +1,6 @@
 # Babel back-cover implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Replace the separate library-adventure stories with imagined back-cover blurbs based on the actual title and description.
 
@@ -27,7 +27,9 @@
 
 ### Task 1: Replace story generation with back-cover copy
 
-- [ ] Reproduce ignored descriptions and resolved-story format with failing tests.
-- [ ] Replace library-quest parts with thematic blurb motifs and metadata-aware generation; pass book.description from the page and update the label.
-- [ ] Replace obsolete story-specific tests with blurb, metadata, variety and safety regressions; inspect representative examples.
-- [ ] Run tests/lint/build, review the result, and publish through the authorized production path.
+- [x] Reproduce ignored descriptions and resolved-story format with failing tests.
+- [x] Replace library-quest parts with thematic blurb motifs and metadata-aware generation; pass book.description from the page and update the label.
+- [x] Replace obsolete story-specific tests with blurb, metadata, variety and safety regressions; inspect representative examples.
+- [x] Run tests/lint/build, review the result, and publish through the authorized production path.
+
+Validation: the old generator ignored description and returned unrelated, resolved library stories. New metadata/teaser regressions failed first and pass with the back-cover implementation. Independent source review found initials/dotted-abbreviation splitting, quoted concluding-sentence leakage and instructional tone mismatches; each received a failing regression and a verified fix. Final whole-change review approved the result. All 36 unit tests, lint and production build pass. The copy was separately edited for stronger atmosphere and stakes, and the source premise/people remain intact. The 500-book check now verifies distinct supplied premises rather than manufacturing unrelated plots. Spoiler markers and theme matching remain intentionally heuristic.
