@@ -1,6 +1,9 @@
 // Catalog URL params: ?q=&available=1&from=&to=&page=
 // Anything malformed is ignored rather than turned into an error.
 
+// Beyond this the SQL offset would overflow; nobody pages through 200k books.
+const MAX_PAGE = 10000;
+
 const str = (v) => (typeof v === "string" ? v : "");
 
 function year(v) {
@@ -12,7 +15,7 @@ function year(v) {
 
 export function parseSearchParams(sp) {
   const q = str(sp.q).trim().slice(0, 100);
-  const page = Math.max(1, Number.parseInt(str(sp.page), 10) || 1);
+  const page = Math.min(MAX_PAGE, Math.max(1, Number.parseInt(str(sp.page), 10) || 1));
   let yearFrom = year(sp.from);
   let yearTo = year(sp.to);
   if (yearFrom != null && yearTo != null && yearFrom > yearTo) [yearFrom, yearTo] = [yearTo, yearFrom];

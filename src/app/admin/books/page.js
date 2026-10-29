@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/dal";
 import { searchBooks, listDeletedBooks, countTopPicks } from "@/lib/queries/books";
 import { TOP_PICKS_LIMIT } from "@/lib/constants";
+import { parseSearchParams } from "@/lib/search-params.mjs";
 import { deleteBookAction, restoreBookAction } from "@/app/admin/actions";
 import { ActionButton } from "@/components/action-button";
 import { SearchForm } from "@/components/search-form";
@@ -34,8 +35,7 @@ async function BookTable({ searchParams }) {
   await requireAdmin();
   const sp = await searchParams;
   if (sp.show === "deleted") return <DeletedBooks />;
-  const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
-  const page = Math.max(1, Number.parseInt(sp.page, 10) || 1);
+  const { q, page } = parseSearchParams(sp);
   const [{ books, hasNext }, topPicks] = await Promise.all([searchBooks({ q, page }), countTopPicks()]);
 
   return (

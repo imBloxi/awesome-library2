@@ -80,3 +80,9 @@ test("filtersToParams keeps only active values", () => {
   });
   assert.deepEqual(filtersToParams({ q: "", filters: { available: false, yearFrom: null, yearTo: null } }), {});
 });
+
+test("clamps huge page numbers so the SQL offset stays valid", () => {
+  assert.equal(parseSearchParams({ page: "1000000000000000000" }).page, 10000);
+  assert.equal(parseSearchParams({ page: "99999999999999999999999" }).page, 10000);
+  assert.equal(parseSearchParams({ page: "10000" }).page, 10000);
+});
