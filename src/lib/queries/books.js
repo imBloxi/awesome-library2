@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
-import { LOAN_DAYS } from "@/lib/constants";
-import { AVAILABLE_SQL as AVAILABLE, TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery } from "@/lib/queries/search-sql.mjs";
+import { LOAN_DAYS, TOP_PICKS_LIMIT } from "@/lib/constants";
+import { AVAILABLE_SQL as AVAILABLE, TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery, topPicksQuery } from "@/lib/queries/search-sql.mjs";
 
 export const PAGE_SIZE = 20;
 
@@ -10,6 +10,12 @@ export async function searchBooks({ q = "", page = 1, filters = {} }) {
   const { text, values } = buildSearchQuery({ q, ...filters, limit: PAGE_SIZE + 1, offset: (page - 1) * PAGE_SIZE });
   const rows = await db().query(text, values);
   return { books: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE };
+}
+
+// "This week's top books" for the home page, same columns as searchBooks rows.
+export async function listTopPicks(limit = TOP_PICKS_LIMIT) {
+  const { text, values } = topPicksQuery(limit);
+  return db().query(text, values);
 }
 
 // Number of current top picks, so admin can see when more are flagged than the home page shows.

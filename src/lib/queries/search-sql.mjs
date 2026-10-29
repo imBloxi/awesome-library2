@@ -42,3 +42,14 @@ export function buildSearchQuery({ q = "", available = false, yearFrom = null, y
     order by b.title, b.id limit ${param(limit)} offset ${param(offset)}`;
   return { text, values };
 }
+
+// "This week's top books", newest pick first. The where clause matches the
+// books_top_pick partial index.
+export function topPicksQuery(limit) {
+  return {
+    text: `select ${BOOK_LIST_COLS} from books b
+      where b.top_pick_at is not null and b.deleted_at is null and ${TOP_PICK_ACTIVE_SQL}
+      order by b.top_pick_at desc, b.id limit $1`,
+    values: [limit],
+  };
+}

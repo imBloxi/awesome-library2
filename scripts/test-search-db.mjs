@@ -4,7 +4,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import pg from "pg";
-import { TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery } from "../src/lib/queries/search-sql.mjs";
+import { TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery, topPicksQuery } from "../src/lib/queries/search-sql.mjs";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const tag = `test-${Date.now()}`;
@@ -99,4 +99,29 @@ test("deleted books never show in search", async () => {
   const id = await addBook(null, { title: "deleted one" });
   await pool.query("update books set deleted_at = now() where id = $1", [id]);
   assert.deepEqual(await search({ q: `${tag} deleted` }), []);
+});
+
+async function topPicks(limit) {
+  const { text, values } = topPicksQuery(limit);
+  const { rows } = await pool.query(text, values);
+  return rows;
+}
+
+test("top picks: current only, newest first, no deleted books", async () => {
+  await addBook(daysAgo(3), { title: "pick older" });
+  await addBook(daysAgo(1), { title: "pick newer" });
+  await addBook(daysAgo(9), { title: "pick expired" });
+  const gone = await addBook(daysAgo(0.5), { title: "pick deleted" });
+  await pool.query("update books set deleted_at = now() where id = $1", [gone]);
+  const mine = (await topPicks(1000)).map((r) => r.title).filter((t) => t.startsWith(`${tag} pick`));
+  assert.deepEqual(mine, [`${tag} pick newer`, `${tag} pick older`]);
+});
+
+test("top picks: respects the limit and carries list columns", async () => {
+  await addBook(daysAgo(0.1), { title: "pick a" });
+  await addBook(daysAgo(0.2), { title: "pick b" });
+  const rows = await topPicks(1);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].is_top_pick, true);
+  assert.equal(typeof rows[0].available, "number");
 });
