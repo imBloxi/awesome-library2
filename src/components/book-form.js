@@ -13,6 +13,7 @@ export function BookForm({ action, book = {}, submitLabel }) {
     description: book.description ?? "",
     published_year: book.published_year ?? "",
     total_copies: book.total_copies ?? 1,
+    top_pick: book.is_top_pick ?? false,
   };
 
   return (
@@ -28,6 +29,10 @@ export function BookForm({ action, book = {}, submitLabel }) {
       <Field label="Description">
         <textarea name="description" rows={5} maxLength={5000} defaultValue={v.description} className={inputClass} />
       </Field>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" name="top_pick" defaultChecked={v.top_pick} />
+        Top pick this week (shown on the home page for 7 days)
+      </label>
       {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
       <div className="flex items-center gap-4">
         <button type="submit" disabled={pending} className={buttonClass}>{pending ? "Saving…" : submitLabel}</button>

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { LOAN_DAYS } from "@/lib/constants";
+import { TOP_PICK_ACTIVE_SQL, topPickAtSql } from "@/lib/queries/search-sql.mjs";
 
 export const PAGE_SIZE = 20;
 
@@ -33,7 +34,7 @@ export async function searchBooks({ q = "", page = 1 }) {
 
 export async function getBook(id) {
   const rows = await db().query(
-    `select b.*, ${AVAILABLE} as available,
+    `select b.*, ${AVAILABLE} as available, coalesce(${TOP_PICK_ACTIVE_SQL}, false) as is_top_pick,
        (select count(*)::int from active_reservations a where a.book_id = b.id) as active_count
      from books b where b.id = $1 and b.deleted_at is null`,
     [id]
@@ -43,19 +44,19 @@ export async function getBook(id) {
 
 export async function createBook(data) {
   const rows = await db().query(
-    `insert into books (title, author, isbn, description, published_year, total_copies)
-     values ($1, $2, $3, $4, $5, $6) returning id`,
-    [data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies]
+    `insert into books (title, author, isbn, description, published_year, total_copies, top_pick_at)
+     values ($1, $2, $3, $4, $5, $6, case when $7 then now() end) returning id`,
+    [data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies, data.top_pick]
   );
   return rows[0].id;
 }
 
 export async function updateBook(id, data) {
   const rows = await db().query(
-    `update books set title = $2, author = $3, isbn = $4, description = $5,
-       published_year = $6, total_copies = $7, updated_at = now()
-     where id = $1 and deleted_at is null returning id`,
-    [id, data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies]
+    `update books b set title = $2, author = $3, isbn = $4, description = $5,
+       published_year = $6, total_copies = $7, top_pick_at = ${topPickAtSql("$8")}, updated_at = now()
+     where b.id = $1 and b.deleted_at is null returning b.id`,
+    [id, data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies, data.top_pick]
   );
   return rows.length === 1;
 }
