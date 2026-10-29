@@ -30,14 +30,14 @@ async function Reservations() {
       </p>
       {rows.length === 0 ? (
         <p className="text-muted">
-          No reservations yet. <Link href="/" className="underline">Find a book</Link>
+          No reservations yet. <Link href="/" className="link">Find a book</Link>
         </p>
       ) : (
-        <ul className="divide-y divide-silver">
+        <ul className="divide-y divide-line">
           {rows.map((r) => (
             <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <Link href={`/books/${r.book_id}`} className="font-bold">{r.title}</Link>
+                <Link href={`/books/${r.book_id}`} className="font-semibold">{r.title}</Link>
                 <p className="text-sm text-muted">
                   {r.author} · reserved {formatDate(r.reserved_at)}
                   {r.status === "reserved" && ` · pick up by ${formatDate(r.expires_at)}`}

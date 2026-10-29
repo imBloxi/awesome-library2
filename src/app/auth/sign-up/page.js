@@ -11,7 +11,7 @@ export default function SignUpPage() {
       <PageTitle>Create an account</PageTitle>
       <AuthForm action={signUpAction} mode="sign-up" />
       <p className="mt-6 text-sm text-muted">
-        Already registered? <Link href="/auth/sign-in" className="underline">Sign in</Link>
+        Already registered? <Link href="/auth/sign-in" className="link">Sign in</Link>
       </p>
     </>
   );

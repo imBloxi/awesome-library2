@@ -4,7 +4,7 @@ import { SearchForm } from "@/components/search-form";
 import { CatalogFilters } from "@/components/catalog-filters";
 import { BookTable, CoverShelf } from "@/components/book-table";
 import { parseSearchParams, filtersToParams, hasFilters } from "@/lib/search-params.mjs";
-import { PageTitle, Skeleton, Pagination, TopPickBadge } from "@/components/ui";
+import { PageTitle, Skeleton, Pagination } from "@/components/ui";
 
 const NO_FILTERS = { available: false, yearFrom: null, yearTo: null };
 
@@ -39,18 +39,17 @@ async function Catalog({ searchParams }) {
         <CatalogFilters filters={filters} showClear={filtered} />
       </SearchForm>
       {topPicks.length > 0 && (
-        <section aria-labelledby="top-books" className="mb-8 border-2 border-dashed border-navy bg-paper p-4">
-          <h2 id="top-books" className="mb-4 flex items-center gap-2 text-xl font-bold text-navy">
-            ★ This week&apos;s top books ★ <TopPickBadge />
-          </h2>
+        <section aria-labelledby="top-books" className="mb-12">
+          <p className="eyebrow mb-1">Picked by our librarians</p>
+          <h2 id="top-books" className="mb-5 text-xl font-semibold tracking-tight">This week&apos;s top books</h2>
           <CoverShelf books={topPicks} />
         </section>
       )}
-      <h2 className="mb-2 text-xl font-bold text-navy">
+      <h2 className="mb-3 text-xl font-semibold tracking-tight">
         {filtered ? "Search results" : "All books"}
       </h2>
       {books.length === 0 ? (
-        <p className="ui bevel-in bg-paper p-3 text-sm">
+        <p className="rounded-lg bg-subtle px-4 py-6 text-center text-sm text-muted">
           {filtered ? "No books match your search. Try fewer words or clear the filters." : "No books in the catalog yet."}
         </p>
       ) : (

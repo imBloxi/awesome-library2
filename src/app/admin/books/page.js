@@ -43,18 +43,18 @@ async function BookTable({ searchParams }) {
       <Tabs current="active" />
       <SearchForm action="/admin/books" q={q} />
       {topPicks > TOP_PICKS_LIMIT && (
-        <p className="mb-3 text-sm ui bevel-in bg-paper p-2 text-black">
+        <p className="mb-4 rounded-lg bg-[#fff7e6] px-4 py-3 text-sm text-[#8a5a00]">
           {topPicks} top picks, only the {TOP_PICKS_LIMIT} newest show on the home page.
         </p>
       )}
       {books.length === 0 ? (
         <p className="text-muted">No books found.</p>
       ) : (
-        <ul className="divide-y divide-silver">
+        <ul className="divide-y divide-line">
           {books.map((b) => (
             <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <Link href={`/books/${b.id}`} className="font-bold">{b.title}</Link>
+                <Link href={`/books/${b.id}`} className="font-semibold">{b.title}</Link>
                 {b.is_top_pick && <span className="ml-2"><TopPickBadge /></span>}
                 <p className="text-sm text-muted">{b.author}{b.isbn ? ` · ${b.isbn}` : ""}</p>
               </div>
@@ -89,7 +89,7 @@ async function DeletedBooks() {
       ) : (
         <>
           <p className="mb-3 text-sm text-muted">Restoring a book brings it back to the catalog. Its ISBN was cleared when it was deleted, so add it again from Edit.</p>
-          <ul className="divide-y divide-silver">
+          <ul className="divide-y divide-line">
             {books.map((b) => (
               <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
