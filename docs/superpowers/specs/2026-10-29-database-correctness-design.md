@@ -26,4 +26,4 @@ Run existing environment/CSV tests and lint. Retry build only if Google Fonts ac
 
 No UI redesign, auth replacement, dependency upgrades, deployment, or production migrations. Any new index requires evidence and a new additive migration. If local database tooling cannot be installed with verification intact, record the blocker rather than weakening concurrency validation.
 
-This design awaits user approval before implementation.
+Approved in chat and implemented. See the implementation plan and validation report.

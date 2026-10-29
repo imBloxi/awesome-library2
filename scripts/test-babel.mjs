@@ -17,9 +17,11 @@ test("case, Unicode normalization, and whitespace share a seed", () => {
 });
 
 test("Unicode title words become part of the invented prose", () => {
-  const passage = babelPassage("星図").join(" ");
-  assert.ok(passage.includes("星図"));
-  assert.doesNotMatch(passage, /undefined|NaN/);
+  for (const title of ["星図", "किताब", "q\u0307"]) {
+    const passage = babelPassage(title).join(" ");
+    assert.ok(passage.includes(title), `Missing title word: ${title}`);
+    assert.doesNotMatch(passage, /undefined|NaN/);
+  }
 });
 
 test("blank and punctuation-only titles have a stable fallback", () => {

@@ -6,4 +6,4 @@ Add a collapsed "Open a Babel page" section below the existing book details. Ope
 
 Keep generation bounded to a few short paragraphs. Handle empty, long and Unicode titles; React escapes all output. Test repeatability, different titles, Unicode, bounds, and absence of external effects. Existing reservation controls and descriptions stay intact.
 
-This small feature is separate from the approved database optimization. It awaits design approval before product code changes.
+This small feature is separate from the database optimization. Approved in chat and implemented; see the implementation plan and validation report.

@@ -5,7 +5,7 @@ const PLACES = ["between two unwritten pages", "beneath the last library", "insi
 // Title alone seeds a small deterministic PRNG; no global randomness or I/O.
 export function babelPassage(title = "") {
   const seed = title.slice(0, 300).normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase() || "untitled";
-  const words = (seed.match(/[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu) ?? ["untitled"]).map((w) => w.slice(0, 32));
+  const words = (seed.match(/[\p{L}\p{N}][\p{L}\p{M}\p{N}'’-]*/gu) ?? ["untitled"]).map((w) => w.slice(0, 32));
   let state = 2166136261;
   for (const char of seed) state = Math.imul(state ^ char.codePointAt(0), 16777619) >>> 0;
   const pick = (items) => {
