@@ -1,6 +1,6 @@
 # Babel coherence implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Refine the approved Babel feature so its prose follows a logical, connected story.
 
@@ -26,7 +26,9 @@
 
 ### Task 1: Replace independent random sentences with coherent narratives
 
-- [ ] Add regressions for using the full title and retaining one reader across paragraphs; observe failure on existing generation.
-- [ ] Choose one narrative frame, reader and setting per title. Retain the seed generator and return exactly three paragraphs.
-- [ ] Inspect examples for each frame, run all unit tests, lint and production build, and review the change.
-- [ ] Commit and push to the existing feature branch.
+- [x] Add regressions for using the full title and retaining one reader across paragraphs; observe failure on existing generation.
+- [x] Choose one narrative frame, reader and setting per title. Retain the seed generator and return exactly three paragraphs.
+- [x] Inspect examples for each frame, run all unit tests, lint and production build, and review the change.
+- [x] Commit and push to the existing feature branch.
+
+Validation: both new coherence checks failed on the original generator, then passed with complete narrative frames. Independent review confirmed consistent plots and found a Unicode truncation issue; a boundary regression failed before the fix and passed afterward. All 29 unit tests, lint and production build passed. Database code is unchanged in this refinement.

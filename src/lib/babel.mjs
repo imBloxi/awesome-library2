@@ -21,9 +21,11 @@ const STORIES = [
   ],
 ];
 
+const clipTitle = (text) => text.slice(0, 300).replace(/[\uD800-\uDBFF]$/u, "");
+
 // Title alone seeds a small deterministic PRNG; no global randomness or I/O.
 export function babelPassage(title = "") {
-  const seed = title.slice(0, 300).normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase().slice(0, 300) || "untitled";
+  const seed = clipTitle(clipTitle(title).normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase()) || "untitled";
   const bookTitle = /[\p{L}\p{N}]/u.test(seed) ? seed : "untitled";
   let state = 2166136261;
   for (const char of seed) state = Math.imul(state ^ char.codePointAt(0), 16777619) >>> 0;

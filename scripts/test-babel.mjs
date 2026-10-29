@@ -56,6 +56,12 @@ test("output stays short even for very long titles", () => {
   }
 });
 
+test("title length limits preserve complete Unicode characters", () => {
+  for (const title of ["a".repeat(299) + "📚", "\uFB03".repeat(99) + "aa📚"]) {
+    for (const paragraph of babelPassage(title)) assert.equal(paragraph.isWellFormed(), true);
+  }
+});
+
 test("book title markup stays escaped when React renders the passage", () => {
   const paragraphs = babelPassage('<script>alert("book")</script>');
   const html = renderToStaticMarkup(createElement("div", null, ...paragraphs.map((p, i) => createElement("p", { key: i }, p))));
