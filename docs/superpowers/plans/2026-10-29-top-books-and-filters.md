@@ -4,7 +4,7 @@
 
 **Goal:** Admins can flag books as "top picks" in the database; the home page shows them as "This week's top books", and the catalog search gains availability and year filters.
 
-**Architecture:** One new boolean column `books.top_pick` (migration `002`), set from the existing admin book form. Search SQL and URL-param parsing move into two pure `.mjs` modules so they are unit-testable with `node --test` (the repo's existing pattern for `csv.mjs` / `reserve-sql.mjs`). The home page runs the top-picks query in parallel with the search query, only on an unfiltered first page.
+**Architecture:** One new timestamp column `books.top_pick_at` (migration `002`; a book is a top pick for 7 days after it is set), set from the existing admin book form. Search SQL and URL-param parsing move into two pure `.mjs` modules so they are unit-testable with `node --test` (the repo's existing pattern for `csv.mjs` / `reserve-sql.mjs`). The home page runs the top-picks query in parallel with the search query, only on an unfiltered first page.
 
 **Tech Stack:** Next.js 16.4.3 (`cacheComponents: true`), React 19, Neon Postgres via `@neondatabase/serverless`, zod 4, Tailwind 4, `node --test`.
 
@@ -14,9 +14,10 @@
 
 - Speed must not regress: no new query on the filtered/search path, top-picks query uses a partial index, no `select *` on list pages, top-picks and search queries run in parallel (`Promise.all`).
 - `AGENTS.md`: this Next.js has breaking changes and `node_modules` is not installed in this checkout. Before Task 3, run `pnpm install` and read the relevant guide under `node_modules/next/dist/docs/` (forms/`next/form`, `cacheComponents`/Suspense rules). Do not add `"use cache"` to the top-picks section: availability counts must stay live.
-- Assumption (confirm): "top books" is **admin-curated** via a flag, not computed from reservation counts. "This week's" is a label; the admin un-flags manually.
+- Assumption (confirm): "top books" is **admin-curated**, not computed from reservation counts.
+- Design (my suggestion, replaces a plain boolean): the flag is a timestamp `books.top_pick_at`. A book is a top pick while `top_pick_at > now() - interval '7 days'`, so "this week's" is literal and stale picks expire on their own. Newest pick first, so the cap of 6 is meaningful instead of alphabetical.
 - Assumption: filters are **available-only**, **year from**, **year to**. No sort options, no author facet.
-- Page size stays `PAGE_SIZE = 20`. Top picks cap: `TOP_PICKS_LIMIT = 6` in `src/lib/constants.js`.
+- Page size stays `PAGE_SIZE = 20`. Constants in `src/lib/constants.js`: `TOP_PICKS_LIMIT = 6`, `TOP_PICK_DAYS = 7` (interpolated into SQL the way `LOAN_DAYS` is).
 - Soft-deleted books (`deleted_at is not null`) never appear in either list.
 - Migrations are additive and idempotent (`if not exists`), matching `001_init.sql`.
 - Style: plain JS (no TypeScript), `@/` alias in app code, relative imports in `.mjs` modules that `scripts/` tests import, Tailwind classes from `src/components/ui.js` (`inputClass`, `buttonClass`).
@@ -28,18 +29,20 @@
 - `from` > `to` (e.g. 2000 vs 1990): swap rather than return an empty list (Task 2).
 - Non-numeric or out-of-range year / `available=banana` / `page=-3` in the URL: ignored or clamped, never a 500 (Task 2).
 - Filtered or searched page 1 must not show the top-picks section; unfiltered page 2 must not either (Task 4).
-- Deleted book that is still flagged must not appear in top picks (Task 3).
+- Deleted book that is still flagged must not appear in top picks (Task 4).
+- Re-saving a book that is already a current top pick must not reset its date; unticking then ticking must (Task 1).
+- More than 6 books flagged: the admin must be told which ones are not shown (Task 1).
 - Pagination links keep the active filters (Task 2, `filtersToParams`).
 
 ## File Structure
 
 | File | Responsibility |
 |---|---|
-| `db/migrations/002_top_pick.sql` (new) | `top_pick` column + partial index |
+| `db/migrations/002_top_pick.sql` (new) | `top_pick_at` column + partial index |
 | `src/lib/queries/search-sql.mjs` (new) | `buildSearchQuery`, `AVAILABLE_SQL`; pure, no imports from `@/` |
 | `src/lib/search-params.mjs` (new) | `parseSearchParams`, `filtersToParams`; pure |
 | `scripts/test-search.mjs` (new) | `node --test` for both modules |
-| `src/lib/queries/books.js` | use builder in `searchBooks`; add `listTopPicks`; `top_pick` in create/update |
+| `src/lib/queries/books.js` | use builder in `searchBooks`; add `listTopPicks`; `top_pick_at` in create/update |
 | `src/lib/constants.js` | `TOP_PICKS_LIMIT` |
 | `src/app/admin/actions.js`, `src/components/book-form.js`, `src/app/admin/books/page.js` | admin sets/sees the flag |
 | `src/components/catalog-filters.js` (new) | filter inputs rendered inside `SearchForm` |
@@ -47,23 +50,24 @@
 
 ---
 
-### Task 1: `top_pick` column and admin control
+### Task 1: `top_pick_at` column and admin control
 
 **Files:**
 - Create: `db/migrations/002_top_pick.sql`
-- Modify: `src/lib/queries/books.js` (`createBook`, `updateBook`), `src/app/admin/actions.js` (`bookSchema`, `parseBook`), `src/components/book-form.js`, `src/app/admin/books/page.js` (badge)
+- Modify: `src/lib/constants.js`, `src/lib/queries/books.js` (`createBook`, `updateBook`, `getBook`), `src/app/admin/actions.js` (`bookSchema`, `parseBook`), `src/components/book-form.js`, `src/app/admin/books/page.js`
 
 **Interfaces:**
-- Produces: `books.top_pick boolean not null default false`; `createBook(data)` / `updateBook(id, data)` accept `data.top_pick: boolean`; `getBook(id)` already returns it via `b.*`.
+- Produces: `books.top_pick_at timestamptz null`; `TOP_PICK_DAYS`, `TOP_PICKS_LIMIT`; `createBook(data)` / `updateBook(id, data)` accept `data.top_pick: boolean`; `getBook(id)` additionally returns `is_top_pick: boolean`; list rows get `is_top_pick` from Task 2's builder.
+- `TOP_PICK_ACTIVE_SQL = "b.top_pick_at > now() - interval '" + TOP_PICK_DAYS + " days'"` lives in `src/lib/queries/search-sql.mjs` (Task 2). Until then define it locally in `books.js` and move it.
 
-- [ ] **Step 1: Write the migration.** `alter table books add column if not exists top_pick boolean not null default false;` and `create index if not exists books_top_pick on books (title, id) where top_pick and deleted_at is null;`
+- [ ] **Step 1: Write the migration.** `alter table books add column if not exists top_pick_at timestamptz;` and `create index if not exists books_top_pick on books (top_pick_at desc) where top_pick_at is not null and deleted_at is null;` (a partial-index predicate cannot contain `now()`, so the 7-day window is applied in the query).
 - [ ] **Step 2: Apply it twice against a throwaway database.** Run: `pnpm db:migrate` then again. Expected: first prints `applied 002_top_pick.sql`, second prints only `migrations up to date`.
-- [ ] **Step 3: Update `createBook` / `updateBook`** to write `top_pick` (append as the last parameter; keep column order stable).
-- [ ] **Step 4: In `bookSchema` add `top_pick: z.boolean()`.** In `parseBook`, build `raw.top_pick = formData.get("top_pick") === "on"` (a checkbox is absent when unchecked, so it cannot go through the existing `?? ""` key list).
-- [ ] **Step 5: In `BookForm`, add a `top_pick` checkbox** labelled "Show in This week's top books", `defaultChecked={v.top_pick}`, and add `top_pick: book.top_pick ?? false` to the fallback `v` object.
-- [ ] **Step 6: In the admin books list, show a small "Top pick" badge** next to the title when `b.top_pick`. This needs `b.top_pick` in `searchBooks`'s column list; add it to `cols` in Task 3 (note it there).
-- [ ] **Step 7: Verify by hand.** `pnpm dev`, edit a book, tick the box, save, reopen: box is still ticked; untick, save: cleared. Run `pnpm lint`. Expected: no errors.
-- [ ] **Step 8: Commit** `feat: top_pick flag on books with admin checkbox`.
+- [ ] **Step 3: `createBook`** sets `top_pick_at = case when $7 then now() end`. **`updateBook`** sets `top_pick_at = case when $8 then coalesce(case when top_pick_at > now() - interval '7 days' then top_pick_at end, now()) end` (ticked and still current: keep the date; ticked and expired or never set: now; unticked: null). `getBook` adds `(top_pick_at > now() - interval '7 days') as is_top_pick`.
+- [ ] **Step 4: In `bookSchema` add `top_pick: z.boolean()`.** In `parseBook`, set `raw.top_pick = formData.get("top_pick") === "on"` (an unchecked checkbox is absent, so it cannot use the existing `?? ""` key list).
+- [ ] **Step 5: In `BookForm`, add a `top_pick` checkbox** labelled "Top pick this week (shown for 7 days)", `defaultChecked={v.top_pick}`; add `top_pick: book.is_top_pick ?? false` to the fallback `v` object.
+- [ ] **Step 6: Admin books list** (do this after Task 2, it needs `is_top_pick` on list rows): show a "Top pick" badge on current picks. When more than `TOP_PICKS_LIMIT` books are current picks, show a note above the list: "N top picks, only the 6 newest show on the home page."
+- [ ] **Step 7: Verify by hand.** `pnpm dev`: tick and save, reopen, still ticked; save again and check in SQL that `top_pick_at` did not change; untick, save: null. Set `top_pick_at` to 8 days ago in SQL: the form shows it unticked. Run `pnpm lint`. Expected: clean.
+- [ ] **Step 8: Commit** `feat: top_pick_at on books with admin checkbox`.
 
 ### Task 2: Pure search modules (TDD)
 
@@ -73,8 +77,9 @@
 
 **Interfaces:**
 - Produces:
+  - `TOP_PICK_ACTIVE_SQL: string` (see Task 1 Interfaces).
   - `AVAILABLE_SQL: string`: the existing expression `(b.total_copies - (select count(*) from active_reservations a where a.book_id = b.id))::int`, moved verbatim from `books.js`.
-  - `buildSearchQuery({ q: string, available: boolean, yearFrom: number|null, yearTo: number|null, limit: number, offset: number }) -> { text: string, values: unknown[] }` where `text` selects `b.id, b.title, b.author, b.isbn, b.published_year, b.total_copies, b.top_pick, <AVAILABLE_SQL> as available` from `books b`, always filters `b.deleted_at is null`, orders by `b.title, b.id`, and uses only `$n` placeholders.
+  - `buildSearchQuery({ q: string, available: boolean, yearFrom: number|null, yearTo: number|null, limit: number, offset: number }) -> { text: string, values: unknown[] }` where `text` selects `b.id, b.title, b.author, b.isbn, b.published_year, b.total_copies, (<TOP_PICK_ACTIVE_SQL>) as is_top_pick, <AVAILABLE_SQL> as available` from `books b`, always filters `b.deleted_at is null`, orders by `b.title, b.id`, and uses only `$n` placeholders.
   - `parseSearchParams(sp: Record<string, unknown>) -> { q: string, page: number, filters: { available: boolean, yearFrom: number|null, yearTo: number|null } }`. Param names: `q`, `page`, `available` (`"1"` means on), `from`, `to`.
   - `filtersToParams({ q, filters }) -> Record<string, string>`: only non-default values, for `Pagination`'s `params`.
 
@@ -109,8 +114,9 @@
 - [ ] **Step 2: Refactor `searchBooks`** to call `buildSearchQuery` with `limit: PAGE_SIZE + 1`, `offset`, keeping the slice/`hasNext` logic. Import `AVAILABLE_SQL` in place of the local `AVAILABLE` constant (used by `getBook`, `listBooksForExport`, `getStats`). Delete the now-duplicated `likePattern` and the two inline queries.
 - [ ] **Step 3: Create `CatalogFilters`**: a checkbox `name="available" value="1"` "Available now" (`defaultChecked={filters.available}`), and two `type="number"` inputs `name="from"` / `name="to"` (min 0, max 2100, placeholders "Year from" / "Year to", `defaultValue` from filters). Use `inputClass`; keep the row wrapping on narrow screens.
 - [ ] **Step 4: In `page.js`**, replace the inline parsing with `parseSearchParams(sp)`, pass `filters` to `searchBooks`, render `<SearchForm action="/" q={q}><CatalogFilters filters={filters} /></SearchForm>` (also in the Suspense fallback), and pass `filtersToParams({ q, filters })` as `Pagination`'s `params`. Empty-state text: "No books match your search." when any of `q` or a filter is active.
-- [ ] **Step 5: Verify against a seeded throwaway DB** (`pnpm db:seed`, `pnpm dev`): `/?available=1` hides fully reserved books; `/?from=1900&to=1950` shows only that range; `/?q=river&available=1&from=1900` combines; `/?from=2000&to=1990` behaves like `1990..2000`; page 2 links keep the filters; `/admin/books` search still works. Run `pnpm lint`.
-- [ ] **Step 6: Commit** `feat: availability and year filters on the catalog`.
+- [ ] **Step 5: Add a "Clear filters" link** (`<Link href="/">`) next to the form, rendered only when a filter or `q` is active.
+- [ ] **Step 6: Verify against a seeded throwaway DB** (`pnpm db:seed`, `pnpm dev`): `/?available=1` hides fully reserved books; `/?from=1900&to=1950` shows only that range; `/?q=river&available=1&from=1900` combines; `/?from=2000&to=1990` behaves like `1990..2000`; page 2 links keep the filters; `/admin/books` search still works. Run `pnpm lint`.
+- [ ] **Step 7: Commit** `feat: availability and year filters on the catalog`.
 
 ### Task 4: "This week's top books" section
 
@@ -120,7 +126,7 @@
 
 **Interfaces:**
 - Consumes: `searchBooks` (Task 3), `parseSearchParams` (Task 2).
-- Produces: `TOP_PICKS_LIMIT = 6`; `listTopPicks(limit = TOP_PICKS_LIMIT) -> Promise<Book[]>` with the same columns as `searchBooks` rows, ordered `b.title, b.id`, filtered `b.top_pick and b.deleted_at is null`; `BookListItem({ book })`.
+- Produces: `TOP_PICKS_LIMIT = 6`; `listTopPicks(limit = TOP_PICKS_LIMIT) -> Promise<Book[]>` with the same columns as `searchBooks` rows, ordered `b.top_pick_at desc, b.id`, filtered `TOP_PICK_ACTIVE_SQL and b.deleted_at is null` (the planner can still use `books_top_pick`); `BookListItem({ book })`.
 
 - [ ] **Step 1: Extract `BookListItem`** from the markup in `page.js` (no behavior change); confirm the home page renders identically.
 - [ ] **Step 2: Implement `listTopPicks`** in `books.js` using `AVAILABLE_SQL`; the where clause must match the partial index predicate from Task 1 so the index is used.
@@ -136,5 +142,18 @@
 ## Self-review
 
 - Coverage: DB flag (Task 1), top books section (Task 4), filter search (Tasks 2-3). Bug fixing is explicitly deferred.
-- Types: `buildSearchQuery`, `parseSearchParams`, `filtersToParams`, `searchBooks`, `listTopPicks`, `BookListItem`, `CatalogFilters` have one signature each across tasks. `top_pick` is added to the `cols` list in Task 2 (builder), which Task 1 step 6 depends on; execute Task 2 before Task 1 step 6 if doing it out of order.
+- Types: `buildSearchQuery`, `parseSearchParams`, `filtersToParams`, `searchBooks`, `listTopPicks`, `BookListItem`, `CatalogFilters` have one signature each across tasks. `is_top_pick` comes from the builder in Task 2, which Task 1 step 6 depends on: do Task 2 before Task 1 step 6.
 - Verification limits: DB-backed behavior is checked by hand against a throwaway database because the repo has no DB test harness besides `scripts/test-reserve.mjs`.
+
+## Suggested additions (not in the tasks above)
+
+Folded into the tasks: the 7-day expiring `top_pick_at`, the admin note when more than 6 are flagged, and the "Clear filters" link.
+
+Worth doing, in this order:
+
+1. **Fix a race in `updateBook`** (`src/app/admin/actions.js`, `books.js`). `updateBookAction` reads `getBook`, checks `total_copies < active_count`, then calls `updateBook` as a separate statement. A reservation landing in between can leave a book with fewer copies than active holds. Fix: put the check in the `update ... where` clause (`and $7 >= (select count(*) from active_reservations where book_id = $1)`). I found this by reading the code; not reproduced. Add it to the bug-fix plan.
+2. **One-click top-pick toggle in the admin list**, using the existing `ActionButton` pattern, so featuring a book doesn't mean opening the edit form.
+3. **DB-backed test script** `scripts/test-search-db.mjs`, modeled on `scripts/test-reserve.mjs`, covering the top-pick `updateBook` date rules and the filter combinations against a throwaway database. The manual steps above only prove it once.
+4. **"Newest additions" sort** (`created_at desc`) as a fourth filter option. Cheap once the builder exists.
+
+Bigger, separate plans: genre/category (needs a table and admin UI), and a bug-fix pass after an audit.
