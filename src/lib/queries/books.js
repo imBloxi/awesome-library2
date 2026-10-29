@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { LOAN_DAYS } from "@/lib/constants";
+import { updateBookSteps, deleteBookSteps } from "./book-sql.mjs";
 
 export const PAGE_SIZE = 20;
 
@@ -51,26 +52,28 @@ export async function createBook(data) {
 }
 
 export async function updateBook(id, data) {
-  const rows = await db().query(
-    `update books set title = $2, author = $3, isbn = $4, description = $5,
-       published_year = $6, total_copies = $7, updated_at = now()
-     where id = $1 and deleted_at is null returning id`,
-    [id, data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies]
+  const sql = db();
+  const results = await sql.transaction(
+    updateBookSteps(id, data).map((s) => sql.query(s.text, s.params)),
+    { isolationLevel: "ReadCommitted" }
   );
-  return rows.length === 1;
+  const row = results.at(-1)[0];
+  if (!row) return { ok: false, error: "This book no longer exists." };
+  if (!row.updated) {
+    return { ok: false, error: `${row.active_count} copies are reserved or borrowed right now. Copies can't go below that.` };
+  }
+  return { ok: true };
 }
 
 // Soft delete, refused while anyone holds or has borrowed the book.
 // Returns false if it was refused.
 export async function deleteBook(id) {
-  const rows = await db().query(
-    `update books set deleted_at = now(), isbn = null, updated_at = now()
-     where id = $1 and deleted_at is null
-       and not exists (select 1 from active_reservations where book_id = $1)
-     returning id`,
-    [id]
+  const sql = db();
+  const results = await sql.transaction(
+    deleteBookSteps(id).map((s) => sql.query(s.text, s.params)),
+    { isolationLevel: "ReadCommitted" }
   );
-  return rows.length === 1;
+  return results.at(-1).length === 1;
 }
 
 export async function listDeletedBooks() {

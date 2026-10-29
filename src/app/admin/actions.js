@@ -4,7 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/dal";
-import { createBook, updateBook, deleteBook, getBook, restoreBook } from "@/lib/queries/books";
+import { createBook, updateBook, deleteBook, restoreBook } from "@/lib/queries/books";
 import { markPickedUp, returnBook, cancelHold, extendHold } from "@/lib/queries/reservations";
 import { setUserRole } from "@/lib/queries/users";
 
@@ -57,13 +57,9 @@ export async function updateBookAction(id, _prev, formData) {
   const { data, error, values } = parseBook(formData);
   if (error) return { error, values };
 
-  const book = await getBook(id);
-  if (!book) return { error: "This book no longer exists.", values };
-  if (data.total_copies < book.active_count) {
-    return { error: `${book.active_count} copies are reserved or borrowed right now. Copies can't go below that.`, values };
-  }
   try {
-    await updateBook(id, data);
+    const result = await updateBook(id, data);
+    if (!result.ok) return { error: result.error, values };
   } catch (err) {
     return { error: dbError(err), values };
   }
