@@ -33,10 +33,10 @@ export function BookForm({ action, book = {}, submitLabel }) {
         <input type="checkbox" name="top_pick" defaultChecked={v.top_pick} />
         Top pick this week (shown on the home page for 7 days)
       </label>
-      {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
+      {state.error && <p className="text-sm text-bad">{state.error}</p>}
       <div className="flex items-center gap-4">
         <button type="submit" disabled={pending} className={buttonClass}>{pending ? "Saving…" : submitLabel}</button>
-        <Link href="/admin/books" className="text-sm text-zinc-500 hover:underline">Cancel</Link>
+        <Link href="/admin/books" className="text-sm text-muted hover:underline">Cancel</Link>
       </div>
     </form>
   );

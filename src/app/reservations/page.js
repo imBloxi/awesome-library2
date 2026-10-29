@@ -25,20 +25,20 @@ async function Reservations() {
 
   return (
     <>
-      <p className="mb-4 text-sm text-zinc-500">
+      <p className="mb-4 text-sm text-muted">
         {active} of {MAX_ACTIVE} reservations in use. Holds expire if not picked up within 7 days.
       </p>
       {rows.length === 0 ? (
-        <p className="text-zinc-500">
+        <p className="text-muted">
           No reservations yet. <Link href="/" className="underline">Find a book</Link>
         </p>
       ) : (
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <ul className="divide-y divide-silver">
           {rows.map((r) => (
             <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <Link href={`/books/${r.book_id}`} className="font-medium hover:underline">{r.title}</Link>
-                <p className="text-sm text-zinc-500">
+                <Link href={`/books/${r.book_id}`} className="font-bold">{r.title}</Link>
+                <p className="text-sm text-muted">
                   {r.author} · reserved {formatDate(r.reserved_at)}
                   {r.status === "reserved" && ` · pick up by ${formatDate(r.expires_at)}`}
                 </p>

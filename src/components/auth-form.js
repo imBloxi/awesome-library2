@@ -30,7 +30,7 @@ export function AuthForm({ action, mode }) {
           className={inputClass}
         />
       </label>
-      {state.error && <p className="text-sm text-red-600 dark:text-red-400">{state.error}</p>}
+      {state.error && <p className="text-sm text-bad">{state.error}</p>}
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? "Please wait…" : isSignUp ? "Create account" : "Sign in"}
       </button>

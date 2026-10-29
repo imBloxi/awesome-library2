@@ -36,21 +36,19 @@ async function Stats() {
         <Link
           key={c.label}
           href={c.href}
-          className={`rounded-lg border p-4 hover:bg-zinc-50 dark:hover:bg-zinc-950 ${
-            c.warn ? "border-red-300 dark:border-red-800" : "border-zinc-200 dark:border-zinc-800"
-          }`}
+          className={`bevel-out block bg-silver p-3 text-black no-underline hover:bg-paper ${c.warn ? "outline-2 outline-bad" : ""}`}
         >
-          <p className="text-3xl font-semibold tabular-nums">{c.value}</p>
-          <p className="text-sm text-zinc-500">{c.label}</p>
+          <p className={`ui text-3xl font-bold tabular-nums ${c.warn ? "text-bad" : "text-navy"}`}>{c.value}</p>
+          <p className="ui text-sm">{c.label}</p>
         </Link>
       ))}
     </div>
     <section className="mt-10">
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Recent activity</h2>
+        <h2 className="text-xl font-bold text-navy">Recent activity</h2>
         <Link href="/admin/reservations?status=all" className="text-sm underline">All reservations</Link>
       </div>
-      {recent.length === 0 ? <p className="text-zinc-500">No reservations yet.</p> : <AdminReservationList rows={recent} />}
+      {recent.length === 0 ? <p className="text-muted">No reservations yet.</p> : <AdminReservationList rows={recent} />}
     </section>
     </>
   );

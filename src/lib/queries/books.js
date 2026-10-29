@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { updateBookSteps, deleteBookSteps } from "./book-sql.mjs";
 import { LOAN_DAYS, TOP_PICKS_LIMIT } from "@/lib/constants";
-import { AVAILABLE_SQL as AVAILABLE, TOP_PICK_ACTIVE_SQL, buildSearchQuery, topPicksQuery } from "@/lib/queries/search-sql.mjs";
+import { AVAILABLE_SQL as AVAILABLE, TOP_PICK_ACTIVE_SQL, buildSearchQuery, topPicksQuery, byAuthorQuery } from "@/lib/queries/search-sql.mjs";
 
 export const PAGE_SIZE = 20;
 
@@ -16,6 +16,11 @@ export async function searchBooks({ q = "", page = 1, filters = {} }) {
 // "This week's top books" for the home page, same columns as searchBooks rows.
 export async function listTopPicks(limit = TOP_PICKS_LIMIT) {
   const { text, values } = topPicksQuery(limit);
+  return db().query(text, values);
+}
+
+export async function listBooksByAuthor(author, excludeId, limit = 6) {
+  const { text, values } = byAuthorQuery(author, excludeId, limit);
   return db().query(text, values);
 }
 
