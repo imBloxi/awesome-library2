@@ -6,6 +6,11 @@ const MAX_PAGE = 10000;
 
 const str = (v) => (typeof v === "string" ? v : "");
 
+export function parsePage(value) {
+  const page = typeof value === "number" ? Math.trunc(value) : Number.parseInt(str(value), 10);
+  return Math.min(MAX_PAGE, Math.max(1, page || 1));
+}
+
 function year(v) {
   const s = str(v).trim();
   if (!/^\d{1,4}$/.test(s)) return null;
@@ -15,7 +20,7 @@ function year(v) {
 
 export function parseSearchParams(sp) {
   const q = str(sp.q).trim().slice(0, 100);
-  const page = Math.min(MAX_PAGE, Math.max(1, Number.parseInt(str(sp.page), 10) || 1));
+  const page = parsePage(sp.page);
   let yearFrom = year(sp.from);
   let yearTo = year(sp.to);
   if (yearFrom != null && yearTo != null && yearFrom > yearTo) [yearFrom, yearTo] = [yearTo, yearFrom];

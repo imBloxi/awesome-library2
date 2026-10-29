@@ -5,6 +5,7 @@ import { makeAdminAction, removeAdminAction } from "@/app/admin/actions";
 import { ActionButton } from "@/components/action-button";
 import { SearchForm } from "@/components/search-form";
 import { PageTitle, Skeleton, Pagination } from "@/components/ui";
+import { parseSearchParams } from "@/lib/search-params.mjs";
 
 export default function AdminUsersPage({ searchParams }) {
   return (
@@ -19,9 +20,7 @@ export default function AdminUsersPage({ searchParams }) {
 
 async function UserTable({ searchParams }) {
   const me = await requireAdmin();
-  const sp = await searchParams;
-  const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
-  const page = Math.max(1, Number.parseInt(sp.page, 10) || 1);
+  const { q, page } = parseSearchParams(await searchParams);
   const { users, hasNext } = await listUsers({ q, page });
 
   return (

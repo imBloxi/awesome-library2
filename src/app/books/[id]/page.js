@@ -76,9 +76,9 @@ async function BookDetails({ params }) {
               <p className="max-w-prose whitespace-pre-line leading-relaxed">{book.description}</p>
             </section>
           )}
-          <details className="groupbox max-w-prose bg-paper">
-            <summary className="ui cursor-pointer text-sm font-bold text-navy">Open a Babel page</summary>
-            <p className="ui mt-3 text-xs text-muted">
+          <details className="max-w-prose rounded-lg border border-line bg-subtle p-4">
+            <summary className="cursor-pointer text-sm font-medium">Open a Babel page</summary>
+            <p className="mt-3 text-xs text-muted">
               A little Library of Babel, seeded by this title. Invented text, not an excerpt from the book.
             </p>
             <div className="mt-4 space-y-4 leading-relaxed">

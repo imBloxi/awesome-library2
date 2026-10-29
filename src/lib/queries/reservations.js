@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { LOAN_DAYS } from "@/lib/constants";
 import { reserveSteps, reserveFailureReason, explainFailure } from "./reserve-sql.mjs";
 import { liveHoldSteps } from "./hold-sql.mjs";
+import { likePattern } from "./search-sql.mjs";
 
 // Returns { ok: true } or { ok: false, error }.
 // All three steps run in one transaction over a single HTTP request.
@@ -115,7 +116,7 @@ export async function listAllReservations({ status = "active", q = "", bookId = 
     where.push(`(${DISPLAY_STATUS}) = $${params.length}`);
   }
   if (q) {
-    params.push(`%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%`);
+    params.push(likePattern(q));
     where.push(`(u.email ilike $${params.length} or b.title ilike $${params.length})`);
   }
   return db().query(

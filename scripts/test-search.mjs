@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildSearchQuery, AVAILABLE_SQL, TOP_PICK_ACTIVE_SQL } from "../src/lib/queries/search-sql.mjs";
-import { parseSearchParams, filtersToParams } from "../src/lib/search-params.mjs";
+import { parseSearchParams, filtersToParams, parsePage } from "../src/lib/search-params.mjs";
 
 const none = { q: "", available: false, yearFrom: null, yearTo: null, limit: 21, offset: 0 };
 
@@ -85,4 +85,11 @@ test("clamps huge page numbers so the SQL offset stays valid", () => {
   assert.equal(parseSearchParams({ page: "1000000000000000000" }).page, 10000);
   assert.equal(parseSearchParams({ page: "99999999999999999999999" }).page, 10000);
   assert.equal(parseSearchParams({ page: "10000" }).page, 10000);
+});
+
+test("shared page parsing bounds query numbers and malformed URL values", () => {
+  for (const page of [1e100, Infinity, "9".repeat(400)]) assert.equal(parsePage(page), 10000);
+  for (const page of [NaN, -Infinity, -1, null, undefined, ["2", "3"], "junk"]) assert.equal(parsePage(page), 1);
+  assert.equal(parsePage(2.8), 2);
+  assert.equal(parsePage("3"), 3);
 });

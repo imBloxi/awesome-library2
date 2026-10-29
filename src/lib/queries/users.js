@@ -1,16 +1,14 @@
 import { db } from "@/lib/db";
 import { PAGE_SIZE } from "@/lib/queries/books";
-
-function likePattern(q) {
-  return `%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
-}
+import { parsePage } from "@/lib/search-params.mjs";
+import { likePattern } from "./search-sql.mjs";
 
 const COLS = `u.id, u.name, u.email, u.role,
   (select count(*)::int from active_reservations a where a.user_id = u.id) as active_count`;
 
 // Fetches one extra row to know whether there's a next page.
 export async function listUsers({ q = "", page = 1 }) {
-  const offset = (page - 1) * PAGE_SIZE;
+  const offset = (parsePage(page) - 1) * PAGE_SIZE;
   const rows = q
     ? await db().query(
         `select ${COLS} from neon_auth."user" u

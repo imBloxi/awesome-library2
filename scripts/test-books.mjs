@@ -4,7 +4,8 @@ import { after, beforeEach, test } from "node:test";
 import { setTimeout } from "node:timers/promises";
 import { pool, lastQuery } from "./helpers/test-db.mjs";
 import { deleteBook, updateBook, getBook, getStats } from "../src/lib/queries/books.js";
-import { reserveBook, markPickedUp, extendHold, countActive } from "../src/lib/queries/reservations.js";
+import { reserveBook, markPickedUp, extendHold, countActive, listAllReservations } from "../src/lib/queries/reservations.js";
+import { listUsers } from "../src/lib/queries/users.js";
 import { reserveSteps } from "../src/lib/queries/reserve-sql.mjs";
 
 // This suite intentionally resets its fixture tables: never use a real development/production DB.
@@ -276,3 +277,24 @@ for (const [name, mutate] of [["pickup", markPickedUp], ["extension", extendHold
     assert.equal(await mutate(goneHold), false);
   });
 }
+
+test("admin user queries bound oversized and malformed page numbers", async () => {
+  for (const page of [1e100, Infinity, -1, NaN, 1.5]) {
+    const result = await listUsers({ page });
+    assert.equal(Number.isSafeInteger(lastQuery.params.at(-1)), true);
+    assert.ok(lastQuery.params.at(-1) >= 0 && lastQuery.params.at(-1) <= 199980);
+    assert.equal(typeof result.hasNext, "boolean");
+  }
+});
+
+test("admin searches treat LIKE wildcards literally", async () => {
+  const id = await addBook(2);
+  await pool.query("update books set title = '50%_\\rare' where id = $1", [id]);
+  await pool.query('update neon_auth."user" set name = $1, email = $2 where id = $3', ["50%_\\reader", "50%_\\reader@example.test", "test-user"]);
+  await addHold(id);
+  const match = "50%_\\";
+  assert.equal((await listUsers({ q: match })).users.length, 1);
+  assert.equal((await listAllReservations({ q: match })).length, 1);
+  assert.equal((await listUsers({ q: "50X" })).users.length, 0);
+  assert.equal((await listAllReservations({ q: "50X" })).length, 0);
+});
