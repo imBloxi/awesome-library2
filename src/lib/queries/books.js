@@ -1,40 +1,36 @@
 import { db } from "@/lib/db";
-import { LOAN_DAYS } from "@/lib/constants";
 import { updateBookSteps, deleteBookSteps } from "./book-sql.mjs";
+import { LOAN_DAYS, TOP_PICKS_LIMIT } from "@/lib/constants";
+import { AVAILABLE_SQL as AVAILABLE, TOP_PICK_ACTIVE_SQL, buildSearchQuery, topPicksQuery } from "@/lib/queries/search-sql.mjs";
 
 export const PAGE_SIZE = 20;
 
-// Escape LIKE wildcards so a search for "50%" means the literal text.
-function likePattern(q) {
-  return `%${q.replace(/[\\%_]/g, (c) => "\\" + c)}%`;
+// Fetches one extra row to know whether there's a next page.
+// filters: { available, yearFrom, yearTo } from parseSearchParams.
+export async function searchBooks({ q = "", page = 1, filters = {} }) {
+  const { text, values } = buildSearchQuery({ q, ...filters, limit: PAGE_SIZE + 1, offset: (page - 1) * PAGE_SIZE });
+  const rows = await db().query(text, values);
+  return { books: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE };
 }
 
-const AVAILABLE = `(b.total_copies - (select count(*) from active_reservations a where a.book_id = b.id))::int`;
+// "This week's top books" for the home page, same columns as searchBooks rows.
+export async function listTopPicks(limit = TOP_PICKS_LIMIT) {
+  const { text, values } = topPicksQuery(limit);
+  return db().query(text, values);
+}
 
-// Fetches one extra row to know whether there's a next page.
-export async function searchBooks({ q = "", page = 1 }) {
-  const offset = (page - 1) * PAGE_SIZE;
-  const cols = `b.id, b.title, b.author, b.isbn, b.published_year, b.total_copies, ${AVAILABLE} as available`;
-  const rows = q
-    ? await db().query(
-        `select ${cols} from books b
-         where b.deleted_at is null
-           and (b.title || ' ' || b.author || ' ' || coalesce(b.isbn, '')) ilike $1
-         order by b.title, b.id limit $2 offset $3`,
-        [likePattern(q), PAGE_SIZE + 1, offset]
-      )
-    : await db().query(
-        `select ${cols} from books b
-         where b.deleted_at is null
-         order by b.title, b.id limit $1 offset $2`,
-        [PAGE_SIZE + 1, offset]
-      );
-  return { books: rows.slice(0, PAGE_SIZE), hasNext: rows.length > PAGE_SIZE };
+// Number of current top picks, so admin can see when more are flagged than the home page shows.
+export async function countTopPicks() {
+  const rows = await db().query(
+    `select count(*)::int as n from books b
+     where b.top_pick_at is not null and ${TOP_PICK_ACTIVE_SQL} and b.deleted_at is null`
+  );
+  return rows[0].n;
 }
 
 export async function getBook(id) {
   const rows = await db().query(
-    `select b.*, ${AVAILABLE} as available,
+    `select b.*, ${AVAILABLE} as available, coalesce(${TOP_PICK_ACTIVE_SQL}, false) as is_top_pick,
        (select count(*)::int from active_reservations a where a.book_id = b.id) as active_count
      from books b where b.id = $1 and b.deleted_at is null`,
     [id]
@@ -44,9 +40,9 @@ export async function getBook(id) {
 
 export async function createBook(data) {
   const rows = await db().query(
-    `insert into books (title, author, isbn, description, published_year, total_copies)
-     values ($1, $2, $3, $4, $5, $6) returning id`,
-    [data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies]
+    `insert into books (title, author, isbn, description, published_year, total_copies, top_pick_at)
+     values ($1, $2, $3, $4, $5, $6, case when $7 then now() end) returning id`,
+    [data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies, data.top_pick]
   );
   return rows[0].id;
 }

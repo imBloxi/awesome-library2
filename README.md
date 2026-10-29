@@ -2,9 +2,10 @@
 
 Book search and reservations on Next.js 16, Neon Postgres and Neon Auth.
 
-- **Users:** register, sign in, search, reserve (max 10 active), return, cancel or delete reservations.
+- **Users:** register, sign in, search (filter by available now and publication year), reserve (max 10 active), return, cancel or delete reservations.
+- **Home page:** "This week's top books" above the catalog, on the unfiltered first page.
 - **Admins** (`/admin`):
-  - Books: add, edit, delete and restore, see who currently holds a copy, export to CSV.
+  - Books: add, edit, delete and restore, see who currently holds a copy, export to CSV. Tick **Top pick this week** to feature a book on the home page for 7 days (newest 6 show; see `TOP_PICK_DAYS` in `src/lib/queries/search-sql.mjs`).
   - Reservations: mark picked up or returned, extend or cancel a hold, filter overdue loans (over 28 days, see `src/lib/constants.js`), export to CSV.
   - Users: search, make or remove admins (role changes apply at the user's next sign-in; you can't change your own).
   - Overview: totals, overdue loans, holds about to lapse, recent activity.
@@ -50,7 +51,13 @@ pnpm dev
 
 `src/lib/queries/reserve-sql.mjs` runs three statements in one transaction: a per-user lock, a lock on the book row, then an insert that only succeeds if the user has fewer than 10 active reservations, a copy is free, and they don't already hold that book. Parallel clicks can't get past the limits.
 
-Env checks:
+Search and top-pick SQL against a **throwaway** database:
+
+```bash
+DATABASE_URL=postgres://... pnpm test:search-db
+```
+
+Env and unit checks:
 
 ```bash
 pnpm test:env

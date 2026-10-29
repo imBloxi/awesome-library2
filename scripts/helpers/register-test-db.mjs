@@ -6,7 +6,8 @@ registerHooks({
       return { url: new URL("./test-db.mjs", import.meta.url).href, shortCircuit: true };
     }
     if (specifier.startsWith("@/")) {
-      return nextResolve(new URL(`../../src/${specifier.slice(2)}.js`, import.meta.url).href, context);
+      const path = specifier.includes(".") ? specifier.slice(2) : `${specifier.slice(2)}.js`;
+      return nextResolve(new URL(`../../src/${path}`, import.meta.url).href, context);
     }
     return nextResolve(specifier, context);
   },
