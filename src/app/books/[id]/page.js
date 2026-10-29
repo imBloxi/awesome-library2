@@ -6,6 +6,7 @@ import { getUser } from "@/lib/dal";
 import { reserveAction } from "@/app/actions";
 import { ActionButton } from "@/components/action-button";
 import { Availability, Skeleton } from "@/components/ui";
+import { babelPassage } from "@/lib/babel.mjs";
 
 export default function BookPage({ params }) {
   return (
@@ -52,6 +53,15 @@ async function BookDetails({ params }) {
           Holds last 7 days. <Link href="/reservations" className="underline">See your reservations</Link>
         </p>
       )}
+      <details className="mt-4 max-w-prose rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+        <summary className="cursor-pointer font-medium">Open a Babel page</summary>
+        <p className="mt-3 text-sm text-zinc-500">
+          A little Library of Babel, seeded by this title. Invented text, not an excerpt from the book.
+        </p>
+        <div className="mt-4 space-y-4 font-serif leading-relaxed">
+          {babelPassage(book.title).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+        </div>
+      </details>
     </article>
   );
 }
