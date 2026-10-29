@@ -1,8 +1,9 @@
 import { db } from "@/lib/db";
-import { LOAN_DAYS } from "@/lib/constants";
 import { reserveSteps, reserveFailureReason, explainFailure } from "./reserve-sql.mjs";
 import { liveHoldSteps } from "./hold-sql.mjs";
-import { likePattern } from "./search-sql.mjs";
+import { buildReservationQuery, DISPLAY_STATUS_SQL as DISPLAY_STATUS, DAYS_LEFT_SQL as DAYS_LEFT } from "./reservation-sql.mjs";
+import { parseReservationParams, RESERVATION_PAGE_SIZE } from "../reservation-params.mjs";
+export { RESERVATION_STATUSES as STATUSES } from "../reservation-params.mjs";
 
 // Returns { ok: true } or { ok: false, error }.
 // All three steps run in one transaction over a single HTTP request.
@@ -17,11 +18,6 @@ export async function reserveBook(userId, bookId) {
   const [row] = await sql.query(reserveFailureReason.text, [userId, bookId]);
   return { ok: false, error: explainFailure(row) };
 }
-
-// "display_status" turns a lapsed hold into "expired" even before the daily cron runs.
-const DISPLAY_STATUS = `case when r.status = 'reserved' and r.expires_at <= now()
-  then 'expired' else r.status::text end`;
-const DAYS_LEFT = `greatest(0, ceil(extract(epoch from (r.expires_at - now())) / 86400))::int`;
 
 export async function listUserReservations(userId) {
   return db().query(
@@ -99,40 +95,20 @@ export async function extendHold(id) {
   return changeLiveHold(id, false);
 }
 
-export const STATUSES = ["active", "reserved", "picked_up", "overdue", "returned", "cancelled", "expired", "all"];
+export async function listAllReservations(options = {}) {
+  const { text, params } = buildReservationQuery(options);
+  return db().query(text, params);
+}
 
-export async function listAllReservations({ status = "active", q = "", bookId = null, limit = 200 }) {
-  const params = [];
-  const where = [];
-  if (bookId) {
-    params.push(bookId);
-    where.push(`r.book_id = $${params.length}`);
-  }
-  if (status === "active") where.push(`(${DISPLAY_STATUS}) in ('reserved', 'picked_up')`);
-  else if (status === "overdue")
-    where.push(`r.status = 'picked_up' and r.picked_up_at < now() - interval '${LOAN_DAYS} days'`);
-  else if (status !== "all") {
-    params.push(status);
-    where.push(`(${DISPLAY_STATUS}) = $${params.length}`);
-  }
-  if (q) {
-    params.push(likePattern(q));
-    where.push(`(u.email ilike $${params.length} or b.title ilike $${params.length})`);
-  }
-  return db().query(
-    `select r.id, r.reserved_at, r.expires_at, r.picked_up_at, r.returned_at,
-       ${DISPLAY_STATUS} as status, ${DAYS_LEFT} as days_left,
-       case when r.picked_up_at is not null and r.status = 'picked_up'
-         then floor(extract(epoch from (now() - r.picked_up_at)) / 86400)::int end as loan_days,
-       b.id as book_id, b.title, u.name as user_name, u.email as user_email
-     from reservations r
-     join books b on b.id = r.book_id
-     join neon_auth."user" u on u.id = r.user_id
-     ${where.length ? "where " + where.join(" and ") : ""}
-     order by r.reserved_at desc
-     limit ${Number(limit)}`,
-    params
-  );
+export async function listReservationPage(options = {}) {
+  const parsed = parseReservationParams({ ...options, user: options.userId });
+  const rows = await listAllReservations({ ...parsed, limit: RESERVATION_PAGE_SIZE + 1, offset: (parsed.page - 1) * RESERVATION_PAGE_SIZE });
+  return { rows: rows.slice(0, RESERVATION_PAGE_SIZE), hasNext: rows.length > RESERVATION_PAGE_SIZE };
+}
+
+export async function getReservationMember(userId) {
+  const [member] = await db().query('select id, name, email from neon_auth."user" where id::text = $1::text', [String(userId)]);
+  return member ?? null;
 }
 
 // Daily tidy-up. Correctness doesn't depend on it (see active_reservations view).

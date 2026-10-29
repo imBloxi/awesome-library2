@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { requireAdmin } from "@/lib/dal";
 import { listUsers } from "@/lib/queries/users";
 import { makeAdminAction, removeAdminAction } from "@/app/admin/actions";
@@ -40,8 +41,10 @@ async function UserTable({ searchParams }) {
                     {u.name || u.email}
                     {isMe && <span className="ml-2 text-xs font-normal text-muted">(you)</span>}
                   </p>
-                  <p className="text-sm text-muted">
-                    {u.email} · {u.active_count} active reservation{u.active_count === 1 ? "" : "s"}
+                  <p className="text-sm text-muted [overflow-wrap:anywhere]">
+                    {u.email} · <Link href={{ pathname: "/admin/reservations", query: { status: "active", user: String(u.id) } }} className="link" aria-label={`View ${u.active_count} active reservations for ${u.name || u.email}`}>
+                      {u.active_count} active reservation{u.active_count === 1 ? "" : "s"}
+                    </Link>
                   </p>
                 </div>
                 <div className="flex items-start gap-3">

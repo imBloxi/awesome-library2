@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-29: Admin circulation desk
+
+- Overview now leads with overdue loans and holds expiring within 24 hours, ordered by urgency and deadline. Count tiles open the matching circulation filters.
+- Reservations adds attention/expiring filters, priority/newest sorting, exact member filters, and 20-row pagination that preserves filters.
+- Pickup and loan deadlines display exact UTC times. Overdue badges, filters and counts share the same 28-day rule, including loans less than one day overdue.
+- Member active counts open that person's reservation list, including useful context and a clear-filter link when there are no results.
+- Reservation CSV copy now discloses the existing 50,000-record limit.
+- New PostgreSQL regressions cover deadline boundaries, text/UUID member IDs, literal searches and older history; URL and date formatting checks run with the unit suite.
+
 ## 2026-10-29: Clean white redesign
 
 - Replaced the 1997 theme with a plain white design: system sans-serif, thin grey dividers, a dark primary button and a single blue accent.
@@ -48,9 +57,7 @@
 
 | Issue | Impact | Fix |
 |---|---|---|
-| `/admin/reservations` can fail with *"could not determine data type of parameter $2"* (seen in production before the redesign) | Some admin reservation filters error | Cast the status parameter in `listAllReservations` (`$n::text`) and add a DB test |
 | Admin sees how many top picks are hidden, not which ones | Admin can't tell which picks are off the home page | Return pick ids in order and mark the ones after the 6th |
-| `/admin/users?page=<huge>` returns a 500 | Junk URL only | Use `parseSearchParams` there too |
 | A stale edit form can restart an expired top pick | A pick can run 7 more days unintentionally | Send the shown `top_pick_at` with the form |
 | Restoring a deleted book within 7 days revives its pick | Surprise top pick | Clear `top_pick_at` on delete |
 | "7 days" is hard-coded in the book form label | Label goes wrong if `TOP_PICK_DAYS` changes | Use the constant |

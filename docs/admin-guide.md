@@ -6,7 +6,9 @@ The admin area has four tabs: **Overview**, **Books**, **Reservations**, **Users
 
 ## Overview (`/admin`)
 
-Tiles with live counts: books, users, active holds, books out on loan, **overdue loans** (out more than 28 days), **holds expiring within a day**, and books with no free copy. Tiles that need attention are outlined in red. Click a tile to jump to that list. Below the tiles is the recent activity.
+Tiles show live counts: books, users, active holds, books out on loan, **overdue loans**, **holds expiring within 24 hours**, and books with no free copy. Overdue and expiring tiles are outlined in red when they need attention. Click a circulation tile to open its matching reservation filter.
+
+The **Needs attention** queue shows up to eight reservations: overdue loans first, then live holds expiring within 24 hours. Each group starts with its earliest deadline. **View attention queue** opens the full paginated queue. A lapsed hold is excluded even before the daily cleanup job runs.
 
 ## Books (`/admin/books`)
 
@@ -38,7 +40,9 @@ Tiles with live counts: books, users, active holds, books out on loan, **overdue
 Filter by status:
 
 - Active (default)
-- Ready for pickup
+- **Needs attention** (overdue loans and live holds expiring within 24 hours)
+- **Expiring within 24h** (live holds only)
+- Waiting for pickup
 - Borrowed
 - **Overdue** (borrowed more than 28 days ago)
 - Returned
@@ -46,7 +50,11 @@ Filter by status:
 - Expired
 - All
 
-You can also search by member email or book title.
+You can also search by member name, email or book title. Lists show up to **20 reservations per page**; use **Previous** and **Next** to reach older entries. Search, status, sort and any selected member stay applied while paging. Applying filters starts again on page one.
+
+**Priority** sorting puts overdue loans first, then expiring holds, then other deadlines, with the earliest deadline first in each group. Active lists default to priority; completed reservation history and All default to **Newest first**. You can choose either sort.
+
+Every live hold shows its exact **Pickup by** timestamp, and every borrowed book shows its **Due** timestamp. All dates and times in the staff reservation lists are labeled **UTC**. A loan becomes overdue strictly after pickup plus 28 days, including when it is less than one full day late.
 
 | Action | When it's allowed | Effect |
 |---|---|---|
@@ -55,15 +63,16 @@ You can also search by member email or book title.
 | **Extend** | A live hold | New 7-day pickup window from now |
 | **Cancel** | A live hold | Copy goes back on the shelf |
 
-A hold that has already lapsed can't be extended: its copy may have gone to someone else. **Export CSV** downloads every reservation.
+A hold that has already lapsed can't be extended: its copy may have gone to someone else. **Export CSV** downloads up to **50,000 reservations** across all members and statuses. The export does not apply the current page's filters and may omit older reservations when the total exceeds that limit.
 
 The 28-day overdue threshold is `LOAN_DAYS` in `src/lib/constants.js`.
 
 ## Users (`/admin/users`)
 
-- Search by name or email, and see each person's active reservation count.
+- Search by name or email. Click a person's **active reservation count** to open their exact active reservation list.
+- The reservation page shows the selected member's name and email. That member stays selected while you search, change filters or turn pages, even if there are no matches. **Clear member filter** returns to the same search, status and sort across all members. If the member no longer exists, the page says **Member not found** and still offers a way to clear the filter.
 - **Make admin** or **Remove admin**. The change applies at that person's **next sign-in**.
-- You can't change your own role, so there's always at least one admin.
+- You can't change your own role.
 
 ## Making someone an admin
 

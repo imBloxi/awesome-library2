@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { updateBookSteps, deleteBookSteps } from "./book-sql.mjs";
-import { LOAN_DAYS, TOP_PICKS_LIMIT } from "@/lib/constants";
+import { TOP_PICKS_LIMIT } from "@/lib/constants";
+import { IS_OVERDUE_SQL, IS_EXPIRING_SQL } from "./reservation-sql.mjs";
 import { AVAILABLE_SQL as AVAILABLE, TOP_PICK_ACTIVE_SQL, buildSearchQuery, topPicksQuery, byAuthorQuery } from "@/lib/queries/search-sql.mjs";
 
 export const PAGE_SIZE = 20;
@@ -110,10 +111,9 @@ export async function getStats() {
        select book_id, count(*) as active_count,
          count(*) filter (where status = 'reserved') as holds,
          count(*) filter (where status = 'picked_up') as loans,
-         count(*) filter (where status = 'picked_up'
-           and picked_up_at < now() - interval '${LOAN_DAYS} days') as overdue,
-         count(*) filter (where status = 'reserved' and expires_at < now() + interval '1 day') as expiring
-       from active_reservations group by book_id
+         count(*) filter (where ${IS_OVERDUE_SQL}) as overdue,
+         count(*) filter (where ${IS_EXPIRING_SQL}) as expiring
+       from active_reservations r group by book_id
      )
      select b.books, b.out_of_stock, (select count(*)::int from neon_auth."user") as users, r.*
      from (

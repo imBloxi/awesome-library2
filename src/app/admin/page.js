@@ -19,14 +19,17 @@ export default function AdminPage() {
 
 async function Stats() {
   await requireAdmin();
-  const [s, recent] = await Promise.all([getStats(), listAllReservations({ status: "all", limit: 8 })]);
+  const [s, attention] = await Promise.all([
+    getStats(),
+    listAllReservations({ status: "attention", sort: "priority", limit: 8 }),
+  ]);
   const cards = [
     { label: "Books", value: s.books, href: "/admin/books" },
     { label: "Users", value: s.users, href: "/admin/users" },
     { label: "Waiting for pickup", value: s.holds, href: "/admin/reservations?status=reserved" },
     { label: "Borrowed", value: s.loans, href: "/admin/reservations?status=picked_up" },
     { label: "Overdue loans", value: s.overdue, href: "/admin/reservations?status=overdue", warn: s.overdue > 0 },
-    { label: "Holds expiring within 24h", value: s.expiring, href: "/admin/reservations?status=reserved" },
+    { label: "Holds expiring within 24h", value: s.expiring, href: "/admin/reservations?status=expiring", warn: s.expiring > 0 },
     { label: "Books with no copy free", value: s.out_of_stock, href: "/admin/books" },
   ];
   return (
@@ -44,11 +47,13 @@ async function Stats() {
       ))}
     </div>
     <section className="mt-10">
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-xl font-semibold tracking-tight">Recent activity</h2>
-        <Link href="/admin/reservations?status=all" className="text-sm link">All reservations</Link>
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-xl font-semibold tracking-tight">Needs attention</h2>
+        <Link href="/admin/reservations?status=attention" className="text-sm link">View attention queue</Link>
       </div>
-      {recent.length === 0 ? <p className="text-muted">No reservations yet.</p> : <AdminReservationList rows={recent} />}
+      <p className="mb-4 text-sm text-muted">Overdue loans first, then holds expiring within 24 hours. Earliest deadlines first in each group.</p>
+      {attention.length === 0 ? <p className="text-muted">No reservations need attention right now.</p> : <AdminReservationList rows={attention} />}
+      <Link href="/admin/reservations" className="mt-4 inline-block text-sm link">All active reservations</Link>
     </section>
     </>
   );

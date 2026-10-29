@@ -50,11 +50,13 @@ Then [make yourself an admin](admin-guide.md#making-someone-an-admin).
 | `pnpm lint` | ESLint |
 | `pnpm db:migrate` | applies new migrations using `.env.local` |
 | `pnpm db:seed` | adds sample books |
-| `pnpm test:env` | unit tests: env parsing, CSV, search params and SQL builder. No database needed. |
+| `pnpm test:env` | unit tests: env parsing, CSV, search, Babel, reservation URL params and UTC timestamps. No database needed. |
+| `pnpm test:admin` | circulation filters, exact deadlines, member IDs and paging against a **throwaway** DB (`TEST_DATABASE_URL=... pnpm test:admin`, Node 24+) |
+| `pnpm test:books` | book/hold mutation races and dashboard counts against a **throwaway** DB (`TEST_DATABASE_URL=... pnpm test:books`, Node 24+) |
 | `pnpm test:search-db` | search, filter, top-pick and author SQL against a **throwaway** DB (`DATABASE_URL=... pnpm test:search-db`) |
 | `pnpm test:reserve` | reserve concurrency rules against a **throwaway** DB |
 
-The two DB test scripts create rows and delete them afterwards. Don't point them at production.
+The search and reserve scripts create rows and delete them afterwards. The admin and book suites **truncate their fixture tables**; run them sequentially. Never point any DB test at production or a database containing data you need to keep.
 
 ## A throwaway local database
 

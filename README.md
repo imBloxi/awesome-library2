@@ -11,9 +11,9 @@ Book search and reservations on Next.js 16, Neon Postgres and Neon Auth.
 - **Babel back covers:** read an imagined jacket blurb grounded in the book's title and description, with its premise, thematic stakes and an open hook. The same metadata opens the same copy; editions sharing a title can differ. Generation is local and needs no AI service. Missing descriptions use title-led copy.
 - **Admins** (`/admin`):
   - Books: add, edit, delete and restore, see who currently holds a copy, export to CSV. Tick **Top pick this week** to feature a book on the home page for 7 days (newest 6 show; see `TOP_PICK_DAYS` in `src/lib/queries/search-sql.mjs`).
-  - Reservations: mark picked up or returned, extend or cancel a hold, filter overdue loans (over 28 days, see `src/lib/constants.js`), export to CSV.
-  - Users: search, make or remove admins (role changes apply at the user's next sign-in; you can't change your own).
-  - Overview: totals, overdue loans, holds about to lapse, recent activity.
+  - Reservations: paginated priority queues, exact pickup and return deadlines in UTC, member filters, pickup/return/extend/cancel actions, and CSV export (up to 50,000 newest records).
+  - Users: search, open a member's active reservations, make or remove admins (role changes apply at the user's next sign-in; you can't change your own).
+  - Overview: live totals and a Needs attention queue for overdue loans and holds expiring within 24 hours.
 - A reservation is a hold until pickup. Holds not picked up within 7 days stop counting automatically.
 
 ## Setup
@@ -81,7 +81,14 @@ this suite truncates its fixture tables):
 TEST_DATABASE_URL=postgres://... pnpm test:books
 ```
 
-Apply both migrations first. For a local PostgreSQL test database without Neon Auth,
+Admin circulation filters, deadline boundaries and pagination (Node 24+,
+**disposable database only**; this suite also truncates fixture tables):
+
+```bash
+TEST_DATABASE_URL=postgres://... pnpm test:admin
+```
+
+Apply all migrations first. Run the fixture-resetting suites sequentially. For a local PostgreSQL test database without Neon Auth,
 create a test-only `neon_auth."user"` table with `id text primary key`, `name text`,
 `email text` and `role text` before migrating. This tests SQL and locking, not the
 remote Neon Auth service. Never run these checks against production.
