@@ -2,7 +2,7 @@
 
 Plain white and quiet: the books are the focus. System fonts only and no images, so the UI costs nothing extra to load.
 
-> Screenshots in `docs/screenshots/` show the earlier 1997 theme and need re-taking.
+> Older full-page screenshots in `docs/screenshots/` show the earlier 1997 theme. The `hardcover-*` screenshots show the updated cover component in a standalone desktop/mobile fixture.
 
 ## Tokens (`@theme` in `src/app/globals.css`)
 
@@ -30,7 +30,15 @@ Plain white and quiet: the books are the focus. System fonts only and no images,
 
 ## React components
 
-`PageTitle`, `Skeleton`, `Availability` (`short` variant), `TopPickBadge`, `StatusBadge`, `Pagination` in `ui.js`. `BookCover` (`sm` / `md` / `lg`, pastel colour from the book id) in `book-cover.js`. `BookTable` and `CoverShelf` in `book-table.js`. `SearchForm`, `CatalogFilters`, `ActionButton`.
+`PageTitle`, `Skeleton`, `Availability` (`short` variant), `TopPickBadge`, `StatusBadge`, `Pagination` in `ui.js`. `BookCover` (`sm` / `md` / `lg`, cloth colour from the book id) in `book-cover.js`. `BookTable` and `CoverShelf` in `book-table.js`. `SearchForm`, `CatalogFilters`, `ActionButton`.
+
+### Hardcover treatment
+
+Book covers use a cloth-like CSS weave, a shaded binding groove, an inset foil border and an ivory page block with a thin back board. Titles and authors use local Georgia/Times serif fonts; the rest of the interface retains the system sans-serif stack. Palette and cover identity stay stable per book id.
+
+Shelf and detail covers retain the 2:3 aspect ratio and their existing responsive widths. Compact table covers remain 36 × 48 px, with an initial and the same binding treatment. Cover text is clamped inside the board, while the real title and author remain accessible beside/below it. Covers remain decorative (`aria-hidden`). No image requests, downloaded fonts, added animation or client JavaScript are needed.
+
+Verified the rendered component in Chromium at 390, 768 and 1200 px, including long titles, unbroken words and Unicode. Preview fixture labels use the same truncation behavior as the shelf; browser validation does not exercise Neon authentication or live database pages. Lint, the 29 existing unit tests and production build pass.
 
 ## Accessibility
 

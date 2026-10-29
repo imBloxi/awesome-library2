@@ -1,38 +1,40 @@
-// A flat, typographic cover drawn in CSS, so the catalog has covers without image downloads.
+// Clothbound hardcovers drawn in CSS: no images, fonts or client JavaScript.
 // Colour comes from the book id, so a book always looks the same.
 const TONES = [
-  ["#e8eef9", "#1f3a68"],
-  ["#f3ece4", "#5b3a1e"],
-  ["#e7f1ec", "#1f4d36"],
-  ["#f4e9ec", "#6b2337"],
-  ["#eeeaf6", "#3d2d6b"],
-  ["#f2f0e3", "#4f4a1c"],
-  ["#e6f0f2", "#1d4a54"],
-  ["#efefef", "#2b2b2b"],
+  ["#243c54", "#f1dfb4"],
+  ["#603640", "#f3dfb8"],
+  ["#2c493d", "#e8ddb9"],
+  ["#594334", "#f2dfba"],
+  ["#433c5b", "#e9dfc3"],
+  ["#60502f", "#f3e5be"],
+  ["#2d5057", "#eadfbd"],
+  ["#3f4247", "#eee4cc"],
 ];
 
 export function BookCover({ book, size = "md" }) {
-  const [bg, fg] = TONES[Number(book.id) % TONES.length];
-  if (size === "sm") {
-    return (
-      <span
-        aria-hidden="true"
-        className="inline-grid h-12 w-9 shrink-0 place-items-center rounded-[3px] text-sm font-semibold"
-        style={{ background: bg, color: fg }}
-      >
-        {book.title.replace(/^(the|a|an)\s+/i, "").charAt(0).toUpperCase()}
-      </span>
-    );
-  }
-  const dims = size === "lg" ? "w-44 sm:w-56 text-xl" : "w-full text-sm";
+  const [cloth, foil] = TONES[Number(book.id) % TONES.length];
+  const compact = size === "sm";
+  const dims = compact ? "h-12 w-9" : size === "lg" ? "w-44 sm:w-56" : "w-full";
   return (
     <span
       aria-hidden="true"
-      className={`flex aspect-[2/3] shrink-0 flex-col justify-between rounded-md p-[9%] shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_-12px_rgba(0,0,0,0.25)] ${dims}`}
-      style={{ background: bg, color: fg }}
+      className={`book-cover book-cover--${size} ${dims}`}
+      style={{ "--cover-cloth": cloth, "--cover-foil": foil }}
     >
-      <span className="line-clamp-4 font-semibold leading-snug tracking-tight">{book.title}</span>
-      <span className="line-clamp-2 text-[0.75em] opacity-75">{book.author}</span>
+      <span className="book-cover__pages" />
+      <span className="book-cover__front">
+        {compact ? (
+          <span className="book-cover__initial">
+            {Array.from(book.title.replace(/^(the|a|an)\s+/i, "").trim())[0]?.toUpperCase()}
+          </span>
+        ) : (
+          <>
+            <span className="book-cover__ornament">✦</span>
+            <span className="book-cover__title">{book.title}</span>
+            <span className="book-cover__author">{book.author}</span>
+          </>
+        )}
+      </span>
     </span>
   );
 }
