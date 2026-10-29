@@ -11,6 +11,34 @@ test("a title always opens the same Babel page, independently of previous calls"
   assert.notDeepEqual(babelPassage("A Different Door"), passage);
 });
 
+test("editions with the same title have different, repeatable stories", () => {
+  const first = babelPassage("The Secret Garden", 101);
+  assert.notDeepEqual(babelPassage("The Secret Garden", 102), first);
+  assert.deepEqual(babelPassage("  THE SECRET GARDEN  ", "101"), first);
+});
+
+test("a catalog has distinct story bodies beyond book titles and character names", () => {
+  const bodies = new Set();
+  const developments = new Set();
+  const endings = new Set();
+  for (let id = 1; id <= 500; id++) {
+    const paragraphs = babelPassage(`The Library Collection Volume ${id}`, id);
+    for (const paragraph of paragraphs) {
+      assert.ok(paragraph.length >= 50 && paragraph.length < 800);
+      assert.doesNotMatch(paragraph, /undefined|NaN|\[object Object\]/);
+      assert.equal(paragraph.isWellFormed(), true);
+    }
+    const reader = paragraphs[0].match(/^(\p{Lu}[\p{L}\p{M}]+)/u)[1];
+    const clean = (text) => text.replaceAll(reader, "READER").replace(/“[^”]*”/gu, "BOOK");
+    bodies.add(clean(paragraphs.slice(1).join("\n")));
+    developments.add(clean(paragraphs[1]));
+    endings.add(clean(paragraphs[2]));
+  }
+  assert.ok(bodies.size >= 495, `Only ${bodies.size}/500 distinct story bodies`);
+  assert.ok(developments.size >= 450, `Only ${developments.size}/500 distinct investigations`);
+  assert.ok(endings.size >= 450, `Only ${endings.size}/500 distinct conclusions`);
+});
+
 test("a passage treats the full title as one book rather than quoting random title words", () => {
   const paragraphs = babelPassage("The Hitchhiker’s Guide to the Galaxy");
   assert.ok(paragraphs[0].includes("the hitchhiker’s guide to the galaxy"));
@@ -51,7 +79,7 @@ test("output stays short even for very long titles", () => {
     assert.equal(paragraphs.length, 3);
     for (const paragraph of paragraphs) {
       assert.ok(paragraph.length >= 50 && paragraph.length < 800);
-      assert.match(paragraph, /[.!?]$/);
+      assert.match(paragraph, /[.!?][”’"']?$/);
     }
   }
 });

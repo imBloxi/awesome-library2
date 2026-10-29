@@ -79,10 +79,10 @@ async function BookDetails({ params }) {
           <details className="max-w-prose rounded-lg border border-line bg-subtle p-4">
             <summary className="cursor-pointer text-sm font-medium">Open a Babel page</summary>
             <p className="mt-3 text-xs text-muted">
-              A little Library of Babel, seeded by this title. Invented text, not an excerpt from the book.
+              A little Library of Babel, inspired by this book. Invented text, not an excerpt from the book.
             </p>
             <div className="mt-4 space-y-4 leading-relaxed">
-              {babelPassage(book.title).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+              {babelPassage(book.title, book.id).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
             </div>
           </details>
         </div>
