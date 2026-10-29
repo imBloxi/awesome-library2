@@ -4,7 +4,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import pg from "pg";
-import { TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery, topPicksQuery } from "../src/lib/queries/search-sql.mjs";
+import { TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery, topPicksQuery, byAuthorQuery } from "../src/lib/queries/search-sql.mjs";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const tag = `test-${Date.now()}`;
@@ -123,5 +123,24 @@ test("top picks: respects the limit and carries list columns", async () => {
   const rows = await topPicks(1);
   assert.equal(rows.length, 1);
   assert.equal(rows[0].is_top_pick, true);
+  assert.equal(typeof rows[0].available, "number");
+});
+
+test("more by author: same author only, excludes this book and deleted ones", async () => {
+  const author = `${tag} Author`;
+  const add = async (title, deleted = false) => {
+    const { rows } = await pool.query(
+      "insert into books (title, author, deleted_at) values ($1, $2, $3) returning id",
+      [`${tag} ${title}`, author, deleted ? new Date() : null]
+    );
+    return rows[0].id;
+  };
+  const self = await add("b self");
+  await add("a other");
+  await add("c gone", true);
+  await addBook(null, { title: "someone else" });
+  const { text, values } = byAuthorQuery(author, self, 10);
+  const { rows } = await pool.query(text, values);
+  assert.deepEqual(rows.map((r) => r.title), [`${tag} a other`]);
   assert.equal(typeof rows[0].available, "number");
 });

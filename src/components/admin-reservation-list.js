@@ -7,18 +7,18 @@ import { LOAN_DAYS } from "@/lib/constants";
 // Shared by the reservations page and a book's edit page.
 export function AdminReservationList({ rows, showBook = true }) {
   return (
-    <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+    <ul className="divide-y divide-silver">
       {rows.map((r) => {
         const overdue = r.status === "picked_up" && r.loan_days > LOAN_DAYS;
         return (
           <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div className="min-w-0">
               {showBook ? (
-                <Link href={`/books/${r.book_id}`} className="font-medium hover:underline">{r.title}</Link>
+                <Link href={`/books/${r.book_id}`} className="font-bold">{r.title}</Link>
               ) : (
                 <p className="font-medium">{r.user_name}</p>
               )}
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-muted">
                 {showBook ? `${r.user_name} (${r.user_email})` : r.user_email} · reserved {formatDate(r.reserved_at)}
                 {r.picked_up_at && ` · picked up ${formatDate(r.picked_up_at)}`}
                 {r.returned_at && ` · returned ${formatDate(r.returned_at)}`}
@@ -27,7 +27,7 @@ export function AdminReservationList({ rows, showBook = true }) {
             <div className="flex flex-wrap items-start gap-3">
               <StatusBadge status={r.status} daysLeft={r.days_left} />
               {overdue && (
-                <span className="whitespace-nowrap rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 dark:bg-red-950 dark:text-red-300">
+                <span className="whitespace-nowrap bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
                   Overdue · {r.loan_days - LOAN_DAYS}d
                 </span>
               )}

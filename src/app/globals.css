@@ -1,26 +1,223 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* The Library, circa 1997: a Win95 window on a teal desktop.
+   System fonts only, no images, so it costs nothing to load. */
+
+@theme {
+  --font-serif: "Times New Roman", Times, serif;
+  --font-ui: Tahoma, Verdana, "Segoe UI", sans-serif;
+  --color-desktop: #008080;
+  --color-silver: #c0c0c0;
+  --color-shadow: #808080;
+  --color-navy: #000080;
+  --color-link: #0000ee;
+  --color-visited: #551a8b;
+  --color-muted: #505050;
+  --color-paper: #ffffcc;
+  --color-ok: #006400;
+  --color-bad: #a00000;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    background: var(--color-desktop);
+  }
+  body {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    color: #000;
+  }
+  a {
+    color: var(--color-link);
+    text-decoration: underline;
+  }
+  a:visited {
+    color: var(--color-visited);
+  }
+  a:hover {
+    color: #ff0000;
+  }
+  :focus-visible {
+    outline: 1px dotted #000;
+    outline-offset: 2px;
+  }
+  hr {
+    border: 0;
+    border-top: 1px solid var(--color-shadow);
+    border-bottom: 1px solid #fff;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .bevel-out {
+    border: 2px solid;
+    border-color: #fff #404040 #404040 #fff;
+    box-shadow: inset -1px -1px var(--color-shadow), inset 1px 1px #dfdfdf;
+  }
+  .bevel-in {
+    border: 2px solid;
+    border-color: var(--color-shadow) #fff #fff var(--color-shadow);
+    box-shadow: inset 1px 1px #404040;
+  }
+
+  .window {
+    background: var(--color-silver);
+  }
+  .titlebar {
+    background: linear-gradient(90deg, var(--color-navy), #1084d0);
+    color: #fff;
+    font-family: var(--font-ui);
+    font-weight: bold;
+  }
+  .titlebar a,
+  .titlebar a:visited {
+    color: #fff;
+    text-decoration: none;
+  }
+  .titlebar-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 18px;
+    height: 16px;
+    background: var(--color-silver);
+    color: #000;
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .btn,
+  a.btn,
+  a.btn:visited {
+    display: inline-block;
+    padding: 4px 14px;
+    background: var(--color-silver);
+    color: #000;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    border: 2px solid;
+    border-color: #fff #404040 #404040 #fff;
+    box-shadow: inset -1px -1px var(--color-shadow), inset 1px 1px #dfdfdf;
+  }
+  .btn:active:not(:disabled) {
+    border-color: #404040 #fff #fff #404040;
+    box-shadow: inset 1px 1px var(--color-shadow);
+    padding: 5px 13px 3px 15px;
+  }
+  .btn:disabled {
+    color: var(--color-shadow);
+    text-shadow: 1px 1px #fff;
+    cursor: default;
+  }
+  /* Win95 marked the default button with an extra black frame. */
+  .btn-primary {
+    font-weight: bold;
+    outline: 1px solid #000;
+    outline-offset: 0;
+  }
+  .btn-danger,
+  a.btn-danger {
+    color: var(--color-bad);
+  }
+  .btn-sm {
+    padding: 2px 10px;
+    font-size: 13px;
+  }
+
+  .field {
+    width: 100%;
+    padding: 4px 6px;
+    background: #fff;
+    color: #000;
+    font-family: var(--font-ui);
+    font-size: 16px; /* 16px stops iOS zooming in on focus */
+    border: 2px solid;
+    border-color: var(--color-shadow) #fff #fff var(--color-shadow);
+    box-shadow: inset 1px 1px #404040;
+    border-radius: 0;
+  }
+  .field:focus {
+    outline: 1px dotted #000;
+    outline-offset: 1px;
+  }
+
+  /* Group box, like a <fieldset> in a dialog. */
+  .groupbox {
+    border: 2px groove #fff;
+    padding: 12px;
+  }
+  .groupbox > legend {
+    padding: 0 4px;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .ui {
+    font-family: var(--font-ui);
+  }
+
+  .blink {
+    animation: blink 1s steps(2, start) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .blink {
+      animation: none;
+    }
+  }
+
+  .retro-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+  }
+  .retro-table th {
+    background: var(--color-silver);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: normal;
+    text-align: left;
+    padding: 3px 8px;
+    border: 2px solid;
+    border-color: #fff #404040 #404040 #fff;
+  }
+  .retro-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--color-silver);
+    vertical-align: middle;
+  }
+  .retro-table tbody tr:nth-child(even) {
+    background: #f4f4f4;
+  }
+  .retro-table tbody tr:hover {
+    background: var(--color-paper);
+  }
+
+  .progress-blocks {
+    background: repeating-linear-gradient(90deg, var(--color-navy) 0 10px, transparent 10px 13px);
+    animation: progress 1.6s steps(12) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .progress-blocks {
+      animation: none;
+      width: 50%;
+    }
+  }
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }

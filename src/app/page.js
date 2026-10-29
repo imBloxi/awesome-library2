@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import { searchBooks, listTopPicks } from "@/lib/queries/books";
 import { SearchForm } from "@/components/search-form";
 import { CatalogFilters } from "@/components/catalog-filters";
+import { BookTable, CoverShelf } from "@/components/book-table";
 import { parseSearchParams, filtersToParams, hasFilters } from "@/lib/search-params.mjs";
-import { BookListItem } from "@/components/book-list-item";
-import { PageTitle, Skeleton, Pagination } from "@/components/ui";
+import { PageTitle, Skeleton, Pagination, TopPickBadge } from "@/components/ui";
 
 const NO_FILTERS = { available: false, yearFrom: null, yearTo: null };
 
@@ -22,6 +22,7 @@ export default function CatalogPage({ searchParams }) {
 async function Catalog({ searchParams }) {
   const sp = await searchParams;
   const { q, page, filters } = parseSearchParams(sp);
+  const params = filtersToParams({ q, filters });
   const filtered = hasFilters({ q, filters });
   // Top picks only on the plain first page, fetched alongside the catalog so it adds no wait.
   const showTop = !filtered && page === 1;
@@ -32,26 +33,30 @@ async function Catalog({ searchParams }) {
 
   return (
     <>
-      <SearchForm action="/" q={q}>
+      {/* Keyed on the query: the page doesn't remount when only the URL's search changes,
+          so without this the inputs would keep stale values after "Clear all filters" or Back. */}
+      <SearchForm key={JSON.stringify(params)} action="/" q={q}>
         <CatalogFilters filters={filters} showClear={filtered} />
       </SearchForm>
       {topPicks.length > 0 && (
-        <section className="mb-8">
-          <h2 className="mb-2 text-lg font-semibold">This week&apos;s top books</h2>
-          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {topPicks.map((b) => <BookListItem key={b.id} book={b} />)}
-          </ul>
-          <h2 className="mt-8 text-lg font-semibold">All books</h2>
+        <section aria-labelledby="top-books" className="mb-8 border-2 border-dashed border-navy bg-paper p-4">
+          <h2 id="top-books" className="mb-4 flex items-center gap-2 text-xl font-bold text-navy">
+            ★ This week&apos;s top books ★ <TopPickBadge />
+          </h2>
+          <CoverShelf books={topPicks} />
         </section>
       )}
+      <h2 className="mb-2 text-xl font-bold text-navy">
+        {filtered ? "Search results" : "All books"}
+      </h2>
       {books.length === 0 ? (
-        <p className="text-zinc-500">{filtered ? "No books match your search." : "No books in the catalog yet."}</p>
+        <p className="ui bevel-in bg-paper p-3 text-sm">
+          {filtered ? "No books match your search. Try fewer words or clear the filters." : "No books in the catalog yet."}
+        </p>
       ) : (
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {books.map((b) => <BookListItem key={b.id} book={b} showTopPick />)}
-        </ul>
+        <BookTable books={books} />
       )}
-      <Pagination basePath="/" params={filtersToParams({ q, filters })} page={page} hasNext={hasNext} />
+      <Pagination basePath="/" params={params} page={page} hasNext={hasNext} />
     </>
   );
 }
