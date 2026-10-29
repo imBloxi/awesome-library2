@@ -1,10 +1,10 @@
 # Reservation correctness follow-up implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Continue the approved correctness/database pass by preventing expired hold revival, fixing admin user pagination overflow, and preserving the latest upstream design.
 
-**Architecture:** Coordinate pickup/extension with the existing per-user and book locks, then lock the reservation before checking expiry using the final statement's time. Reuse existing URL parsing and LIKE escaping instead of duplicating it.
+**Architecture:** Coordinate pickup/extension with the existing per-user and book locks, then lock the reservation before checking expiry using actual database wall time. Reuse existing URL parsing and LIKE escaping instead of duplicating it.
 
 **Tech Stack:** Node 24, Next.js 16, Neon HTTP transactions and disposable PostgreSQL 17 tests.
 
@@ -31,9 +31,9 @@
 
 **Interface:** `liveHoldSteps(id, pickedUp)` returns ordered SQL descriptors. Pickup and extension retain their boolean results, using one explicit READ COMMITTED Neon transaction each.
 
-- [ ] Add real-database expiry-wait regressions for pickup/extension with another user taking a copy and the same user taking their tenth slot. Observe lock waits and actual expiry; confirm failures before implementation.
-- [ ] Lock the reservation's user, then its book and reservation rows, then recheck live status, nondeleted book and expiry with `statement_timestamp()` in a separate final mutation statement.
-- [ ] Cover normal pickup/extension, invalid statuses, missing/deleted books, and concurrent admin mutations. Run the book suite and existing reservation scenarios; commit.
+- [x] Add real-database expiry-wait regressions for pickup/extension with another user taking a copy and the same user taking their tenth slot. Observe lock waits and actual expiry; confirm failures before implementation.
+- [x] Lock the reservation's user, then its book and reservation rows, then recheck live status, nondeleted book and expiry with `clock_timestamp()` in a separate final mutation statement. A failing batched-protocol regression showed why statement time was insufficient.
+- [x] Cover normal pickup/extension, invalid statuses, missing/deleted books, and concurrent admin mutations. Run the book suite and existing reservation scenarios; commit.
 
 ### Task 2: Reuse parsing and search helpers
 
@@ -41,11 +41,11 @@
 
 **Interface:** export `parsePage(value)` with the existing 1..10000 bounds. Reuse it in URL parsing and user queries; reuse `likePattern(q)` for admin users/reservations.
 
-- [ ] Reproduce huge/invalid numeric user-page offsets against PostgreSQL and add parser cases. Add literal-wildcard search fixtures.
-- [ ] Reuse helper functions and retain query result shapes and pagination links. Run affected suites; commit.
+- [x] Reproduce huge/invalid numeric user-page offsets against PostgreSQL and add parser cases. Add literal-wildcard search fixtures.
+- [x] Reuse helper functions and retain query result shapes and pagination links. Run affected suites; commit.
 
 ### Task 3: Verify the merged result
 
-- [ ] Replace obsolete Babel theme classes with current design tokens; preserve native details behavior.
-- [ ] Run unit and PostgreSQL suites, lint, migration repeatability and production build.
-- [ ] Request one read-only whole-change review, fix confirmed important issues with failing tests first, and document limits.
+- [x] Replace obsolete Babel theme classes with current design tokens; preserve native details behavior.
+- [x] Run unit and PostgreSQL suites, lint, migration repeatability and production build.
+- [x] Request one read-only whole-change review, fix confirmed important issues with failing tests first, and document limits.

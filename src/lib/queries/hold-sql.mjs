@@ -1,5 +1,6 @@
 // Keep the same user → book lock order as reserveSteps. Lock the reservation
-// too, then check expiry in a fresh statement after every possible lock wait.
+// too, then check expiry after every possible lock wait. Use wall time even if
+// the transport batches statements into one PostgreSQL protocol message.
 export function liveHoldSteps(id, pickedUp) {
   return [
     {
@@ -13,10 +14,10 @@ export function liveHoldSteps(id, pickedUp) {
     },
     {
       text: `update reservations r set ${pickedUp
-        ? "status = 'picked_up', picked_up_at = statement_timestamp()"
-        : "expires_at = statement_timestamp() + interval '7 days'"}
+        ? "status = 'picked_up', picked_up_at = clock_timestamp()"
+        : "expires_at = clock_timestamp() + interval '7 days'"}
         from books b where r.id = $1 and b.id = r.book_id and b.deleted_at is null
-          and r.status = 'reserved' and r.expires_at > statement_timestamp()
+          and r.status = 'reserved' and r.expires_at > clock_timestamp()
         returning r.id`,
       params: [id],
     },

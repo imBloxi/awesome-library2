@@ -7,6 +7,7 @@ import { deleteBook, updateBook, getBook, getStats } from "../src/lib/queries/bo
 import { reserveBook, markPickedUp, extendHold, countActive, listAllReservations } from "../src/lib/queries/reservations.js";
 import { listUsers } from "../src/lib/queries/users.js";
 import { reserveSteps } from "../src/lib/queries/reserve-sql.mjs";
+import { liveHoldSteps } from "../src/lib/queries/hold-sql.mjs";
 
 // This suite intentionally resets its fixture tables: never use a real development/production DB.
 beforeEach(async () => {
@@ -297,4 +298,22 @@ test("admin searches treat LIKE wildcards literally", async () => {
   assert.equal((await listAllReservations({ q: match })).length, 1);
   assert.equal((await listUsers({ q: "50X" })).users.length, 0);
   assert.equal((await listAllReservations({ q: "50X" })).length, 0);
+});
+
+test("hold expiry uses wall time even when commands share one protocol message", async () => {
+  const id = await addHold(await addBook());
+  // IDs come from the local identity column, never user input. Batching here
+  // checks PostgreSQL timing semantics independently of the HTTP transport.
+  assert.match(id, /^\d+$/);
+  const statements = liveHoldSteps(id, true).map((s) => s.text.replaceAll("$1", id));
+  const client = await pool.connect();
+  try {
+    const results = await client.query(`begin;
+      update reservations set expires_at = clock_timestamp() + interval '100 milliseconds' where id = ${id};
+      ${statements[0]}; ${statements[1]}; select pg_sleep(0.15); ${statements[2]}; commit`);
+    assert.equal(results.at(-2).rows.length, 0, "Batch protocol must not freeze the expiry check at message start");
+  } finally {
+    await client.query("rollback");
+    client.release();
+  }
 });
