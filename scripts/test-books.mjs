@@ -4,7 +4,7 @@ import { after, beforeEach, test } from "node:test";
 import { setTimeout } from "node:timers/promises";
 import { pool, lastQuery } from "./helpers/test-db.mjs";
 import { deleteBook, updateBook, getBook, getStats } from "../src/lib/queries/books.js";
-import { reserveBook } from "../src/lib/queries/reservations.js";
+import { reserveBook, markPickedUp, extendHold, countActive } from "../src/lib/queries/reservations.js";
 import { reserveSteps } from "../src/lib/queries/reserve-sql.mjs";
 
 // This suite intentionally resets its fixture tables: never use a real development/production DB.
@@ -195,3 +195,84 @@ test("transactional book edits retain latest-main top-pick behavior", async () =
   await updateBook(id, bookData(2));
   assert.equal((await getBook(id)).top_pick_at, null);
 });
+
+async function addHold(bookId, status = "reserved") {
+  const { rows } = await pool.query(
+    "insert into reservations (user_id, book_id, status) values ('test-user', $1, $2) returning id",
+    [bookId, status]
+  );
+  return rows[0].id;
+}
+
+async function waitForExpiry(id) {
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    const { rows: [row] } = await pool.query("select expires_at <= clock_timestamp() as expired from reservations where id = $1", [id]);
+    if (row.expired) return;
+    await setTimeout(10);
+  }
+  assert.fail("Fixture hold did not expire");
+}
+
+async function waitForReservation(promise) {
+  let finished = false;
+  promise.then(() => { finished = true; }, () => { finished = true; });
+  const deadline = Date.now() + 3000;
+  while (Date.now() < deadline) {
+    // Old code lets the new reservation finish; fixed code makes it wait
+    // behind the pending hold mutation. Observe either before releasing it.
+    const { rows: [row] } = await pool.query(`select count(*)::int as n from pg_stat_activity
+      where application_name = 'library-book-tests' and cardinality(pg_blocking_pids(pid)) > 0`);
+    if (finished || row.n >= 2) return;
+    await setTimeout(10);
+  }
+  assert.fail("Competing reservation neither completed nor waited on a lock");
+}
+
+for (const [name, mutate] of [["pickup", markPickedUp], ["extension", extendHold]]) {
+  for (const sameUser of [false, true]) {
+    test(`${name} cannot revive a hold after its ${sameUser ? "user slot" : "copy"} was reused during a lock wait`, async () => {
+      const id = await addBook();
+      const hold = await addHold(id);
+      await pool.query(`insert into neon_auth."user" (id, name, email) values ('other-user', 'Other', 'other@example.test')`);
+      if (sameUser) {
+        const { rows } = await pool.query("insert into books (title, author) select 'Extra', 'Author' from generate_series(1,9) returning id");
+        for (const book of rows) await addHold(book.id);
+      }
+      const target = sameUser ? await addBook() : id;
+      await pool.query("update reservations set expires_at = clock_timestamp() + interval '500 milliseconds' where id = $1", [hold]);
+      await transaction(async (client) => {
+        await client.query("select id from reservations where id = $1 for update", [hold]);
+        const mutation = mutate(hold);
+        await waitForBlocked(client);
+        await waitForExpiry(hold);
+        const reservation = reserveBook(sameUser ? "test-user" : "other-user", target);
+        await waitForReservation(reservation);
+        await client.query("commit");
+        const [changed, reserved] = await Promise.all([mutation, reservation]);
+        assert.equal(reserved.ok, true);
+        assert.equal(changed, false, "A hold that expired during the wait must remain expired");
+      });
+      assert.equal(await countActive("test-user"), sameUser ? 10 : 0);
+      assert.equal((await getBook(id)).active_count, sameUser ? 0 : 1);
+    });
+  }
+
+  test(`${name} only changes live holds on existing books`, async () => {
+    assert.equal(await mutate(999), false);
+    const id = await addBook();
+    for (const status of ["picked_up", "returned", "cancelled", "expired"]) {
+      assert.equal(await mutate(await addHold(id, status)), false);
+    }
+    const hold = await addHold(id);
+    assert.equal(await mutate(hold), true);
+    const { rows: [row] } = await pool.query("select status, picked_up_at, expires_at > now() + interval '6 days' as extended from reservations where id = $1", [hold]);
+    assert.equal(row.status, name === "pickup" ? "picked_up" : "reserved");
+    if (name === "pickup") assert.ok(row.picked_up_at);
+    else assert.equal(row.extended, true);
+    const gone = await addBook();
+    const goneHold = await addHold(gone);
+    await pool.query("update books set deleted_at = now() where id = $1", [gone]);
+    assert.equal(await mutate(goneHold), false);
+  });
+}

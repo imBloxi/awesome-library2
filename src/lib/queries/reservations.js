@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { LOAN_DAYS } from "@/lib/constants";
 import { reserveSteps, reserveFailureReason, explainFailure } from "./reserve-sql.mjs";
+import { liveHoldSteps } from "./hold-sql.mjs";
 
 // Returns { ok: true } or { ok: false, error }.
 // All three steps run in one transaction over a single HTTP request.
@@ -68,14 +69,17 @@ export async function returnBook(id, userId = null) {
   return rows.length === 1;
 }
 
-export async function markPickedUp(id) {
-  const rows = await db().query(
-    `update reservations set status = 'picked_up', picked_up_at = now()
-     where id = $1 and status = 'reserved' and expires_at > now()
-     returning id`,
-    [id]
+async function changeLiveHold(id, pickedUp) {
+  const sql = db();
+  const results = await sql.transaction(
+    liveHoldSteps(id, pickedUp).map((s) => sql.query(s.text, s.params)),
+    { isolationLevel: "ReadCommitted" }
   );
-  return rows.length === 1;
+  return results.at(-1).length === 1;
+}
+
+export async function markPickedUp(id) {
+  return changeLiveHold(id, true);
 }
 
 // Admin: cancel a hold that is still within its pickup window. Frees the copy.
@@ -91,12 +95,7 @@ export async function cancelHold(id) {
 // Admin: give a live hold a fresh 7-day pickup window. A lapsed hold can't be revived,
 // because its copy may already have gone to someone else.
 export async function extendHold(id) {
-  const rows = await db().query(
-    `update reservations set expires_at = now() + interval '7 days'
-     where id = $1 and status = 'reserved' and expires_at > now() returning id`,
-    [id]
-  );
-  return rows.length === 1;
+  return changeLiveHold(id, false);
 }
 
 export const STATUSES = ["active", "reserved", "picked_up", "overdue", "returned", "cancelled", "expired", "all"];
