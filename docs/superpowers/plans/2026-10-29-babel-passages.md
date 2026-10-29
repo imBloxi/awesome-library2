@@ -1,6 +1,6 @@
 # Babel passages implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Give each book a repeatable, surreal passage inspired by its title.
 
@@ -33,8 +33,8 @@
 
 **Interfaces:** `babelPassage(title: string): string[]` returns exactly three short paragraphs, using a normalized, bounded title as its only seed.
 
-- [ ] Write tests for deterministic output, different titles, normalized seed, Unicode title words, blank fallback and bounded long input. Confirm missing implementation fails.
-- [ ] Implement a small seeded PRNG with sentence templates and a fixed surreal vocabulary. Include sampled title words, with no global state or I/O.
-- [ ] Add a collapsed “Open a Babel page” details/summary section to book details, with plain explanatory copy and paragraph text children. Verify generator output rendered through React escapes HTML.
-- [ ] Add tests to `test:env` and document the feature. Run tests and lint; include the feature in final code review with the database changes.
-- [ ] Commit the implementation and record validation.
+- [x] Write tests for deterministic output, different titles, normalized seed, Unicode title words, blank fallback and bounded long input. Confirm missing implementation fails.
+- [x] Implement a small seeded PRNG with sentence templates and a fixed surreal vocabulary. Include sampled title words, with no global state or I/O.
+- [x] Add a collapsed “Open a Babel page” details/summary section to book details, with plain explanatory copy and paragraph text children. Verify generator output rendered through React escapes HTML.
+- [x] Add tests to `test:env` and document the feature. Run tests and lint; include the feature in final code review with the database changes.
+- [x] Commit the implementation and record validation.
