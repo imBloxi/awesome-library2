@@ -39,6 +39,12 @@ test("a catalog has distinct story bodies beyond book titles and character names
   assert.ok(endings.size >= 450, `Only ${endings.size}/500 distinct conclusions`);
 });
 
+test("a staff-delivered item keeps its retrieval location consistent", () => {
+  const investigation = babelPassage("The Lantern", 172)[1];
+  assert.match(investigation, /bring the relevant box to the reading desk/);
+  assert.doesNotMatch(investigation, /stopped on the correct shelf/);
+});
+
 test("a passage treats the full title as one book rather than quoting random title words", () => {
   const paragraphs = babelPassage("The Hitchhiker’s Guide to the Galaxy");
   assert.ok(paragraphs[0].includes("the hitchhiker’s guide to the galaxy"));

@@ -1,6 +1,6 @@
 # Babel variety implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Replace the three repeatedly reused Babel plots with varied, coherent stories for each book, including separate editions with the same title.
 
@@ -26,7 +26,9 @@
 
 ### Task 1: Expand procedural stories
 
-- [ ] Reproduce repeated bodies with a 500-book test that removes title/reader substitutions, and add edition identity regressions.
-- [ ] Extract compatible story parts into `src/lib/babel-stories.mjs`; update `babelPassage(title, bookId)` and its book-page caller.
-- [ ] Inspect generated examples, run unit tests, lint and build, and review coherence and variation.
-- [ ] Document the seed contract, commit and push to the existing feature branch.
+- [x] Reproduce repeated bodies with a 500-book test that removes title/reader substitutions, and add edition identity regressions.
+- [x] Extract compatible story parts into `src/lib/babel-stories.mjs`; update `babelPassage(title, bookId)` and its book-page caller.
+- [x] Inspect generated examples, run unit tests, lint and build, and review coherence and variation.
+- [x] Document the seed contract, commit and push to the existing feature branch.
+
+Validation: the old generator produced only 3 story bodies across 500 books after title/reader substitutions were removed. The new sample produced 500 bodies, 500 investigations and 499 conclusions. Duplicate-title edition tests pass. All 32 unit tests, lint and production build passed. Independent review found one shelf/desk mismatch; its seeded regression failed before a location-neutral confirmation fixed it. The reviewer also checked 50,000 long-title samples, all within paragraph limits. No database behavior changed.

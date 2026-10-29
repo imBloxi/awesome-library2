@@ -62,7 +62,7 @@ export const STORY_PARTS = {
   mysteries: [
     {
       discovery: (item, source) => `A map appeared where the contents page should have been, marking ${item} at ${source}.`,
-      confirmation: "The map's moving dot stopped on the correct shelf.",
+      confirmation: "The map's moving dot stopped once the item was found.",
       ending: "The map faded, leaving the book's ordinary contents page behind.",
     },
     {
