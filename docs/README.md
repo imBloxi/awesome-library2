@@ -1,6 +1,6 @@
 # The Library: documentation
 
-A small public-library website: people search the catalogue and reserve books online, and staff run the desk from an admin area. Built on Next.js 16, Neon Postgres and Neon Auth, deployed on Vercel in Frankfurt. It deliberately looks like a 1997 Windows 95 web page.
+A small public-library website: people search the catalogue and reserve books online, and staff run the desk from an admin area. Built on Next.js 16, Neon Postgres and Neon Auth, deployed on Vercel in Frankfurt. It uses a plain white, book-first design.
 
 ![Catalogue on desktop](screenshots/home-desktop.png)
 

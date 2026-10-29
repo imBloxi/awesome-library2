@@ -9,23 +9,23 @@ export const metadata = {
   description: "Search, reserve and pick up books from your local library.",
 };
 
-// Reads the session, so it streams in after the static frame.
+// Reads the session, so it streams in after the static header.
 async function UserNav() {
   const user = await getUser();
   if (!user) {
     return (
       <>
-        <Link href="/auth/sign-in" className="btn btn-sm">Sign in</Link>
-        <Link href="/auth/sign-up" className="btn btn-sm btn-primary">Register</Link>
+        <Link href="/auth/sign-in" className="btn btn-ghost btn-sm">Sign in</Link>
+        <Link href="/auth/sign-up" className="btn btn-primary btn-sm">Register</Link>
       </>
     );
   }
   return (
     <>
-      <Link href="/reservations" className="btn btn-sm">My reservations</Link>
-      {user.isAdmin && <Link href="/admin" className="btn btn-sm">Admin</Link>}
+      <Link href="/reservations" className="btn btn-ghost btn-sm">My reservations</Link>
+      {user.isAdmin && <Link href="/admin" className="btn btn-ghost btn-sm">Admin</Link>}
       <form action={signOutAction}>
-        <button type="submit" className="btn btn-sm" title={user.email}>Sign out</button>
+        <button type="submit" className="btn btn-ghost btn-sm" title={user.email}>Sign out</button>
       </form>
     </>
   );
@@ -34,36 +34,26 @@ async function UserNav() {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full">
-      <body className="flex min-h-full flex-col p-2 sm:p-6">
-        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-10 focus:bg-white focus:p-2">
+      <body className="flex min-h-full flex-col">
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-10 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:shadow">
           Skip to content
         </a>
-        <div className="window bevel-out mx-auto flex w-full max-w-5xl flex-1 flex-col p-[3px]">
-          <header>
-            <div className="titlebar flex items-center justify-between gap-2 px-1.5 py-[3px] text-sm">
-              <Link href="/" className="truncate">📚 The Library — Online Catalogue</Link>
-              <span className="flex shrink-0 gap-[2px]" aria-hidden="true">
-                <span className="titlebar-btn bevel-out">_</span>
-                <span className="titlebar-btn bevel-out">□</span>
-                <span className="titlebar-btn bevel-out">×</span>
-              </span>
-            </div>
-            <nav aria-label="Main" className="flex flex-wrap items-center gap-1.5 px-1 py-1.5">
-              <Link href="/" className="btn btn-sm">🏠 Catalog</Link>
-              <span className="ml-auto flex flex-wrap items-center gap-1.5">
-                <Suspense fallback={<span className="ui px-2 text-sm text-muted">Connecting…</span>}>
-                  <UserNav />
-                </Suspense>
-              </span>
+        <header className="border-b border-line">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <Link href="/" className="text-lg font-semibold tracking-tight">Library</Link>
+            <nav aria-label="Main" className="flex flex-wrap items-center gap-1">
+              <Suspense fallback={<span className="h-8 w-32" />}>
+                <UserNav />
+              </Suspense>
             </nav>
-          </header>
-          <main id="main" className="bevel-in flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</main>
-          <footer className="ui mt-[3px] flex flex-wrap gap-[3px] text-xs">
-            <span className="bevel-in flex-1 px-2 py-0.5">Document: Done</span>
-            <span className="bevel-in px-2 py-0.5">Best viewed in Netscape Navigator 4.0 at 800×600</span>
-            <span className="bevel-in px-2 py-0.5">© 1997–2026</span>
-          </footer>
-        </div>
+          </div>
+        </header>
+        <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-10">{children}</main>
+        <footer className="border-t border-line">
+          <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-muted sm:px-6">
+            Holds last 7 days · Up to 10 books at a time
+          </div>
+        </footer>
       </body>
     </html>
   );
