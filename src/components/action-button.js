@@ -24,8 +24,8 @@ export function ActionButton({ action, id, label, pendingLabel, confirm, variant
       >
         {pending ? pendingLabel ?? "Working…" : label}
       </button>
-      {state?.error && <p role="alert" className="ui text-sm text-bad">⚠ {state.error}</p>}
-      {state?.message && <p role="status" className="ui text-sm font-bold text-ok">✔ {state.message}</p>}
+      {state?.error && <p role="alert" className="text-sm text-bad">{state.error}</p>}
+      {state?.message && <p role="status" className="text-sm text-ok">{state.message}</p>}
     </form>
   );
 }

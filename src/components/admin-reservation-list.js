@@ -7,14 +7,14 @@ import { LOAN_DAYS } from "@/lib/constants";
 // Shared by the reservations page and a book's edit page.
 export function AdminReservationList({ rows, showBook = true }) {
   return (
-    <ul className="divide-y divide-silver">
+    <ul className="divide-y divide-line">
       {rows.map((r) => {
         const overdue = r.status === "picked_up" && r.loan_days > LOAN_DAYS;
         return (
           <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             <div className="min-w-0">
               {showBook ? (
-                <Link href={`/books/${r.book_id}`} className="font-bold">{r.title}</Link>
+                <Link href={`/books/${r.book_id}`} className="font-semibold">{r.title}</Link>
               ) : (
                 <p className="font-medium">{r.user_name}</p>
               )}

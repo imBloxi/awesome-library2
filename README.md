@@ -1,6 +1,6 @@
 # Library
 
-Book search and reservations on Next.js 16, Neon Postgres and Neon Auth, dressed as a 1997 Windows 95 web page.
+Book search and reservations on Next.js 16, Neon Postgres and Neon Auth.
 
 **Full documentation: [`docs/`](docs/README.md)**: [user guide](docs/user-guide.md), [admin guide](docs/admin-guide.md), [architecture](docs/architecture.md), [database](docs/database.md), [design system](docs/design-system.md), [development](docs/development.md), [deployment](docs/deployment.md), [changelog](docs/changelog.md).
 

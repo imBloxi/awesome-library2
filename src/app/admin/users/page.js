@@ -30,7 +30,7 @@ async function UserTable({ searchParams }) {
       {users.length === 0 ? (
         <p className="text-muted">No users found.</p>
       ) : (
-        <ul className="divide-y divide-silver">
+        <ul className="divide-y divide-line">
           {users.map((u) => {
             const isAdmin = String(u.role ?? "").split(",").map((r) => r.trim()).includes("admin");
             const isMe = String(u.id) === String(me.id);
@@ -47,11 +47,7 @@ async function UserTable({ searchParams }) {
                 </div>
                 <div className="flex items-start gap-3">
                   <span
-                    className={`whitespace-nowrap px-2 py-0.5 text-xs font-medium ${
-                      isAdmin
-                        ? "bg-purple-100 text-purple-900"
-                        : "bg-silver text-black"
-                    }`}
+                    className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${isAdmin ? "bg-[#eef2ff] text-accent" : "bg-subtle text-muted"}`}
                   >
                     {isAdmin ? "Admin" : "Member"}
                   </span>

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-29: Clean white redesign
+
+- Replaced the 1997 theme with a plain white design: system sans-serif, thin grey dividers, a dark primary button and a single blue accent.
+- Flat pastel book covers; clean table for results; cover grids for top picks and "More by this author".
+- Book page: details as a definition list, a clear reserve call-to-action, "← Back to catalog".
+- "Top pick" pill instead of the blinking NEW!; shimmer skeletons instead of the progress dialog; simple 404.
+- Screenshots in `docs/screenshots/` still show the old theme.
+
 ## 2026-10-29: 1997 redesign and catalogue UX
 
 - **New look:** a Windows 95 window on a teal desktop.
