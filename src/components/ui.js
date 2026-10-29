@@ -2,44 +2,41 @@ import Link from "next/link";
 
 export function PageTitle({ children, action }) {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-2xl font-semibold tracking-tight">{children}</h1>
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b-2 border-navy pb-1">
+      <h1 className="text-3xl font-bold text-navy">{children}</h1>
       {action}
     </div>
   );
 }
 
+// Win95-style progress dialog. Reserves roughly the space the content will take.
 export function Skeleton({ rows = 5 }) {
   return (
-    <div className="flex flex-col gap-3" aria-busy="true">
-      {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="h-14 animate-pulse rounded-md bg-zinc-100 dark:bg-zinc-900" />
-      ))}
+    <div aria-busy="true" style={{ minHeight: `${rows * 2.5}rem` }}>
+      <div className="ui inline-flex flex-col gap-2 bg-silver p-3 bevel-out" role="status">
+        <span className="text-sm">⏳ Loading… please wait</span>
+        <span className="block h-4 w-56 bg-white bevel-in p-[2px]">
+          <span className="progress-blocks block h-full" />
+        </span>
+      </div>
     </div>
   );
 }
 
-export function Availability({ available, total }) {
+// short: for narrow spots like the cover shelf ("● 2 of 3" instead of "● 2 of 3 available").
+export function Availability({ available, total, short = false }) {
   const n = Math.max(0, available);
-  return (
-    <span
-      className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${
-        n > 0
-          ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-300"
-          : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-      }`}
-    >
-      {n > 0 ? `${n} of ${total} available` : "None available"}
+  return n > 0 ? (
+    <span className="ui whitespace-nowrap text-sm font-bold text-ok" title={`${n} of ${total} available`}>
+      ● {n} of {total}{short ? "" : " available"}
     </span>
+  ) : (
+    <span className="ui whitespace-nowrap text-sm text-bad">○ {short ? "All out" : "None available"}</span>
   );
 }
 
 export function TopPickBadge() {
-  return (
-    <span className="whitespace-nowrap rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-300">
-      Top pick
-    </span>
-  );
+  return <span className="ui blink whitespace-nowrap text-xs font-bold text-[#ff0000]" title="This week's top pick">NEW!</span>;
 }
 
 const STATUS_LABEL = {
@@ -51,14 +48,9 @@ const STATUS_LABEL = {
 };
 
 export function StatusBadge({ status, daysLeft }) {
-  const tone =
-    status === "reserved"
-      ? "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300"
-      : status === "picked_up"
-        ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-300"
-        : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+  const tone = status === "reserved" ? "bg-paper" : status === "picked_up" ? "bg-[#dde8ff]" : "bg-silver";
   return (
-    <span className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${tone}`}>
+    <span className={`ui bevel-in whitespace-nowrap px-1.5 py-0.5 text-xs ${tone}`}>
       {STATUS_LABEL[status] ?? status}
       {status === "reserved" && daysLeft != null && ` · ${daysLeft}d left`}
     </span>
@@ -75,9 +67,10 @@ export function Pagination({ basePath, params, page, hasNext }) {
   };
   if (page <= 1 && !hasNext) return null;
   return (
-    <nav className="mt-6 flex justify-between text-sm">
-      {page > 1 ? <Link href={href(page - 1)} className="underline">← Previous</Link> : <span />}
-      {hasNext && <Link href={href(page + 1)} className="underline">Next →</Link>}
+    <nav aria-label="Pages" className="ui mt-6 flex items-center justify-between gap-2 text-sm">
+      {page > 1 ? <Link href={href(page - 1)} className="btn btn-sm" rel="prev">« Previous</Link> : <span />}
+      <span className="text-muted">Page {page}</span>
+      {hasNext ? <Link href={href(page + 1)} className="btn btn-sm" rel="next">Next »</Link> : <span />}
     </nav>
   );
 }
@@ -86,7 +79,5 @@ export function formatDate(d) {
   return d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
 }
 
-export const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950";
-export const buttonClass =
-  "rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300";
+export const inputClass = "field";
+export const buttonClass = "btn btn-primary";

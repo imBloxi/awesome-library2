@@ -53,3 +53,13 @@ export function topPicksQuery(limit) {
     values: [limit],
   };
 }
+
+// "More by this author" on a book page.
+export function byAuthorQuery(author, excludeId, limit) {
+  return {
+    text: `select ${BOOK_LIST_COLS} from books b
+      where b.author = $1 and b.id <> $2 and b.deleted_at is null
+      order by b.title, b.id limit $3`,
+    values: [author, excludeId, limit],
+  };
+}

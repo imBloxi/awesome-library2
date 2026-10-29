@@ -17,7 +17,7 @@ export default function AdminBooksPage({ searchParams }) {
           <div className="flex gap-2">
             {/* A file download, not a page: <Link> would prefetch it as one. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/admin/export/books" className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">Export CSV</a>
+            <a href="/admin/export/books" className="btn">Export CSV</a>
             <Link href="/admin/books/new" className={buttonClass}>Add book</Link>
           </div>
         }
@@ -43,24 +43,24 @@ async function BookTable({ searchParams }) {
       <Tabs current="active" />
       <SearchForm action="/admin/books" q={q} />
       {topPicks > TOP_PICKS_LIMIT && (
-        <p className="mb-3 text-sm text-amber-800 dark:text-amber-300">
+        <p className="mb-3 text-sm ui bevel-in bg-paper p-2 text-black">
           {topPicks} top picks, only the {TOP_PICKS_LIMIT} newest show on the home page.
         </p>
       )}
       {books.length === 0 ? (
-        <p className="text-zinc-500">No books found.</p>
+        <p className="text-muted">No books found.</p>
       ) : (
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <ul className="divide-y divide-silver">
           {books.map((b) => (
             <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
-                <Link href={`/books/${b.id}`} className="font-medium hover:underline">{b.title}</Link>
+                <Link href={`/books/${b.id}`} className="font-bold">{b.title}</Link>
                 {b.is_top_pick && <span className="ml-2"><TopPickBadge /></span>}
-                <p className="text-sm text-zinc-500">{b.author}{b.isbn ? ` · ${b.isbn}` : ""}</p>
+                <p className="text-sm text-muted">{b.author}{b.isbn ? ` · ${b.isbn}` : ""}</p>
               </div>
               <div className="flex items-start gap-3">
                 <Availability available={b.available} total={b.total_copies} />
-                <Link href={`/admin/books/${b.id}/edit`} className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800">Edit</Link>
+                <Link href={`/admin/books/${b.id}/edit`} className="btn btn-sm">Edit</Link>
                 <ActionButton action={deleteBookAction} id={b.id} label="Delete" pendingLabel="Deleting…" variant="danger" confirm={`Delete “${b.title}”?`} />
               </div>
             </li>
@@ -74,7 +74,7 @@ async function BookTable({ searchParams }) {
 
 function Tabs({ current }) {
   const tab = (key, label, href) => (
-    <Link href={href} className={current === key ? "font-medium underline" : "text-zinc-500 hover:underline"}>{label}</Link>
+    <Link href={href} className={current === key ? "font-medium underline" : "text-muted hover:underline"}>{label}</Link>
   );
   return <div className="mb-4 flex gap-4 text-sm">{tab("active", "Catalog", "/admin/books")}{tab("deleted", "Deleted", "/admin/books?show=deleted")}</div>;
 }
@@ -85,16 +85,16 @@ async function DeletedBooks() {
     <>
       <Tabs current="deleted" />
       {books.length === 0 ? (
-        <p className="text-zinc-500">No deleted books.</p>
+        <p className="text-muted">No deleted books.</p>
       ) : (
         <>
-          <p className="mb-3 text-sm text-zinc-500">Restoring a book brings it back to the catalog. Its ISBN was cleared when it was deleted, so add it again from Edit.</p>
-          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <p className="mb-3 text-sm text-muted">Restoring a book brings it back to the catalog. Its ISBN was cleared when it was deleted, so add it again from Edit.</p>
+          <ul className="divide-y divide-silver">
             {books.map((b) => (
               <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
                   <p className="font-medium">{b.title}</p>
-                  <p className="text-sm text-zinc-500">{b.author} · deleted {formatDate(b.deleted_at)}</p>
+                  <p className="text-sm text-muted">{b.author} · deleted {formatDate(b.deleted_at)}</p>
                 </div>
                 <ActionButton action={restoreBookAction} id={b.id} label="Restore" pendingLabel="Restoring…" />
               </li>

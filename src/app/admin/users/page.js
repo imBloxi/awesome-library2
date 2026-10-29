@@ -28,9 +28,9 @@ async function UserTable({ searchParams }) {
     <>
       <SearchForm action="/admin/users" q={q} placeholder="Search by name or email" />
       {users.length === 0 ? (
-        <p className="text-zinc-500">No users found.</p>
+        <p className="text-muted">No users found.</p>
       ) : (
-        <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+        <ul className="divide-y divide-silver">
           {users.map((u) => {
             const isAdmin = String(u.role ?? "").split(",").map((r) => r.trim()).includes("admin");
             const isMe = String(u.id) === String(me.id);
@@ -39,18 +39,18 @@ async function UserTable({ searchParams }) {
                 <div className="min-w-0">
                   <p className="font-medium">
                     {u.name || u.email}
-                    {isMe && <span className="ml-2 text-xs font-normal text-zinc-500">(you)</span>}
+                    {isMe && <span className="ml-2 text-xs font-normal text-muted">(you)</span>}
                   </p>
-                  <p className="text-sm text-zinc-500">
+                  <p className="text-sm text-muted">
                     {u.email} · {u.active_count} active reservation{u.active_count === 1 ? "" : "s"}
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <span
-                    className={`whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-medium ${
+                    className={`whitespace-nowrap px-2 py-0.5 text-xs font-medium ${
                       isAdmin
-                        ? "bg-purple-100 text-purple-900 dark:bg-purple-950 dark:text-purple-300"
-                        : "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                        ? "bg-purple-100 text-purple-900"
+                        : "bg-silver text-black"
                     }`}
                   >
                     {isAdmin ? "Admin" : "Member"}

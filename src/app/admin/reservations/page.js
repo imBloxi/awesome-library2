@@ -54,11 +54,11 @@ async function ReservationTable({ searchParams }) {
         </select>
       </SearchForm>
       {rows.length === 0 ? (
-        <p className="text-zinc-500">No reservations found.</p>
+        <p className="text-muted">No reservations found.</p>
       ) : (
         <AdminReservationList rows={rows} />
       )}
-      {rows.length === 200 && <p className="mt-4 text-sm text-zinc-500">Showing the 200 most recent. Narrow the search, or export the CSV for everything.</p>}
+      {rows.length === 200 && <p className="mt-4 text-sm text-muted">Showing the 200 most recent. Narrow the search, or export the CSV for everything.</p>}
     </>
   );
 }

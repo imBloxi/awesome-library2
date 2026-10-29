@@ -10,7 +10,7 @@ export default function SignInPage() {
     <>
       <PageTitle>Sign in</PageTitle>
       <AuthForm action={signInAction} mode="sign-in" />
-      <p className="mt-6 text-sm text-zinc-500">
+      <p className="mt-6 text-sm text-muted">
         No account? <Link href="/auth/sign-up" className="underline">Register</Link>
       </p>
     </>

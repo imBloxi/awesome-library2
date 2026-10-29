@@ -31,9 +31,9 @@ async function EditBook({ params }) {
     <>
       <BookForm action={updateBookAction.bind(null, book.id)} book={book} submitLabel="Save changes" />
       <section className="mt-12">
-        <h2 className="mb-3 text-lg font-semibold tracking-tight">Reserved or borrowed now</h2>
+        <h2 className="mb-3 text-lg font-semibold">Reserved or borrowed now</h2>
         {holders.length === 0 ? (
-          <p className="text-zinc-500">Nobody has this book right now.</p>
+          <p className="text-muted">Nobody has this book right now.</p>
         ) : (
           <AdminReservationList rows={holders} showBook={false} />
         )}
