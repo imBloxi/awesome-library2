@@ -30,9 +30,11 @@ export async function countTopPicks() {
 
 export async function getBook(id) {
   const rows = await db().query(
-    `select b.*, ${AVAILABLE} as available, coalesce(${TOP_PICK_ACTIVE_SQL}, false) as is_top_pick,
-       (select count(*)::int from active_reservations a where a.book_id = b.id) as active_count
-     from books b where b.id = $1 and b.deleted_at is null`,
+    `select b.*, (b.total_copies - a.active_count)::int as available,
+       coalesce(${TOP_PICK_ACTIVE_SQL}, false) as is_top_pick, a.active_count
+     from books b cross join lateral (
+       select count(*)::int as active_count from active_reservations where book_id = b.id
+     ) a where b.id = $1 and b.deleted_at is null`,
     [id]
   );
   return rows[0] ?? null;
@@ -99,17 +101,24 @@ export async function listBooksForExport() {
 
 export async function getStats() {
   const rows = await db().query(
-    `select
-       (select count(*)::int from books where deleted_at is null) as books,
-       (select count(*)::int from neon_auth."user") as users,
-       (select count(*)::int from active_reservations
-          where status = 'picked_up' and picked_up_at < now() - interval '${LOAN_DAYS} days') as overdue,
-       (select count(*)::int from books b where b.deleted_at is null and b.total_copies > 0
-          and ${AVAILABLE} = 0) as out_of_stock,
-       (select count(*)::int from active_reservations where status = 'reserved') as holds,
-       (select count(*)::int from active_reservations where status = 'picked_up') as loans,
-       (select count(*)::int from active_reservations
-          where status = 'reserved' and expires_at < now() + interval '1 day') as expiring`
+    `with counts as materialized (
+       select book_id, count(*) as active_count,
+         count(*) filter (where status = 'reserved') as holds,
+         count(*) filter (where status = 'picked_up') as loans,
+         count(*) filter (where status = 'picked_up'
+           and picked_up_at < now() - interval '${LOAN_DAYS} days') as overdue,
+         count(*) filter (where status = 'reserved' and expires_at < now() + interval '1 day') as expiring
+       from active_reservations group by book_id
+     )
+     select b.books, b.out_of_stock, (select count(*)::int from neon_auth."user") as users, r.*
+     from (
+       select count(*)::int as books,
+         count(*) filter (where b.total_copies > 0 and b.total_copies = coalesce(c.active_count, 0))::int as out_of_stock
+       from books b left join counts c on c.book_id = b.id where b.deleted_at is null
+     ) b cross join (
+       select coalesce(sum(overdue), 0)::int as overdue, coalesce(sum(holds), 0)::int as holds,
+         coalesce(sum(loans), 0)::int as loans, coalesce(sum(expiring), 0)::int as expiring from counts
+     ) r`
   );
   return rows[0];
 }

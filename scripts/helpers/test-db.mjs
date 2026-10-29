@@ -9,10 +9,14 @@ export const pool = new pg.Pool({
   statement_timeout: 5000,
 });
 
+// Capture the SQL for EXPLAIN checks against the actual application queries.
+export let lastQuery;
+
 export function db() {
   return {
     // Neon query objects are lazy: transaction() must execute them on one connection.
     query(text, params = []) {
+      lastQuery = { text, params };
       return { text, params, then: (resolve, reject) => pool.query(text, params).then((r) => r.rows).then(resolve, reject) };
     },
     async transaction(queries, { isolationLevel } = {}) {

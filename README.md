@@ -69,6 +69,18 @@ Check the reserve logic against a **throwaway** database:
 DATABASE_URL=postgres://... pnpm test:reserve
 ```
 
+Book-edit concurrency and dashboard checks (Node 24+, **disposable database only**;
+this suite truncates its fixture tables):
+
+```bash
+TEST_DATABASE_URL=postgres://... pnpm test:books
+```
+
+Apply both migrations first. For a local PostgreSQL test database without Neon Auth,
+create a test-only `neon_auth."user"` table with `id text primary key`, `name text`,
+`email text` and `role text` before migrating. This tests SQL and locking, not the
+remote Neon Auth service. Never run these checks against production.
+
 ## Layout
 
 - `db/migrations/`: SQL schema, applied by `scripts/migrate.mjs`
