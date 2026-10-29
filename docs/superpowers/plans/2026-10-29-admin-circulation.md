@@ -31,6 +31,7 @@
 
 **Interfaces:**
 - `parseReservationParams(sp) -> {q, status, sort, userId, page}` and `reservationParams(options) -> URL params object` without page. URL key `user`; `sort` is `priority` or `newest`.
+- Member-state contract: `userId: null` means absent; `userId: ""` means invalid supplied input and must return no rows. Preserve invalid state in forms/links until the member filter is explicitly cleared.
 - Statuses: active, attention, expiring, reserved, picked_up, overdue, returned, cancelled, expired, all.
 - `listReservationPage(options) -> {rows, hasNext}`; 20 rows, one extra fetched.
 - `listAllReservations({status,q,bookId,userId,sort,limit,offset}) -> rows`; default ordering stays newest for existing callers.
@@ -54,15 +55,18 @@
 ### Task 3: Integrate, review, and publish
 
 - [x] Run unit tests, all disposable PostgreSQL suites, lint, production build, and `git diff --check`.
-- [ ] Obtain an independent review of the full change; fix material findings with regressions.
+- [x] Obtain an independent review of the full change; fix material findings with regressions.
 - [ ] Record validation here, commit using the public noreply identity, fetch latest main, and push the tested fast-forward result to `main`.
 - [ ] Verify the remote SHA. Check deployment status if available; distinguish a verified push from an unverified Vercel rollout.
 
 ## Validation record
 
-- Initial admin regression run: 7 expected failures demonstrated missing urgent filters, ignored exact member filters, reverse deadline ordering and absent pagination/member-context APIs. Implemented behavior passes all 10 database tests, including strict clock boundaries and UUID member columns.
-- Unit suite: 42/42 passing. Existing database suites: 20/20 book and hold tests, 11/11 search tests, all 5 reserve-concurrency scenarios passing on a disposable PostgreSQL 17 instance.
+- Initial admin regression run: 7 expected failures demonstrated missing urgent filters, ignored exact member filters, reverse deadline ordering and absent pagination/member-context APIs. Implemented behavior passes all 11 database tests, including strict clock boundaries, UUID member columns and invalid filters.
+- Final unit suite: 43/43 passing. Existing database suites: 20/20 book and hold tests, 11/11 search tests, all 5 reserve-concurrency scenarios passing on a disposable PostgreSQL 17 instance. All suites were rerun after the review fix.
 - Full ESLint and production build pass. The build generated all 15 route shells; optional migrations were skipped because this environment has no production database URL. No migrations are introduced by this change.
 - Actual source components rendered with SWC/React and fresh Tailwind CSS: six page/empty states at 390px and 1200px pass Chromium checks without horizontal overflow or page errors. Checks cover links/form state, exact member context, UTC timestamps, sub-day overdue badges and available actions. These fixtures exercise UI rendering; live Neon Auth was not available.
+- Independent whole-change review found one material issue: invalid/repeated member parameters discarded the selected-member filter. URL and real PostgreSQL regressions reproduced the broadening before the fix; both now pass. Invalid state remains empty, visible and clearable through forms and links. The six prior UI cases and a new invalid-member case were rendered and checked again at both widths.
+- The reviewer found no other material issues. Live Auth, actual Vercel rollout and production-scale query timings were not independently verified; permission/audit/catalog changes remain outside this release.
 - Priority ties use the oldest reservation then ID; newest sorting uses descending reservation time then ID. This keeps unchanged-data pages deterministic.
 - Work takes place in the existing managed cloud checkout on `work`; no additional worktree or dependencies were needed. The user explicitly approved the proposed scope and deployment, so execution continued without another approval checkpoint.
+- Publication evidence is reported in the task response after the push; the remote SHA and Vercel outcome cannot be recorded in the commit before it is published.

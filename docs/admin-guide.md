@@ -71,6 +71,7 @@ The 28-day overdue threshold is `LOAN_DAYS` in `src/lib/constants.js`.
 
 - Search by name or email. Click a person's **active reservation count** to open their exact active reservation list.
 - The reservation page shows the selected member's name and email. That member stays selected while you search, change filters or turn pages, even if there are no matches. **Clear member filter** returns to the same search, status and sort across all members. If the member no longer exists, the page says **Member not found** and still offers a way to clear the filter.
+- An invalid member filter shows no reservations and offers **Clear member filter**; it never silently opens every member's list.
 - **Make admin** or **Remove admin**. The change applies at that person's **next sign-in**.
 - You can't change your own role.
 

@@ -13,12 +13,13 @@ export function parseReservationParams(sp = {}) {
     q: str(sp.q).slice(0, 100),
     status,
     sort: ["priority", "newest"].includes(sp.sort) ? sp.sort : defaultSort,
-    userId: member && member.length <= 200 ? member : null,
+    // null means no filter; an empty ID keeps an invalid supplied filter closed.
+    userId: sp.user == null ? null : member && member.length <= 200 ? member : "",
     page: parsePage(sp.page),
   };
 }
 
 // Page is deliberately omitted: submitting filters starts at page one.
 export function reservationParams({ q, status, sort, userId }) {
-  return { ...(q ? { q } : {}), status, sort, ...(userId ? { user: userId } : {}) };
+  return { ...(q ? { q } : {}), status, sort, ...(userId != null ? { user: userId } : {}) };
 }

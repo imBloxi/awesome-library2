@@ -44,6 +44,7 @@ async function ReservationTable({ searchParams }) {
   await requireAdmin();
   const options = parseReservationParams(await searchParams);
   const { q, status, sort, userId, page } = options;
+  const hasMemberFilter = userId != null;
   const [{ rows, hasNext }, member] = await Promise.all([
     listReservationPage(options),
     userId ? getReservationMember(userId) : Promise.resolve(null),
@@ -51,7 +52,7 @@ async function ReservationTable({ searchParams }) {
 
   return (
     <>
-      {userId && (
+      {hasMemberFilter && (
         <section aria-label="Selected member" className="card mb-6 flex flex-wrap items-center justify-between gap-3 p-4">
           <div className="min-w-0 [overflow-wrap:anywhere]">
             <p className="text-sm text-muted">Reservations for</p>
@@ -61,10 +62,10 @@ async function ReservationTable({ searchParams }) {
                 {member.name && <p className="text-sm text-muted">{member.email}</p>}
               </>
             ) : (
-              <p className="font-medium">Member not found.</p>
+              <p className="font-medium">{userId === "" ? "Invalid member filter." : "Member not found."}</p>
             )}
           </div>
-          <Link href={{ pathname: "/admin/reservations", query: reservationParams({ ...options, userId: "" }) }} className="link text-sm">Clear member filter</Link>
+          <Link href={{ pathname: "/admin/reservations", query: reservationParams({ ...options, userId: null }) }} className="link text-sm">Clear member filter</Link>
         </section>
       )}
       <Form
@@ -92,14 +93,14 @@ async function ReservationTable({ searchParams }) {
             <option value="newest">Newest first</option>
           </select>
         </label>
-        {userId && <input type="hidden" name="user" value={userId} />}
+        {hasMemberFilter && <input type="hidden" name="user" value={userId} />}
         <button type="submit" className={`${buttonClass} py-[0.6rem]`}>Apply filters</button>
       </Form>
       <p className="mb-4 text-sm text-muted">
         {sort === "priority" ? "Priority puts overdue loans first, then expiring holds, then other deadlines." : "Newest reservations first."} All times are UTC. Up to 20 reservations per page.
       </p>
       {rows.length === 0 ? (
-        <p className="text-muted">{userId && !member ? "No reservations found for this member." : "No reservations match these filters."}</p>
+        <p className="text-muted">{hasMemberFilter && !member ? "No reservations found for this member." : "No reservations match these filters."}</p>
       ) : (
         <AdminReservationList rows={rows} />
       )}

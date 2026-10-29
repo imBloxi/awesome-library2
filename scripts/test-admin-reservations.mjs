@@ -5,6 +5,7 @@ import { pool } from "./helpers/test-db.mjs";
 import * as reservations from "../src/lib/queries/reservations.js";
 import { getStats } from "../src/lib/queries/books.js";
 import { buildReservationQuery } from "../src/lib/queries/reservation-sql.mjs";
+import { parseReservationParams } from "../src/lib/reservation-params.mjs";
 
 beforeEach(async () => {
   await pool.query('truncate reservations, books, neon_auth."user" restart identity cascade');
@@ -162,5 +163,15 @@ test("native UUID member columns accept exact and malformed text filters safely"
   } finally {
     await client.query("rollback");
     client.release();
+  }
+});
+
+test("invalid supplied member filters never fall back to other members' reservations", async () => {
+  await add();
+  await add("reserved", { member: "member-b" });
+  for (const user of ["", " ", "x".repeat(201), ["member-a", "member-b"]]) {
+    const options = parseReservationParams({ user, status: "active" });
+    assert.deepEqual(await reservations.listReservationPage(options), { rows: [], hasNext: false });
+    assert.deepEqual(await reservations.listAllReservations({ userId: options.userId }), []);
   }
 });

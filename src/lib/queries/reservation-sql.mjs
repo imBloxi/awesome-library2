@@ -20,7 +20,8 @@ export function buildReservationQuery({ status = "active", q = "", bookId = null
   const where = [];
   const bind = (value) => { params.push(value); return `$${params.length}`; };
   if (bookId != null) where.push(`r.book_id = ${bind(bookId)}`);
-  if (userId != null) {
+  if (userId === "") where.push("false");
+  else if (userId != null) {
     // Neon Auth IDs can be UUID or text. Resolve the text filter to the native
     // column type before matching indexed reservations, without casting user input.
     where.push(`r.user_id = (select id from neon_auth."user" where id::text = ${bind(String(userId))}::text)`);
