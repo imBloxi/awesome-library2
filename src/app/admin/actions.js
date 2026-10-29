@@ -20,6 +20,7 @@ const bookSchema = z.object({
     .union([z.literal(""), z.coerce.number().int().min(0).max(2100, "Year looks wrong.")])
     .transform(emptyToNull),
   total_copies: z.coerce.number().int("Copies must be a whole number.").min(0).max(1000),
+  top_pick: z.boolean(),
 });
 
 function parseBook(formData) {
@@ -29,6 +30,8 @@ function parseBook(formData) {
       formData.get(k) ?? "",
     ])
   );
+  // An unticked checkbox isn't sent at all.
+  raw.top_pick = formData.get("top_pick") === "on";
   const parsed = bookSchema.safeParse(raw);
   return parsed.success
     ? { data: parsed.data, values: raw }
