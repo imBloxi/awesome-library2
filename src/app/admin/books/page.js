@@ -1,11 +1,12 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/dal";
-import { searchBooks, listDeletedBooks } from "@/lib/queries/books";
+import { searchBooks, listDeletedBooks, countTopPicks } from "@/lib/queries/books";
+import { TOP_PICKS_LIMIT } from "@/lib/constants";
 import { deleteBookAction, restoreBookAction } from "@/app/admin/actions";
 import { ActionButton } from "@/components/action-button";
 import { SearchForm } from "@/components/search-form";
-import { PageTitle, Skeleton, Availability, Pagination, buttonClass, formatDate } from "@/components/ui";
+import { PageTitle, Skeleton, Availability, Pagination, TopPickBadge, buttonClass, formatDate } from "@/components/ui";
 
 export default function AdminBooksPage({ searchParams }) {
   return (
@@ -35,12 +36,17 @@ async function BookTable({ searchParams }) {
   if (sp.show === "deleted") return <DeletedBooks />;
   const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
   const page = Math.max(1, Number.parseInt(sp.page, 10) || 1);
-  const { books, hasNext } = await searchBooks({ q, page });
+  const [{ books, hasNext }, topPicks] = await Promise.all([searchBooks({ q, page }), countTopPicks()]);
 
   return (
     <>
       <Tabs current="active" />
       <SearchForm action="/admin/books" q={q} />
+      {topPicks > TOP_PICKS_LIMIT && (
+        <p className="mb-3 text-sm text-amber-800 dark:text-amber-300">
+          {topPicks} top picks, only the {TOP_PICKS_LIMIT} newest show on the home page.
+        </p>
+      )}
       {books.length === 0 ? (
         <p className="text-zinc-500">No books found.</p>
       ) : (
@@ -49,6 +55,7 @@ async function BookTable({ searchParams }) {
             <li key={b.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div className="min-w-0">
                 <Link href={`/books/${b.id}`} className="font-medium hover:underline">{b.title}</Link>
+                {b.is_top_pick && <span className="ml-2"><TopPickBadge /></span>}
                 <p className="text-sm text-zinc-500">{b.author}{b.isbn ? ` · ${b.isbn}` : ""}</p>
               </div>
               <div className="flex items-start gap-3">

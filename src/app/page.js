@@ -2,13 +2,17 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { searchBooks } from "@/lib/queries/books";
 import { SearchForm } from "@/components/search-form";
+import { CatalogFilters } from "@/components/catalog-filters";
+import { parseSearchParams, filtersToParams, hasFilters } from "@/lib/search-params.mjs";
 import { PageTitle, Skeleton, Availability, Pagination } from "@/components/ui";
+
+const NO_FILTERS = { available: false, yearFrom: null, yearTo: null };
 
 export default function CatalogPage({ searchParams }) {
   return (
     <>
       <PageTitle>Find a book</PageTitle>
-      <Suspense fallback={<><SearchForm action="/" /><Skeleton rows={8} /></>}>
+      <Suspense fallback={<><SearchForm action="/"><CatalogFilters filters={NO_FILTERS} /></SearchForm><Skeleton rows={8} /></>}>
         <Catalog searchParams={searchParams} />
       </Suspense>
     </>
@@ -17,15 +21,17 @@ export default function CatalogPage({ searchParams }) {
 
 async function Catalog({ searchParams }) {
   const sp = await searchParams;
-  const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
-  const page = Math.max(1, Number.parseInt(sp.page, 10) || 1);
-  const { books, hasNext } = await searchBooks({ q, page });
+  const { q, page, filters } = parseSearchParams(sp);
+  const filtered = hasFilters({ q, filters });
+  const { books, hasNext } = await searchBooks({ q, page, filters });
 
   return (
     <>
-      <SearchForm action="/" q={q} />
+      <SearchForm action="/" q={q}>
+        <CatalogFilters filters={filters} showClear={filtered} />
+      </SearchForm>
       {books.length === 0 ? (
-        <p className="text-zinc-500">{q ? `No books match “${q}”.` : "No books in the catalog yet."}</p>
+        <p className="text-zinc-500">{filtered ? "No books match your search." : "No books in the catalog yet."}</p>
       ) : (
         <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {books.map((b) => (
@@ -44,7 +50,7 @@ async function Catalog({ searchParams }) {
           ))}
         </ul>
       )}
-      <Pagination basePath="/" params={q ? { q } : {}} page={page} hasNext={hasNext} />
+      <Pagination basePath="/" params={filtersToParams({ q, filters })} page={page} hasNext={hasNext} />
     </>
   );
 }
