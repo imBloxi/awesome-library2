@@ -26,7 +26,7 @@ async function UserNav() {
   return (
     <>
       <Link href="/reservations" className="btn btn-ghost btn-sm">
-        My reservations
+        My library
         {alerts > 0 && (
           <span className={`rounded-full px-1.5 text-xs font-semibold text-white ${notices.overdue ? "bg-bad" : "bg-accent"}`}>
             {alerts}

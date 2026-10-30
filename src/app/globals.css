@@ -503,3 +503,22 @@
     background-position: -200% 0;
   }
 }
+
+/* Member shelves: quiet paper surfaces with clear, reachable section links. */
+.library-overview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin: 1.5rem 0 2.5rem; }
+.library-stat { display: flex; flex-direction: column; gap: .5rem; min-height: 7rem; padding: 1.25rem; border: 1px solid #ddd8ce; border-radius: 12px; background: #faf8f3; font-size: .875rem; }
+.library-stat:hover { background: #f1ede3; border-color: #a69c89; }
+.library-stat-count { font-family: Georgia, serif; font-size: 2.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.library-shelf { margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--color-line); border-radius: 12px; scroll-margin-top: 1rem; }
+.library-shelf h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: -.025em; }
+.library-shelf-description { margin: .25rem 0 1rem; font-size: .875rem; color: var(--color-muted); }
+.library-empty { padding: 1rem 0; color: var(--color-muted); font-size: .875rem; }
+.library-shelf li, .library-history li { overflow-wrap: anywhere; }
+.library-shelf .btn, .library-history .btn { min-height: 44px; }
+.library-history { margin-top: 2rem; border-top: 1px solid var(--color-line); padding-top: .5rem; }
+.library-history summary { cursor: pointer; padding: 1rem 0; font-weight: 600; }
+@media (max-width: 640px) {
+  .library-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .library-stat { padding: 1rem; }
+  .library-shelf { padding: 1rem; }
+}

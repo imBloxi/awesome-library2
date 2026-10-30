@@ -9,7 +9,7 @@ import { PageTitle, Skeleton } from "@/components/ui";
 export default function AdminPage() {
   return (
     <>
-      <PageTitle>Admin</PageTitle>
+      <PageTitle action={<Link href="/admin/desk" className="btn btn-primary">Open circulation desk</Link>}>Library operations</PageTitle>
       <Suspense fallback={<Skeleton rows={2} />}>
         <Stats />
       </Suspense>
@@ -34,6 +34,17 @@ async function Stats() {
   ];
   return (
     <>
+    <section className="mt-10">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-xl font-semibold tracking-tight">Needs attention</h2>
+        <Link href="/admin/reservations?status=attention" className="text-sm link">View attention queue</Link>
+      </div>
+      <p className="mb-4 text-sm text-muted">Overdue loans first, then holds expiring within 24 hours. Earliest deadlines first in each group.</p>
+      {attention.length === 0 ? <p className="text-muted">No reservations need attention right now.</p> : <AdminReservationList rows={attention} />}
+      <Link href="/admin/reservations" className="mt-4 inline-block text-sm link">All active reservations</Link>
+    </section>
+    <section className="mt-10" aria-labelledby="collection-overview">
+      <h2 id="collection-overview" className="mb-4 text-xl font-semibold">Collection overview</h2>
     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
       {cards.map((c) => (
         <Link
@@ -46,14 +57,6 @@ async function Stats() {
         </Link>
       ))}
     </div>
-    <section className="mt-10">
-      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-xl font-semibold tracking-tight">Needs attention</h2>
-        <Link href="/admin/reservations?status=attention" className="text-sm link">View attention queue</Link>
-      </div>
-      <p className="mb-4 text-sm text-muted">Overdue loans first, then holds expiring within 24 hours. Earliest deadlines first in each group.</p>
-      {attention.length === 0 ? <p className="text-muted">No reservations need attention right now.</p> : <AdminReservationList rows={attention} />}
-      <Link href="/admin/reservations" className="mt-4 inline-block text-sm link">All active reservations</Link>
     </section>
     </>
   );
