@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Signal Lab — Extension activity test</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./test.js" defer></script>
+</head>
+<body>
+  <main>
+    <header><a class="brand" href="./index.html"><span class="logo" aria-hidden="true">◉</span> SIGNAL LAB</a><span class="local">LOCAL SESSION · NO UPLOADS</span></header>
+    <section class="intro"><span class="eyebrow">BROWSER OBSERVABILITY / 01</span><h1>See what your<br>browser gives away<span>.</span></h1><p>Test the activity signals your extension exposes to a website. Compare a baseline with your extension enabled, then switch tabs and come back.</p></section>
+    <div class="toolbar"><label>Session label <input id="label" maxlength="80" placeholder="e.g. Extension enabled"></label><div class="actions"><button id="pause" class="secondary">Pause recording</button><button id="export" class="primary">Export JSON ↗</button><button id="reset" class="secondary">Reset</button></div></div>
+    <section class="metrics" aria-label="Live browser signals">
+      <article><span class="metric-label">01 / PAGE VISIBILITY</span><strong id="visibility">—</strong><p><code>document.visibilityState</code><br>Hidden: <span id="hidden">—</span></p></article>
+      <article><span class="metric-label">02 / WINDOW FOCUS</span><strong id="focus">—</strong><p><code>document.hasFocus()</code><br>Focus losses: <span id="blur-count">0</span></p></article>
+      <article><span class="metric-label">03 / LAST INPUT</span><strong id="idle">—</strong><p>Seconds since observed input<br>Synthetic inputs: <span id="synthetic-count">0</span></p></article>
+      <article><span class="metric-label">04 / TIMER CADENCE</span><strong id="timer">—</strong><p>Delay beyond a 1-second tick<br>Visibility changes: <span id="visibility-count">0</span></p></article>
+    </section>
+    <div class="workspace"><section class="panel experiment"><span class="eyebrow">A CONTROLLED CHECK</span><h2>Take this tab out of view.</h2><p>Start the test, switch to another tab within 3 seconds, stay there for at least 15 seconds, then return. The result updates when this page runs again.</p><button class="primary" id="away">Start tab-switch test <span aria-hidden="true">→</span></button><p id="test-status" class="test-status" role="status">Ready when you are.</p><div class="note"><strong>How to read the result</strong><p>Hidden or unfocused samples mean those signals were observable. If it reports visible and focused throughout while you were away, that is a mismatch with your action, not proof that an extension is undetectable.</p></div><label class="input-label" for="input-test">Try keyboard, paste, pointer & scroll events</label><textarea id="input-test" placeholder="Type or paste here. Text and key values are never recorded."></textarea><p class="small">Recording starts on load. Log keeps the latest 300 events. Pointer movement is sampled at most once per second.</p></section>
+    <section class="panel log-panel"><div class="panel-heading"><div><span class="eyebrow">LIVE TELEMETRY</span><h2>Event stream</h2></div><span id="recording" class="recording" role="status">● Recording</span></div><div class="table-wrap"><table><caption class="sr-only">Latest browser events, newest first. Export JSON for a full retained sample.</caption><thead><tr><th scope="col">Time</th><th scope="col">Event</th><th scope="col">Observed details</th></tr></thead><tbody id="events"></tbody></table></div><p class="small">Trusted means the browser marked an event <code>isTrusted</code>. It does not prove human activity. Timer delays can also come from load, sleep, or browser scheduling.</p></section></div>
+    <footer><strong>A diagnostic, not a verdict.</strong><p>This page does not reproduce Datorium’s detection rules or read your installed extensions. “Visible,” “focused,” and “actively using the page” are different things. Extensions can alter what JavaScript sees. No test here guarantees whether another site will flag you.</p></footer>
+  </main>
+</body>
+</html>

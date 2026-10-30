@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Always Visible — Signal Lab",
+  "version": "1.0.0",
+  "description": "Reports visible and focused page state on Datorium and the local Signal Lab test page.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "always-visible@signal-lab.local",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://datorium.ai/*",
+        "https://*.datorium.ai/*",
+        "http://localhost/extension-test/*",
+        "http://127.0.0.1/extension-test/*"
+      ],
+      "js": ["visible.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    }
+  ]
+}
