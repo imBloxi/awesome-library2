@@ -8,6 +8,11 @@ const STAFF_ACTIONS = {
   "hold.cancel": "Hold cancelled by staff",
   "hold.extend": "Hold extended by staff",
   "user.role": "Account role changed by staff",
+  "member.note": "Staff note added to your file",
+  "member.warning": "Warning issued by staff",
+  "member.restrict": "Borrowing paused by staff",
+  "member.suspend": "Account suspended by staff",
+  "member.lift": "Restriction lifted by staff",
 };
 
 export function staffActionLabel(action) {

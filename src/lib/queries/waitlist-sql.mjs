@@ -9,6 +9,7 @@
 // overlapping queues can't deadlock. Holding each waiter's lock keeps the 10-reservation
 // limit exact, just as it is for a member reserving directly.
 import { MAX_ACTIVE } from "./reserve-sql.mjs";
+import { borrowBlockedSql } from "./moderation-sql.mjs";
 
 // How far down a queue one promotion looks. More free copies than this at once is unusual.
 export const PROMOTE_SCAN = 50;
@@ -28,8 +29,8 @@ export function promotionLockSteps(book, params) {
   ];
 }
 
-// Returns one row per member who got a hold. Members at the 10-reservation limit keep
-// their place and are skipped this time; anyone who already holds the book leaves the queue.
+// Returns one row per member who got a hold. Members at the 10-reservation limit, and members
+// whose borrowing is paused by staff, keep their place and are skipped this time; anyone who already holds the book leaves the queue.
 export function promoteStep(book, params) {
   return {
     text: `with target as (select (${book})::bigint as book_id),
@@ -42,6 +43,7 @@ export function promoteStep(book, params) {
         from (select waitlist.* from waitlist, target t where waitlist.book_id = t.book_id order by created_at, id limit ${PROMOTE_SCAN}) w
         where (select count(*) from active_reservations a where a.user_id = w.user_id) < ${MAX_ACTIVE}
           and not exists (select 1 from active_reservations a where a.user_id = w.user_id and a.book_id = w.book_id)
+          and not ${borrowBlockedSql("w.user_id")}
       ),
       chosen as (select q.id, q.user_id from queue q, free f where q.pos <= f.n),
       held as (
@@ -72,6 +74,7 @@ export const joinWaitlist = {
     where b.id = $2 and b.deleted_at is null
       and not exists (select 1 from active_reservations a where a.user_id = $1 and a.book_id = b.id)
       and (select count(*) from waitlist where user_id = $1) < ${WAITLIST_LIMIT}
+      and not ${borrowBlockedSql("$1")}
     on conflict (user_id, book_id) do nothing
     returning id`,
 };

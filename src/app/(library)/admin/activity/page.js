@@ -17,6 +17,11 @@ const LABELS = {
   "hold.cancel": "cancelled a hold",
   "hold.extend": "extended a hold",
   "user.role": "changed a role",
+  "member.note": "added a note on a member",
+  "member.warning": "warned a member",
+  "member.restrict": "paused a member's borrowing",
+  "member.suspend": "suspended a member",
+  "member.lift": "lifted a restriction",
 };
 
 export default function ActivityPage({ searchParams }) {

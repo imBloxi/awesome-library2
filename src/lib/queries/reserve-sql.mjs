@@ -1,5 +1,6 @@
 // Plain SQL for the reserve flow. No Next or driver imports, so the
 // concurrency test script can run these exact statements against Postgres.
+import { borrowBlockedSql } from "./moderation-sql.mjs";
 
 export const MAX_ACTIVE = 10;
 
@@ -27,6 +28,7 @@ export function reserveSteps(userId, bookId) {
           and not exists (
             select 1 from active_reservations where user_id = $1 and book_id = b.id
           )
+          and not ${borrowBlockedSql("$1")}
         returning id`,
       params: [userId, bookId],
     },
@@ -40,11 +42,13 @@ export const reserveFailureReason = {
       (select count(*)::int from active_reservations where user_id = $1) as user_active,
       exists (select 1 from active_reservations where user_id = $1 and book_id = $2) as already,
       (select total_copies - (select count(*) from active_reservations where book_id = $2)
-         from books where id = $2)::int as available`,
+         from books where id = $2)::int as available,
+      ${borrowBlockedSql("$1")} as blocked`,
 };
 
 export function explainFailure(row) {
   if (!row || !row.book_exists) return "This book no longer exists.";
+  if (row.blocked) return "Borrowing is paused on your account. Your account console says why and until when.";
   if (row.already) return "You already have this book reserved.";
   if (row.user_active >= MAX_ACTIVE)
     return `You can have at most ${MAX_ACTIVE} reservations at a time.`;

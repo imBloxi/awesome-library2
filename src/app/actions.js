@@ -10,6 +10,7 @@ import {
 } from "@/lib/queries/reservations";
 import { toggleSaved } from "@/lib/queries/books";
 import { WAITLIST_LIMIT } from "@/lib/queries/waitlist-sql.mjs";
+import { getStanding } from "@/lib/queries/moderation";
 
 const idSchema = z.coerce.number().int().positive();
 
@@ -62,7 +63,10 @@ export async function joinWaitlistAction(_prev, formData) {
   const bookId = idSchema.safeParse(formData.get("id"));
   if (!bookId.success) return { error: "Invalid book." };
   const ok = await joinBookWaitlist(user.id, bookId.data);
-  if (!ok) return { error: `Couldn't join. You may already hold this book, or be waiting for ${WAITLIST_LIMIT} books.` };
+  if (!ok) {
+    if ((await getStanding(user.id)).block) return { error: "Borrowing is paused on your account, so you can't join waitlists. Your account console says why and until when." };
+    return { error: `Couldn't join. You may already hold this book, or be waiting for ${WAITLIST_LIMIT} books.` };
+  }
   refresh();
   return { message: "You're on the waitlist. When a copy comes back it's held for you for 7 days." };
 }

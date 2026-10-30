@@ -9,6 +9,7 @@ import { ActionButton } from "@/components/action-button";
 import { Availability, PageTitle, Skeleton, StatusBadge, formatDate } from "@/components/ui";
 import { BookCover } from "@/components/book-cover";
 import { PageTurn, FORWARD } from "@/components/page-turn";
+import { getStanding } from "@/lib/queries/moderation";
 
 export default function ReservationsPage() {
   return (
@@ -23,11 +24,12 @@ export default function ReservationsPage() {
 
 async function Reservations() {
   const user = await requireUser();
-  const [rows, waiting, saved, notices] = await Promise.all([
+  const [rows, waiting, saved, notices, standing] = await Promise.all([
     listUserReservations(user.id),
     listUserWaitlist(user.id),
     listSaved(user.id),
     getMemberNotices(user.id),
+    getStanding(user.id),
   ]);
   const pickups = rows.filter((r) => r.status === "reserved");
   const loans = rows.filter((r) => r.status === "picked_up");
@@ -36,6 +38,7 @@ async function Reservations() {
 
   return (
     <>
+      <Standing standing={standing} />
       <Notices notices={notices} />
       <p className="library-capacity">
         <span className="library-capacity-meter" aria-hidden="true">
@@ -104,6 +107,28 @@ async function Reservations() {
         <ReservationRows rows={history} />
       </details>}
     </>
+  );
+}
+
+// Staff restrictions and recent warnings, with their reasons, above everything else.
+function Standing({ standing }) {
+  const { block, warning } = standing;
+  if (!block && !warning) return null;
+  return (
+    <ul className="mb-3 flex flex-col gap-2" aria-label="Account standing">
+      {block && (
+        <li className="slip slip-bad">
+          <strong>{block.kind === "suspend" ? "Your account is suspended" : "Borrowing is paused"}</strong>
+          {block.ends_at ? ` until ${formatDate(block.ends_at)}` : " until staff lift it"}. Reason: {block.reason}{" "}
+          You can still return books. <Link href="/account#standing" className="link">Account standing</Link>
+        </li>
+      )}
+      {warning && (
+        <li className="slip slip-warn">
+          <strong>Warning from library staff</strong> ({formatDate(warning.created_at)}): {warning.reason}
+        </li>
+      )}
+    </ul>
   );
 }
 

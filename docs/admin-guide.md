@@ -85,7 +85,28 @@ One box, focused when the page opens. Scan or type an ISBN (hyphens and spaces d
 
 ## Member pages (`/admin/users/<id>`)
 
-Click a name on **Users**: role, totals, active holds and loans with the usual buttons, waitlist places and recent history.
+Click a name on **Users**: role, totals, standing, active holds and loans with the usual buttons, waitlist places and recent history.
+
+The **Monitoring** and **Moderate** panels show the member's score with its evidence and let you act:
+
+| Action | Effect | Member sees |
+|---|---|---|
+| **Warn** | nothing is blocked | the warning and reason in My library (30 days) and the account console |
+| **Pause borrowing** (1, 7, 14, 30, 90 days or until lifted) | no new reservations, waitlist places or renewals; waitlist holds go to the next person while they keep their place | a red notice with the reason and end date |
+| **Suspend account** (same durations) | everything above, and reading access closes | the same, marked suspended |
+| **Staff note** | nothing | that a note exists, not its text |
+
+Every action needs a reason and is logged under **Activity** with your email. Returns always work. **Lift restriction** ends pauses and suspensions early and needs a reason too. You can't moderate your own account. Pauses and suspensions end on their own at their end date.
+
+## Monitoring (`/admin/monitoring`)
+
+Members with any circulation history, ranked by a 0 to 100 score built from their own records. Filters: **Needs review** (45+), **Watch** (20+), **Paused or suspended**, **All members**. **How scores are calculated** on the page lists every rule and its points:
+
+- overdue loans now (most weight), late returns over 90 days, holds not collected over 90 days;
+- frequent cancelling (30 days), 5+ reservations inside one hour (last 7 days), heavy waitlisting, holding all 10 reservations;
+- warnings, pauses or suspensions in the last 180 days.
+
+Scores are recalculated on every view, never stored, and never act by themselves. Members see their own score and evidence in their account console.
 
 ## Stats (`/admin/stats`)
 

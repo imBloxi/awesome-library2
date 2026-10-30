@@ -69,9 +69,24 @@ export default function TermsPage() {
       ),
     },
     {
+      id: "moderation",
+      title: "Monitoring and moderation",
+      body: (
+        <>
+          <p>ctOS monitors every account&apos;s circulation record and scores it using the rules in the <Link href="/legal/privacy#record">Privacy policy</Link>. Library staff review accounts and can:</p>
+          <ul>
+            <li><strong>warn</strong> you, with a reason you will see in My library and the account console;</li>
+            <li><strong>pause your borrowing</strong> for a set time or until lifted: no new reservations, waitlist places or renewals, and waitlist holds pass to the next person while you keep your place;</li>
+            <li><strong>suspend your account</strong>: borrowing paused and reading access closed.</li>
+          </ul>
+          <p>Common reasons are overdue books, repeatedly leaving holds uncollected, booking copies you don&apos;t collect, or breaking the acceptable use rules. Every action carries a reason you can read, and returns always work. Ask staff to review any action you disagree with.</p>
+        </>
+      ),
+    },
+    {
       id: "suspension",
-      title: "Suspension and closing",
-      body: <p>The library can suspend or close an account that breaks these terms, after telling you why where it&apos;s safe to do so. You can stop using the service at any time and ask for your account and records to be deleted, as described in the Privacy policy. Books you have on loan still need to be returned.</p>,
+      title: "Closing accounts",
+      body: <p>The library can close an account that seriously or repeatedly breaks these terms, after telling you why where it&apos;s safe to do so. You can stop using the service at any time and ask for your account and records to be deleted, as described in the Privacy policy. Books you have on loan still need to be returned.</p>,
     },
     {
       id: "service",

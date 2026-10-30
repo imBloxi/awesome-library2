@@ -1,3 +1,4 @@
+import { borrowBlockedSql } from "./moderation-sql.mjs";
 import { db } from "@/lib/db";
 import { reserveSteps, reserveFailureReason, explainFailure } from "./reserve-sql.mjs";
 import { liveHoldSteps } from "./hold-sql.mjs";
@@ -169,11 +170,13 @@ export async function renewLoan(userId, id) {
   if (rows.length === 1) return { ok: true };
   const [r] = await db().query(
     `select r.status, r.renewals, coalesce(${IS_OVERDUE_SQL}, false) as overdue,
-       exists (select 1 from waitlist w where w.book_id = r.book_id) as queued
+       exists (select 1 from waitlist w where w.book_id = r.book_id) as queued,
+       ${borrowBlockedSql("r.user_id")} as blocked
      from reservations r where r.id = $1 and r.user_id = $2`,
     [id, userId]
   );
   if (!r || r.status !== "picked_up") return { ok: false, error: "Only books you have borrowed can be renewed." };
+  if (r.blocked) return { ok: false, error: "Borrowing is paused on your account, so loans can't be renewed. You can still return books." };
   if (r.overdue) return { ok: false, error: "This loan is overdue. Please return it." };
   if (r.renewals >= MAX_RENEWALS) return { ok: false, error: "This loan has already been renewed." };
   if (r.queued) return { ok: false, error: "Someone is waiting for this book, so it can't be renewed." };

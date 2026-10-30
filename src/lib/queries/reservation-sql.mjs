@@ -1,4 +1,5 @@
 import { LOAN_DAYS } from "../constants.js";
+import { borrowBlockedSql } from "./moderation-sql.mjs";
 import { RESERVATION_STATUSES } from "../reservation-params.mjs";
 import { likePattern } from "./search-sql.mjs";
 
@@ -17,6 +18,7 @@ export const renewLoanQuery = {
     where r.id = $1 and r.user_id = $2 and r.status = 'picked_up'
       and r.renewals < ${MAX_RENEWALS} and not ${IS_OVERDUE_SQL}
       and not exists (select 1 from waitlist w where w.book_id = r.book_id)
+      and not ${borrowBlockedSql("r.user_id")}
     returning r.id`,
 };
 export const IS_EXPIRING_SQL = `(r.status = 'reserved' and r.expires_at > now() and r.expires_at < now() + interval '1 day')`;

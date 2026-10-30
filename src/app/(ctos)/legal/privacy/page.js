@@ -15,6 +15,7 @@ const RECORD = [
   ["Reservations and loans", "Every reservation: the book, when you reserved it, when the hold expires, when you collected and returned it, renewals, whether it came from a waitlist, and whether you removed it from your view.", "You, and library staff when they confirm pickups and returns.", "To run circulation: holds, loans, due dates, renewals, reading access.", "No automatic deletion. Removing a record from My library hides it from you; ctOS keeps it."],
   ["Waitlists and saved books", "Which books you are waiting for or have saved, and when.", "You.", "To hold the next free copy for you and keep your list.", "Until you leave the waitlist, your hold is created, you remove the book, or the account is deleted."],
   ["Staff audit log", "Each staff action: which staff member, what they did, which book or reservation, your account ID for role changes, and when.", "Library staff actions.", "Accountability for every change made to records.", "No automatic deletion."],
+  ["Moderation", "Staff notes, warnings, borrowing pauses and suspensions: the reason, the staff member, when it started, when it ends or was lifted and why.", "Library staff.", "To enforce the terms fairly and keep every decision accountable.", "No automatic deletion."],
   ["Request data", "IP address, browser user agent, the page requested and the time.", "Every request your browser makes.", "To serve and secure the site. Processed by the hosting provider.", "For the hosting provider's log retention period."],
 ];
 
@@ -51,7 +52,10 @@ export default function PrivacyPage() {
             </tbody>
           </table>
           <h3>Your profile</h3>
-          <p>The account console shows a subject file built from the records above: your counts, the hour and weekday you reserve most often (in UTC), and the authors and genres you borrow most. It is calculated each time you open the console. It is not stored separately, not shared, and not used to make decisions about you.</p>
+          <p>The account console shows a subject file built from the records above: your counts, the hour and weekday you reserve most often (in UTC), and the authors and genres you borrow most. It is calculated each time you open the console and is not stored separately or shared.</p>
+          <h3>Monitoring score</h3>
+          <p>ctOS scores every member with circulation history from 0 to 100 using fixed rules over your own records: overdue loans, late returns, holds you didn&apos;t collect, frequent cancelling, many reservations inside one hour, heavy waitlisting, holding the maximum number of books, and recent staff action. Each rule, its points and the evidence behind it are shown to staff and to you in the account console. The score is recalculated on every view and not stored.</p>
+          <p>The score only helps staff decide what to look at. It never restricts an account by itself. A person decides every warning, pause or suspension, and must record a reason you can read.</p>
           <h3>On your device</h3>
           <p>The sign-in service sets cookies to keep you signed in. They are strictly necessary. There are no analytics or advertising cookies. Your browser also stores your reader settings, your last chapter in each book and your motion setting. Those stay in your browser; ctOS never receives them. You can clear the reading data from the account console.</p>
           <h3>Observed, not recorded</h3>
@@ -62,7 +66,7 @@ export default function PrivacyPage() {
     {
       id: "rules",
       title: "Automatic rules",
-      body: <p>Circulation rules are applied automatically and identically to every member: at most 10 active reservations, holds kept for 7 days, loans of 28 days with one renewal when nobody is waiting, and reading access to a book&apos;s editions only while you have that book checked out. No other automated decisions are made about you.</p>,
+      body: <p>Circulation rules are applied automatically and identically to every member: at most 10 active reservations, holds kept for 7 days, loans of 28 days with one renewal when nobody is waiting, and reading access to a book&apos;s editions only while you have that book checked out. While staff have paused your borrowing, ctOS automatically refuses new reservations, waitlist places, waitlist holds and renewals; while your account is suspended it also closes reading access. Returns always work. No other automated decisions are made about you.</p>,
     },
     {
       id: "access",
@@ -70,7 +74,7 @@ export default function PrivacyPage() {
       body: (
         <ul>
           <li><strong>You</strong>, in My library and the account console.</li>
-          <li><strong>Library staff</strong> (admins) see members&apos; names, email addresses, reservations, loans, waitlists and the staff audit log. They can confirm pickups and returns, cancel or extend holds, and change account roles. Staff cannot see your password.</li>
+          <li><strong>Library staff</strong> (admins) see members&apos; names, email addresses, reservations, loans, waitlists, monitoring scores, moderation history and the staff audit log. Staff notes are visible to staff; you see that a note exists and can ask for its contents. They can confirm pickups and returns, cancel or extend holds, and change account roles. Staff cannot see your password.</li>
           <li><strong>Service providers</strong> that run the site for the library: Vercel (hosting, serving from Frankfurt, Germany) and Neon (the database and the sign-in service). They process data on the library&apos;s behalf under their data processing terms, which also cover any transfer outside the EU. Both are based in the United States.</li>
         </ul>
       ),
@@ -81,7 +85,7 @@ export default function PrivacyPage() {
       body: (
         <ul>
           <li><strong>Contract:</strong> your account, reservations, loans and reading access are the service you asked for.</li>
-          <li><strong>Legitimate interests:</strong> session and request records to keep accounts secure, and the staff audit log so every change to a record is accountable.</li>
+          <li><strong>Legitimate interests:</strong> session and request records to keep accounts secure; monitoring and moderation so copies stay fairly available to every member and the terms are enforced; the staff audit log so every change to a record is accountable. You can object to monitoring by contacting the controller.</li>
         </ul>
       ),
     },

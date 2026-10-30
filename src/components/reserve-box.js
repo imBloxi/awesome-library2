@@ -34,7 +34,7 @@ function ReservedStamp({ due }) {
 // Live availability and what the member can do with this book: reserve it, join or leave
 // its waitlist, or save it for later. Reserve updates the count the instant you click;
 // if the server refuses, both roll back and the reason shows.
-// member: null when signed out, else { holding, saved, position, queueLength }.
+// member: null when signed out, else { holding, saved, position, queueLength, paused }.
 export function ReserveBox({ bookId, available, total, member }) {
   const [optimistic, setOptimistic] = useOptimistic({ available, reserved: false, due: null });
   const [state, formAction, pending] = useActionState(async (prev, formData) => {
@@ -66,6 +66,12 @@ export function ReserveBox({ bookId, available, total, member }) {
           <Link href="/reservations" className="link">See your reservations</Link>
         </p>
         </>
+      ) : member.paused ? (
+        <p className="slip slip-bad">
+          {member.paused.kind === "suspend" ? "Your account is suspended" : "Borrowing is paused on your account"}
+          {member.paused.until ? ` until ${member.paused.until}` : ""}. You can still return books.{" "}
+          <Link href="/account#standing" className="link">See why</Link>
+        </p>
       ) : available > 0 ? (
         <form action={formAction} className="flex flex-col gap-2">
           <input type="hidden" name="id" value={bookId} />

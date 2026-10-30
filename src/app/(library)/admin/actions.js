@@ -8,6 +8,7 @@ import { createBook, updateBook, deleteBook, restoreBook, bookTag } from "@/lib/
 import { markPickedUp, returnBook, cancelHold, extendHold, promoteWaitlist } from "@/lib/queries/reservations";
 import { setUserRole } from "@/lib/queries/users";
 import { importBooks, logAdminEvent } from "@/lib/queries/admin";
+import { addModeration, liftModeration } from "@/lib/queries/moderation";
 import { parseBookCsv, IMPORT_MAX_BYTES } from "@/lib/book-import.mjs";
 
 const idSchema = z.coerce.number().int().positive();
@@ -189,4 +190,50 @@ export async function importBooksAction(_prev, formData) {
   await logAdminEvent(admin, "book.import", { detail: `${inserted} added, ${skipped} skipped (ISBN already in catalog), ${errors.length} invalid` });
   refresh();
   return { done: { inserted, skipped, invalid: errors.length } };
+}
+
+// Moderation. Every action needs a reason, is logged with the acting admin, and is shown to
+// the member (notes excepted). Restrictions and suspensions take effect on the next request.
+const DURATIONS = { "1": 1, "7": 7, "14": 14, "30": 30, "90": 90, indefinite: null };
+const moderationSchema = z.object({
+  id: userIdSchema,
+  kind: z.enum(["note", "warning", "restrict", "suspend"]),
+  reason: z.string().trim().min(3, "Give a reason of at least 3 characters.").max(1000, "Keep the reason under 1,000 characters."),
+  duration: z.string().optional(),
+});
+
+const MODERATION_DONE = {
+  note: "Note added.",
+  warning: "Warning issued. The member sees it in My library and their account console.",
+  restrict: "Borrowing paused.",
+  suspend: "Account suspended.",
+};
+
+export async function moderateAction(_prev, formData) {
+  const me = await requireAdmin();
+  const parsed = moderationSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form." };
+  const { id, kind, reason, duration } = parsed.data;
+  if (id === String(me.id)) return { error: "You can't moderate your own account." };
+  const blocking = kind === "restrict" || kind === "suspend";
+  if (blocking && !(duration in DURATIONS)) return { error: "Choose how long it lasts." };
+  const days = blocking ? DURATIONS[duration] : null;
+  const rowId = await addModeration({ userId: id, kind, reason, days, actor: me });
+  if (!rowId) return { error: "User not found." };
+  await logAdminEvent(me, `member.${kind}`, { targetUser: id, detail: days ? `${reason} (${days} days)` : reason });
+  refresh();
+  return { message: MODERATION_DONE[kind] };
+}
+
+export async function liftModerationAction(_prev, formData) {
+  const me = await requireAdmin();
+  const id = userIdSchema.safeParse(formData.get("id"));
+  const reason = z.string().trim().min(3, "Say why it's lifted (3+ characters).").max(1000).safeParse(formData.get("reason") ?? "");
+  if (!id.success) return { error: "Invalid user." };
+  if (!reason.success) return { error: reason.error.issues[0].message };
+  const lifted = await liftModeration({ userId: id.data, reason: reason.data, actor: me });
+  if (!lifted) return { error: "Nothing to lift: the account has no active restriction or suspension." };
+  await logAdminEvent(me, "member.lift", { targetUser: id.data, detail: reason.data });
+  refresh();
+  return { message: "Lifted. The member can borrow again." };
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-30: Moderation and member monitoring
+
+- Staff can warn members, pause their borrowing or suspend their account for a chosen time or until lifted, and add staff notes. Every action needs a reason, is logged, and is shown to the member (note text excepted). Lifting needs a reason too.
+- Enforcement is in the database statements themselves: paused or suspended members can't reserve, join waitlists or renew, and are skipped (keeping their place) when a waitlist copy comes back. Suspension also closes reading access. Returns always work.
+- New **Monitoring** page ranks members by a 0 to 100 score from fixed, published rules over their own records: overdue loans, late returns, uncollected holds, cancelling, booking bursts, heavy waitlisting, holding the maximum, and recent staff action. Each point shows its evidence.
+- Members see their standing, score, evidence and moderation history in the ctOS account console, and a notice in My library and on book pages while borrowing is paused.
+- Terms of service and Privacy policy updated for monitoring and moderation. New migration `005_moderation.sql`.
+
 ## 2026-10-30: Bindery redesign and ctOS accounts
 
 **Library (Bindery)**

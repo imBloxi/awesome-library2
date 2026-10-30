@@ -7,6 +7,7 @@ import { getAuth } from "@/lib/auth/server";
 import { accountSessions, deviceLabel } from "@/lib/account/service.mjs";
 import { canReadBabel } from "@/lib/queries/reading";
 import { getSubjectFile, listStaffActions } from "@/lib/queries/profile";
+import { getStanding, getMemberSignals, listModeration } from "@/lib/queries/moderation";
 import { circulationRecord, readingPatterns, requestAddress, staffActionLabel, cleanAddress } from "@/lib/ctos/profile.mjs";
 import { ProfileForm, PasswordForm, RevokeSessionForm, RevokeOthersForm, ClearReadingData } from "@/components/account-forms";
 
@@ -47,11 +48,14 @@ async function Account() {
   if (!identity) redirect("/auth/sign-in");
   const { user, session } = identity;
   const request = await headers();
-  const [sessions, canRead, file, staff] = await Promise.all([
+  const [sessions, canRead, file, staff, standing, signals, moderation] = await Promise.all([
     accountSessions(getAuth(), identity),
     canReadBabel(user.id),
     getSubjectFile(user.id),
     listStaffActions(user.id),
+    getStanding(user.id),
+    getMemberSignals(user.id),
+    listModeration(user.id, 20),
   ]);
   const role = String(user.role ?? "").split(",").map((r) => r.trim()).includes("admin") ? "Library staff (admin)" : "Member";
   const patterns = readingPatterns(file);
@@ -69,12 +73,14 @@ async function Account() {
           ["File opened", day(user.createdAt)],
         ]} />
         <nav aria-label="Account sections" className="ctos-console-nav">
-          <a href="#observed">This request</a><a href="#record">Circulation</a><a href="#staff">Staff actions</a>
+          <a href="#standing">Standing</a><a href="#observed">This request</a><a href="#record">Circulation</a><a href="#staff">Staff actions</a>
           <a href="#identity">Identity</a><a href="#security">Password</a><a href="#sessions">Sessions</a><a href="#privacy">Local data</a>
         </nav>
       </header>
 
       <div className="ctos-account-grid">
+        <Standing standing={standing} signals={signals} moderation={moderation} />
+
         <section className="ctos-panel" id="observed" aria-labelledby="observed-heading">
           <p className="ctos-label">Live</p>
           <h2 id="observed-heading" className="ctos-panel-title">This request</h2>
@@ -177,5 +183,56 @@ async function Account() {
         </section>
       </div>
     </div>
+  );
+}
+
+const KIND_LABEL = { note: "Staff note", warning: "Warning", restrict: "Borrowing paused", suspend: "Suspended" };
+
+// Standing: staff restrictions, and the same monitoring score staff see, with its evidence.
+function Standing({ standing, signals, moderation }) {
+  const { block, warning } = standing;
+  const assessment = signals?.assessment;
+  const status = block
+    ? `${block.kind === "suspend" ? "Suspended" : "Borrowing paused"}${block.ends_at ? ` until ${day(block.ends_at)}` : " until lifted by staff"}`
+    : warning ? "Warned in the last 30 days" : "Good standing";
+  return (
+    <section className={`ctos-panel ctos-panel-wide ${block ? "ctos-panel-alert" : ""}`} id="standing" aria-labelledby="standing-heading">
+      <p className="ctos-label">Standing and monitoring</p>
+      <h2 id="standing-heading" className="ctos-panel-title">{status}</h2>
+      {block && <p className="ctos-alert">Reason: {block.reason}. You can still return books{block.kind === "restrict" ? " and keep reading current loans" : ""}.</p>}
+      {warning && <p className="ctos-fine">Latest warning ({day(warning.created_at)}): {warning.reason}</p>}
+      {assessment && (
+        <>
+          <div className="ctos-score" data-level={assessment.level}>
+            <span className="ctos-score-value">{assessment.score}</span>
+            <span className="ctos-score-bar" aria-hidden="true"><span style={{ "--score": `${assessment.score}%` }} /></span>
+            <span className="ctos-flag">{assessment.levelLabel}</span>
+          </div>
+          {assessment.signals.length === 0 ? (
+            <p className="ctos-fine">No monitoring signals. Nothing in your record stands out.</p>
+          ) : (
+            <Readout rows={assessment.signals.map((sig) => [`${sig.label} +${sig.points}`, sig.evidence])} />
+          )}
+          <p className="ctos-fine">Library staff see this same score and evidence. It is recalculated from your records on every visit and never restricts you by itself; only staff can, and they must give a reason.</p>
+        </>
+      )}
+      {moderation.length > 0 && (
+        <>
+          <h3 className="ctos-subtitle">Moderation history</h3>
+          <ol className="ctos-log">
+            {moderation.map((m) => (
+              <li key={m.id}>
+                <time dateTime={new Date(m.created_at).toISOString()}>{stamp(m.created_at)}</time>
+                <span>
+                  {KIND_LABEL[m.kind]}{m.kind === "note" ? ". Contents available on request." : `: ${m.reason}`}
+                  {m.ends_at ? ` Until ${day(m.ends_at)}.` : ""}
+                  {m.lifted_at ? ` Lifted ${day(m.lifted_at)}${m.lift_reason ? `: ${m.lift_reason}` : ""}.` : ""}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </section>
   );
 }
