@@ -1,6 +1,6 @@
 "use server";
 
-import { refresh } from "next/cache";
+import { refresh, revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAuth } from "@/lib/auth/server";
@@ -42,6 +42,7 @@ export async function returnAction(_prev, formData) {
 
   const ok = await returnBook(id.data, user.id);
   if (!ok) return { error: "Only picked-up books can be returned." };
+  revalidatePath("/", "layout");
   refresh();
   return {};
 }

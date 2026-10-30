@@ -522,3 +522,56 @@
   .library-stat { padding: 1rem; }
   .library-shelf { padding: 1rem; }
 }
+
+/* ctOS: graphite system chrome; paper remains the reading surface. */
+.ctos-masthead { background: #11191a; color: #eef3ee; border-bottom: 3px solid #c7ef6b; }
+.ctos-brand { display: flex; flex-direction: column; gap: .25rem; padding: .35rem 0; }
+.ctos-brand > span { font-family: var(--font-sans); font-size: 2rem; font-weight: 800; line-height: 1; letter-spacing: -.07em; }
+.ctos-brand-mark { color: #c7ef6b; }
+.ctos-brand small { font-family: monospace; font-size: .6rem; letter-spacing: .12em; color: #bdc9c3; }
+.ctos-masthead .btn { min-height: 44px; background: transparent; color: #eef3ee; border-color: transparent; }
+.ctos-masthead .btn:hover:not(:disabled) { background: #293535; color: #fff; border-color: #53645b; }
+.ctos-masthead .btn-primary { background: #c7ef6b; color: #172014; }
+.ctos-masthead :focus-visible, .ctos-console-header :focus-visible { outline-color: #c7ef6b; }
+.ctos-eyebrow { font-family: monospace; font-size: .6875rem; line-height: 1.6; letter-spacing: .12em; text-transform: uppercase; color: #546458; }
+.ctos-console-header { padding: clamp(1.5rem, 4vw, 3rem); border-radius: 16px; background: #141f20; color: #f5f7ee; position: relative; overflow: hidden; }
+.ctos-console-header .ctos-eyebrow { color: #c7ef6b; }
+.ctos-console-header h1 { font-size: clamp(2.25rem, 5vw, 3.75rem); font-weight: 600; line-height: 1.08; letter-spacing: -.055em; margin: 1rem 0; }
+.ctos-console-header h1 span { color: #c7ef6b; }
+.ctos-console-header > p:last-of-type { max-width: 38rem; color: #c3cfca; line-height: 1.7; }
+.ctos-console-nav { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+.ctos-console-nav a { display: flex; align-items: center; min-height: 44px; padding: .5rem 1rem; border: 1px solid #4e605c; border-radius: 6px; font-size: .875rem; }
+.ctos-console-nav a:hover { background: #2a3c36; }
+.ctos-clearance { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; padding: 1.5rem; margin: 1.25rem 0; border: 1px solid #bdcbb5; background: #f3f7ed; border-radius: 12px; }
+.ctos-clearance h2 { font-size: 1.25rem; font-weight: 600; margin: .25rem 0; }
+.ctos-clearance p:last-child { font-size: .875rem; max-width: 40rem; color: #435044; line-height: 1.6; }
+.ctos-account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+.ctos-panel { padding: clamp(1rem, 3vw, 2rem); border: 1px solid #dce2db; border-radius: 12px; scroll-margin-top: 1rem; min-width: 0; }
+.ctos-panel-wide { grid-column: 1 / -1; }
+.ctos-panel h2 { margin: .5rem 0; font-size: 1.5rem; font-weight: 600; letter-spacing: -.035em; }
+.ctos-panel-intro { color: #58635b; font-size: .875rem; line-height: 1.7; margin-bottom: 1.5rem; }
+.ctos-form { display: flex; flex-direction: column; gap: .625rem; align-items: stretch; }
+.ctos-form label { font-size: .875rem; font-weight: 500; margin-top: .5rem; }
+.ctos-form .btn { min-height: 44px; align-self: flex-start; white-space: normal; text-align: center; }
+.ctos-form .field { min-width: 0; width: 100%; min-height: 44px; }
+.ctos-record { margin: 1.5rem 0 .75rem; padding-top: 1rem; border-top: 1px solid var(--color-line); font-size: .875rem; }
+.ctos-record dt { color: var(--color-muted); margin-bottom: .25rem; }
+.ctos-record dd { overflow-wrap: anywhere; font-weight: 500; }
+.ctos-sessions { margin-bottom: 1.25rem; }
+.ctos-sessions li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--color-line); padding: 1rem 0; }
+.ctos-sessions h3 { font-size: .9375rem; font-weight: 600; margin-bottom: .5rem; }
+.ctos-sessions p { font-size: .8125rem; color: var(--color-muted); line-height: 1.7; }
+.ctos-tag { display: inline-block; margin: .25rem; border-radius: 4px; background: #e9f3d6; color: #365016; padding: .2rem .4rem; font-size: .6875rem; vertical-align: middle; }
+.ctos-protocol { list-style: decimal; padding-left: 1.25rem; font-size: .875rem; line-height: 1.8; margin-bottom: 1rem; }
+.ctos-panel > .link { display: inline-block; margin-top: 1rem; min-height: 44px; }
+.ctos-access { max-width: 42rem; margin: 2rem auto; padding: clamp(1.25rem, 4vw, 2.5rem); border: 1px solid #cdd6c7; border-top: 4px solid #729d24; border-radius: 12px; background: #f7f9f3; }
+.ctos-access h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 600; letter-spacing: -.045em; margin: .75rem 0; }
+.ctos-access > p:not(.ctos-eyebrow) { color: #4b584d; line-height: 1.7; margin-bottom: 1.5rem; }
+.ctos-access .btn { min-height: 44px; margin: 0 .5rem .5rem 0; white-space: normal; }
+.ctos-auth { max-width: 30rem; margin: 1rem auto; padding: clamp(1.25rem, 4vw, 2.5rem); border: 1px solid #dce2db; border-top: 4px solid #729d24; border-radius: 12px; }
+.ctos-auth > .ctos-eyebrow { margin-bottom: 1.5rem; }
+@media (max-width: 700px) {
+  .ctos-account-grid { grid-template-columns: minmax(0, 1fr); }
+  .ctos-clearance, .ctos-sessions li { align-items: flex-start; flex-direction: column; }
+  .ctos-clearance .btn { white-space: normal; min-height: 44px; }
+}

@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { MAX_EDITION } from "@/lib/babel-book/limits.mjs";
 import { READER_DEFAULTS, normalizeReaderPrefs, normalizeReadingPosition, chapterDirection } from "@/lib/reader-state.mjs";
+
+// Force a new server authorization check rather than reuse the client route cache.
+function openReaderPage(href) {
+  window.location.assign(href);
+}
 
 const PREFS_KEY = "babel:prefs";
 const OPTIONS = {
@@ -32,7 +35,6 @@ export const lastReadKey = (bookKey) => `babel:last:${bookKey}`;
 // The reading surface: text settings remembered on this device, the current place saved
 // for "Continue reading", and ←/→ to turn chapters.
 export function ReaderFrame({ bookKey, basePath, chapterCount = 10, label = "Reading room", position, prevHref, nextHref, children }) {
-  const router = useRouter();
   const [prefs, setPrefs] = useState(READER_DEFAULTS);
 
   useEffect(() => {
@@ -55,11 +57,11 @@ export function ReaderFrame({ bookKey, basePath, chapterCount = 10, label = "Rea
       const href = direction < 0 ? prevHref : direction > 0 ? nextHref : null;
       if (!href) return;
       e.preventDefault();
-      router.push(href);
+      openReaderPage(href);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [router, prevHref, nextHref]);
+  }, [prevHref, nextHref]);
 
   const set = (name, value) => {
     const next = { ...prefs, [name]: value };
@@ -96,12 +98,11 @@ export function ReaderFrame({ bookKey, basePath, chapterCount = 10, label = "Rea
 
 // Opens a random edition of a book (or a random invented book when basePath is "/babel").
 export function RandomEditionButton({ basePath, label = "Roll a random edition", max = MAX_EDITION, className = "btn" }) {
-  const router = useRouter();
   return (
     <button
       type="button"
       className={className}
-      onClick={() => router.push(`${basePath}/${1 + Math.floor(Math.random() * max)}`)}
+      onClick={() => openReaderPage(`${basePath}/${1 + Math.floor(Math.random() * max)}`)}
     >
       {label}
     </button>
@@ -118,9 +119,9 @@ export function ContinueReading({ bookKey }) {
   const current = normalizeReadingPosition(bookKey, last);
   if (!current) return null;
   return (
-    <Link href={current.href} className="link text-sm">
+    <a href={current.href} className="link text-sm">
       Continue reading: edition {current.edition}, chapter {current.chapter}
-    </Link>
+    </a>
   );
 }
 
@@ -132,5 +133,5 @@ export function ReaderResume({ bookKey, basePath, chapterCount }) {
   }, [bookKey, basePath, chapterCount]);
   const current = normalizeReadingPosition(bookKey, last, { basePath, chapterCount });
   if (!current) return null;
-  return <Link href={current.href} className="btn btn-primary">Continue chapter {current.chapter}</Link>;
+  return <a href={current.href} className="btn btn-primary">Continue chapter {current.chapter}</a>;
 }

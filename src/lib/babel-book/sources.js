@@ -1,3 +1,5 @@
+import { getUser } from "@/lib/dal";
+import { canReadCatalogBook, canReadBabel } from "@/lib/queries/reading";
 import { getBookDetails } from "@/lib/queries/books";
 import { babelPassage } from "@/lib/babel.mjs";
 import { generateEdition, inventBook } from "./index.mjs";
@@ -9,6 +11,9 @@ export async function catalogEdition(id, edition) {
   const bookId = parseRouteInt(id, Number.MAX_SAFE_INTEGER);
   const n = parseRouteInt(edition, MAX_EDITION);
   if (!bookId || !n) return null;
+  const user = await getUser();
+  if (!user) return { locked: true, signedIn: false };
+  if (!await canReadCatalogBook(user.id, bookId)) return { locked: true, signedIn: true, bookId };
   const book = await getBookDetails(bookId);
   if (!book) return null;
   return {
@@ -24,9 +29,12 @@ export async function catalogEdition(id, edition) {
 }
 
 // A wholly invented book. No database at all: the number is the book.
-export function inventedEdition(seed) {
+export async function inventedEdition(seed) {
   const n = parseRouteInt(seed, MAX_INVENTED_SEED);
   if (!n) return null;
+  const user = await getUser();
+  if (!user) return { locked: true, signedIn: false };
+  if (!await canReadBabel(user.id)) return { locked: true, signedIn: true };
   const book = inventBook(n);
   return {
     basePath: `/babel/${n}`,

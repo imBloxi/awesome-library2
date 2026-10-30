@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ReaderFrame, ReaderResume, RandomEditionButton } from "@/components/reader-frame";
 import { BookCover } from "@/components/book-cover";
 import { readingMinutes } from "@/lib/reader-state.mjs";
@@ -11,11 +10,11 @@ function ContentsList({ basePath, chapters, currentIndex }) {
     <ol className="reader-contents">
       {chapters.map((chapter, index) => (
         <li key={index}>
-          <Link href={`${basePath}/${index + 1}`} prefetch={false} aria-current={currentIndex === index ? "page" : undefined}>
+          <a href={`${basePath}/${index + 1}`} aria-current={currentIndex === index ? "page" : undefined}>
             <span className="reader-contents-number">{String(index + 1).padStart(2, "0")}</span>
             <span className="reader-contents-title">{chapter.title}</span>
             <span className="reader-contents-time">{chapterMinutes(chapter)} min</span>
-          </Link>
+          </a>
         </li>
       ))}
     </ol>
@@ -52,7 +51,7 @@ export function EditionContents({ basePath, bookKey, edition, byline, backCover,
 
         <div className="reader-start-actions">
           <ReaderResume bookKey={bookKey} basePath={basePath} chapterCount={chapterCount} />
-          <Link href={`${basePath}/1`} className="btn btn-primary">Start from chapter 1 <span aria-hidden="true">→</span></Link>
+          <a href={`${basePath}/1`} className="btn btn-primary">Start from chapter 1 <span aria-hidden="true">→</span></a>
         </div>
 
         <p className="reader-dedication">{edition.dedication}</p>
@@ -82,7 +81,7 @@ export function EditionContents({ basePath, bookKey, edition, byline, backCover,
             />
           )}
         </div>
-        <p className="reader-note">A little time, another world. Read here or take the whole story offline.</p>
+        <p className="reader-note">A little time, another world. Read online while your library loan is checked out.</p>
       </div>
     </ReaderFrame>
   );
@@ -100,7 +99,7 @@ export function EditionChapter({ basePath, bookKey, edition, index, bookTitle })
   return (
     <ReaderFrame bookKey={bookKey} basePath={basePath} chapterCount={chapterCount} position={position} prevHref={prevHref} nextHref={nextHref} label={`Edition ${edition.edition}`}>
       <div className="reader-chapter-top">
-        <Link href={basePath} className="reader-book-link">{bookTitle}</Link>
+        <a href={basePath} className="reader-book-link">{bookTitle}</a>
         <details className="reader-contents-disclosure reader-chapter-menu">
           <summary>Contents</summary>
           <nav aria-label="Table of contents">
@@ -121,14 +120,14 @@ export function EditionChapter({ basePath, bookKey, edition, index, bookTitle })
 
       {!next && <p className="reader-end">The end.</p>}
       <nav aria-label="Chapter navigation" className="reader-pager">
-        <Link href={prevHref} rel={previous ? "prev" : undefined} className="reader-page-link">
+        <a href={prevHref} rel={previous ? "prev" : undefined} className="reader-page-link">
           <span className="reader-page-direction">← {previous ? "Previous chapter" : "Back to contents"}</span>
           <span>{previous?.title ?? bookTitle}</span>
-        </Link>
-        <Link href={nextHref ?? basePath} rel={next ? "next" : undefined} className="reader-page-link reader-page-link-next">
+        </a>
+        <a href={nextHref ?? basePath} rel={next ? "next" : undefined} className="reader-page-link reader-page-link-next">
           <span className="reader-page-direction">{next ? "Next chapter" : "Return to contents"} →</span>
           <span>{next?.title ?? bookTitle}</span>
-        </Link>
+        </a>
       </nav>
     </ReaderFrame>
   );
