@@ -10,6 +10,7 @@ export default function AdminLayout({ children }) {
         <Link href="/admin/reservations" className="btn btn-ghost btn-sm">Reservations</Link>
         <Link href="/admin/users" className="btn btn-ghost btn-sm">Users</Link>
         <Link href="/admin/monitoring" className="btn btn-ghost btn-sm">Monitoring</Link>
+        <Link href="/admin/watchlist" className="btn btn-ghost btn-sm">Watchlist</Link>
         <Link href="/admin/stats" className="btn btn-ghost btn-sm">Stats</Link>
         <Link href="/admin/activity" className="btn btn-ghost btn-sm">Activity</Link>
       </nav>

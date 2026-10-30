@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-30: Book watchlist
+
+- Admin **Watchlist** page: a master switch (off by default) and keywords with reasons, each with a pause toggle and a count of matching books. Matches titles, authors, genres and descriptions literally and case-insensitively.
+- Members who reserve, borrow, wait for or save a watched book within 180 days are listed as **persons of interest** and get a monitoring signal. Nothing is blocked automatically.
+- Watched books say so on their page, members see the flag in their account console, and the Terms and Privacy policy explain it. New migration `006_watchlist.sql`.
+
 ## 2026-10-30: Moderation and member monitoring
 
 - Staff can warn members, pause their borrowing or suspend their account for a chosen time or until lifted, and add staff notes. Every action needs a reason, is logged, and is shown to the member (note text excepted). Lifting needs a reason too.

@@ -12,6 +12,7 @@ import { ReserveBox } from "@/components/reserve-box";
 import { ContinueReading, RandomEditionButton } from "@/components/reader-frame";
 import { Skeleton, TopPickBadge, formatDate } from "@/components/ui";
 import { getStanding } from "@/lib/queries/moderation";
+import { isBookWatched } from "@/lib/queries/watch";
 import { PageTurn, BACK, FORWARD } from "@/components/page-turn";
 import { transitionNames } from "@/lib/book-shape.mjs";
 
@@ -103,11 +104,21 @@ async function BookDetails({ params }) {
 }
 
 async function ReservePanel({ book }) {
-  const [user, live] = await Promise.all([getUser(), getAvailability(book.id)]);
+  const [user, live, watched] = await Promise.all([getUser(), getAvailability(book.id), isBookWatched(book.id)]);
   if (!live) return null;
   const [member, standing] = user ? await Promise.all([getMemberBookState(user.id, book.id), getStanding(user.id)]) : [null, null];
   const paused = standing?.block ? { kind: standing.block.kind, until: standing.block.ends_at ? formatDate(standing.block.ends_at) : null } : null;
-  return <ReserveBox bookId={book.id} available={live.available} total={live.total_copies} member={member && { ...member, paused }} />;
+  return (
+    <>
+      {watched && (
+        <p className="slip slip-warn">
+          <strong>On the library watchlist.</strong> Reserving, borrowing, waiting for or saving this title flags your account to staff as a person of interest.{" "}
+          <Link href="/legal/privacy#record" className="link">What this means</Link>
+        </p>
+      )}
+      <ReserveBox bookId={book.id} available={live.available} total={live.total_copies} member={member && { ...member, paused }} />
+    </>
+  );
 }
 
 function CardRow({ label, children }) {

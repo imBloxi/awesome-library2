@@ -17,7 +17,7 @@
     "test:env": "node --test scripts/test-env.mjs scripts/test-csv.mjs scripts/test-search.mjs scripts/test-babel.mjs scripts/test-babel-book.mjs scripts/test-reservation-params.mjs scripts/test-circulation-format.mjs scripts/test-reader-state.mjs scripts/test-reader-html.mjs scripts/test-account.mjs scripts/test-session-read.mjs scripts/test-motion-prefs.mjs scripts/test-book-shape.mjs scripts/test-ctos.mjs scripts/test-babel-shelf.mjs scripts/test-monitoring.mjs",
     "test:reading": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-reading-access.mjs",
     "test:profile": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-profile-db.mjs",
-    "test:moderation": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-moderation-db.mjs",
+    "test:moderation": "node --import ./scripts/helpers/register-test-db.mjs --test --test-concurrency=1 scripts/test-moderation-db.mjs scripts/test-watch-db.mjs",
     "test:search-db": "node --test scripts/test-search-db.mjs"
   },
   "dependencies": {

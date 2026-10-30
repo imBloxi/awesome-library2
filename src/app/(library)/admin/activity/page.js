@@ -22,6 +22,10 @@ const LABELS = {
   "member.restrict": "paused a member's borrowing",
   "member.suspend": "suspended a member",
   "member.lift": "lifted a restriction",
+  "watch.switch": "switched the watchlist",
+  "watch.add": "added a watchlist keyword",
+  "watch.toggle": "toggled a watchlist keyword",
+  "watch.remove": "removed a watchlist keyword",
 };
 
 export default function ActivityPage({ searchParams }) {

@@ -79,6 +79,7 @@ export default function TermsPage() {
             <li><strong>pause your borrowing</strong> for a set time or until lifted: no new reservations, waitlist places or renewals, and waitlist holds pass to the next person while you keep your place;</li>
             <li><strong>suspend your account</strong>: borrowing paused and reading access closed.</li>
           </ul>
+          <p>The library may keep a watchlist of keywords. Books that match are marked on their page; reserving, borrowing, waiting for or saving one flags your account to staff as a person of interest, as explained in the Privacy policy. A flag alone never restricts your account.</p>
           <p>Common reasons are overdue books, repeatedly leaving holds uncollected, booking copies you don&apos;t collect, or breaking the acceptable use rules. Every action carries a reason you can read, and returns always work. Ask staff to review any action you disagree with.</p>
         </>
       ),

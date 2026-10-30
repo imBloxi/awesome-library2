@@ -98,6 +98,16 @@ The **Monitoring** and **Moderate** panels show the member's score with its evid
 
 Every action needs a reason and is logged under **Activity** with your email. Returns always work. **Lift restriction** ends pauses and suspensions early and needs a reason too. You can't moderate your own account. Pauses and suspensions end on their own at their end date.
 
+## Watchlist (`/admin/watchlist`)
+
+A master switch (off by default) and a list of keywords. While it's on, any book whose title, author, genre or description contains an active keyword is **watched**:
+
+- its book page tells members it's on the watchlist before they reserve;
+- anyone who reserves, borrows, waits for or saves it within 180 days appears under **Persons of interest** with the matching titles, and gets a **Person of interest** monitoring signal (15 points per title, max 30);
+- the member sees the same flag in their account console.
+
+Each keyword needs a reason. **Pause** keeps a keyword without matching; **Remove** deletes it. Every change, including the switch, is logged under **Activity**. Nothing is blocked automatically. Reading history can reveal religion, politics, health or sexuality, so keep keywords narrow and justified.
+
 ## Monitoring (`/admin/monitoring`)
 
 Members with any circulation history, ranked by a 0 to 100 score built from their own records. Filters: **Needs review** (45+), **Watch** (20+), **Paused or suspended**, **All members**. **How scores are calculated** on the page lists every rule and its points:

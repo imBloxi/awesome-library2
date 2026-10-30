@@ -316,3 +316,28 @@
 @keyframes meter-fill {
   from { scale: 0 1; }
 }
+
+/* Watchlist (admin) */
+@layer components {
+  .watch-switch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--color-line);
+    border-left: 4px solid #a4a8b0;
+    border-radius: 4px;
+    background: var(--color-board);
+  }
+  .watch-switch[data-on] { border-left-color: var(--color-bad); }
+  .watch-add {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) auto;
+    gap: 0.75rem;
+    align-items: end;
+  }
+  .watch-add-feedback { grid-column: 1 / -1; }
+  @media (max-width: 640px) { .watch-add { grid-template-columns: minmax(0, 1fr); } }
+}

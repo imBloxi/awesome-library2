@@ -9,6 +9,7 @@ import { markPickedUp, returnBook, cancelHold, extendHold, promoteWaitlist } fro
 import { setUserRole } from "@/lib/queries/users";
 import { importBooks, logAdminEvent } from "@/lib/queries/admin";
 import { addModeration, liftModeration } from "@/lib/queries/moderation";
+import { setWatchlistEnabled, addWatchTerm, toggleWatchTerm, deleteWatchTerm } from "@/lib/queries/watch";
 import { parseBookCsv, IMPORT_MAX_BYTES } from "@/lib/book-import.mjs";
 
 const idSchema = z.coerce.number().int().positive();
@@ -236,4 +237,53 @@ export async function liftModerationAction(_prev, formData) {
   await logAdminEvent(me, "member.lift", { targetUser: id.data, detail: reason.data });
   refresh();
   return { message: "Lifted. The member can borrow again." };
+}
+
+// Book watchlist. Off by default; terms match titles, authors, genres and descriptions.
+
+export async function setWatchlistAction(_prev, formData) {
+  const me = await requireAdmin();
+  const enabled = formData.get("enabled") === "1";
+  await setWatchlistEnabled(enabled, me);
+  await logAdminEvent(me, "watch.switch", { detail: enabled ? "on" : "off" });
+  refresh();
+  return { message: enabled ? "Watchlist on. Matching books are flagged and their borrowers become persons of interest." : "Watchlist off. Nothing is flagged." };
+}
+
+const watchTermSchema = z.object({
+  term: z.string().trim().min(2, "Use at least 2 characters.").max(80, "Keep keywords under 80 characters."),
+  reason: z.string().trim().min(3, "Say why this keyword is watched.").max(500),
+});
+
+export async function addWatchTermAction(_prev, formData) {
+  const me = await requireAdmin();
+  const parsed = watchTermSchema.safeParse({ term: formData.get("term") ?? "", reason: formData.get("reason") ?? "" });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const id = await addWatchTerm(parsed.data.term, parsed.data.reason, me);
+  if (!id) return { error: "That keyword is already on the watchlist." };
+  await logAdminEvent(me, "watch.add", { detail: `${parsed.data.term}: ${parsed.data.reason}` });
+  refresh();
+  return { message: `Watching "${parsed.data.term}".` };
+}
+
+export async function toggleWatchTermAction(_prev, formData) {
+  const me = await requireAdmin();
+  const id = idSchema.safeParse(formData.get("id"));
+  if (!id.success) return { error: "Invalid keyword." };
+  const row = await toggleWatchTerm(id.data);
+  if (!row) return { error: "Keyword not found." };
+  await logAdminEvent(me, "watch.toggle", { detail: `${row.term}: ${row.active ? "on" : "off"}` });
+  refresh();
+  return {};
+}
+
+export async function deleteWatchTermAction(_prev, formData) {
+  const me = await requireAdmin();
+  const id = idSchema.safeParse(formData.get("id"));
+  if (!id.success) return { error: "Invalid keyword." };
+  const row = await deleteWatchTerm(id.data);
+  if (!row) return { error: "Keyword not found." };
+  await logAdminEvent(me, "watch.remove", { detail: row.term });
+  refresh();
+  return {};
 }

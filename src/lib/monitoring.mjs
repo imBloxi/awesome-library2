@@ -57,6 +57,12 @@ export const RULES = [
     return { id: "capacity", label: "At the limit", points: 5, evidence: `holding all ${MAX_ACTIVE} reservations` };
   },
   (s) => {
+    const k = n(s.watched_books);
+    if (!k) return null;
+    const titles = Array.isArray(s.watched_titles) && s.watched_titles.length ? `: ${s.watched_titles.join(", ")}` : "";
+    return { id: "watched", label: "Person of interest", points: Math.min(30, 15 * k), evidence: `${plural(k, "title")} on the library watchlist in 180 days${titles}` };
+  },
+  (s) => {
     const k = n(s.prior_180);
     if (!k) return null;
     return { id: "history", label: "Recent staff action", points: Math.min(20, k * 10), evidence: `${plural(k, "warning or restriction", "warnings or restrictions")} in 180 days` };

@@ -1,6 +1,7 @@
 // Member monitoring signals, computed from circulation and moderation records in one pass.
 // No Next or driver imports, so tests run this exact statement on Postgres.
 import { LOAN_DAYS } from "../constants.js";
+import { watchHitsCte } from "./watch-sql.mjs";
 
 const DUE = `(r.picked_up_at + interval '${LOAN_DAYS} days' * (1 + r.renewals))`;
 
@@ -8,7 +9,11 @@ const DUE = `(r.picked_up_at + interval '${LOAN_DAYS} days' * (1 + r.renewals))`
 // Every count is over a stated window so a member's record recovers with time.
 export function signalsQuery({ single = false } = {}) {
   const only = (col) => (single ? `where ${col}::text = $1::text` : "");
-  return `with
+  return `with ${watchHitsCte(single ? "$1::text" : "")},
+    watched as (
+      select h.user_id, count(distinct h.book_id)::int as watched_books, (array_agg(distinct h.title))[1:3] as watched_titles
+      from hits h group by h.user_id
+    ),
     res as (
       select r.user_id,
         count(*) filter (where r.status = 'picked_up' and r.returned_at is null and ${DUE} < now())::int as overdue_now,
@@ -51,11 +56,13 @@ export function signalsQuery({ single = false } = {}) {
       coalesce(res.lifetime, 0) as lifetime, res.last_activity,
       coalesce(burst.burst_7, 0) as burst_7, coalesce(wl.waiting, 0) as waiting,
       coalesce(moder.prior_180, 0) as prior_180, coalesce(moder.suspended, false) as suspended,
-      coalesce(moder.restricted, false) as restricted
+      coalesce(moder.restricted, false) as restricted,
+      coalesce(watched.watched_books, 0) as watched_books, watched.watched_titles
     from neon_auth."user" u
       left join res on res.user_id = u.id
       left join burst on burst.user_id = u.id
       left join wl on wl.user_id = u.id
       left join moder on moder.user_id = u.id
-    where ${single ? "u.id::text = $1::text" : "res.user_id is not null or wl.user_id is not null or moder.user_id is not null"}`;
+      left join watched on watched.user_id = u.id
+    where ${single ? "u.id::text = $1::text" : "res.user_id is not null or wl.user_id is not null or moder.user_id is not null or watched.user_id is not null"}`;
 }

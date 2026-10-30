@@ -62,6 +62,7 @@ export function ScoringRules() {
         <li><strong>Rapid booking</strong>: 10 points for 5 reservations inside one hour in the last week, 20 for 8 or more.</li>
         <li><strong>Heavy waitlisting</strong>: 5 points when waiting for half the allowed books, 10 at three quarters.</li>
         <li><strong>At the limit</strong>: 5 points when holding all 10 reservations.</li>
+        <li><strong>Person of interest</strong>: 15 points per watched title reserved, borrowed, waited for or saved in 180 days (max 30), while the watchlist is on.</li>
         <li><strong>Recent staff action</strong>: 10 points per warning, restriction or suspension in 180 days (max 20).</li>
       </ul>
       <p className="mt-3 text-sm text-muted">Score is capped at 100. Watch from 20, needs review from 45. Scores never act on their own; only staff pause or suspend accounts, and the member sees every reason.</p>
