@@ -7,6 +7,7 @@ import { getUser } from "@/lib/dal";
 import { BookCover } from "@/components/book-cover";
 import { CoverShelf } from "@/components/book-table";
 import { ReserveBox } from "@/components/reserve-box";
+import { ContinueReading, RandomEditionButton } from "@/components/reader-frame";
 import { Skeleton, TopPickBadge } from "@/components/ui";
 
 export default function BookPage({ params }) {
@@ -71,6 +72,17 @@ async function BookDetails({ params }) {
               {babelPassage(book.title, book.id, book.description).map((paragraph, i) => <p key={i}>{paragraph}</p>)}
             </div>
           </details>
+          <section aria-labelledby="babel-editions" className="max-w-prose rounded-lg border border-line p-4">
+            <h2 id="babel-editions" className="text-sm font-medium">Babel Editions</h2>
+            <p className="mt-1 text-sm text-muted">
+              Imagined versions of this book, ten short chapters each, written by our story generator. Every edition is different.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Link href={`/books/${book.id}/read/1`} className="btn btn-sm">Read a Babel Edition</Link>
+              <RandomEditionButton basePath={`/books/${book.id}/read`} label="Roll a random edition" className="btn btn-sm" />
+              <ContinueReading bookKey={`book-${book.id}`} />
+            </div>
+          </section>
         </div>
       </article>
 

@@ -42,6 +42,7 @@ export default function RootLayout({ children }) {
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
             <Link href="/" className="text-lg font-semibold tracking-tight">Library</Link>
             <nav aria-label="Main" className="flex flex-wrap items-center gap-1">
+              <Link href="/babel" className="btn btn-ghost btn-sm">Babel</Link>
               <Suspense fallback={<span className="h-8 w-32" />}>
                 <UserNav />
               </Suspense>

@@ -263,6 +263,137 @@
     }
   }
 
+  /* Babel reader. Themes only apply inside the reading surface; the site stays white. */
+  .reader {
+    --reader-bg: #ffffff;
+    --reader-ink: #1a1a1a;
+    --reader-muted: #6b6b6b;
+    --reader-line: #e8e8e8;
+    --reader-size: 1.125rem;
+    --reader-font: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    margin-inline: auto;
+    max-width: 42rem;
+    padding: 1.25rem 1rem 3rem;
+    border-radius: 12px;
+    background: var(--reader-bg);
+    color: var(--reader-ink);
+    transition: background-color 150ms, color 150ms;
+  }
+  @media (min-width: 640px) {
+    .reader {
+      padding: 1.5rem 2.5rem 3.5rem;
+    }
+  }
+  .reader[data-theme="sepia"] {
+    --reader-bg: #f6efe0;
+    --reader-ink: #3b2f22;
+    --reader-muted: #806d55;
+    --reader-line: #e3d6bd;
+  }
+  .reader[data-theme="dark"] {
+    --reader-bg: #1b1a18;
+    --reader-ink: #e6e0d4;
+    --reader-muted: #9a9286;
+    --reader-line: #34312c;
+  }
+  .reader[data-size="s"] { --reader-size: 1rem; }
+  .reader[data-size="l"] { --reader-size: 1.3rem; }
+  .reader[data-font="sans"] { --reader-font: var(--font-sans); }
+  .reader .eyebrow { color: var(--reader-muted); }
+  .reader .btn { background: transparent; color: var(--reader-ink); border-color: var(--reader-line); }
+  .reader .btn-primary { background: var(--reader-ink); color: var(--reader-bg); border-color: var(--reader-ink); }
+
+  .reader-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  .reader-toggle {
+    display: inline-flex;
+    overflow: hidden;
+    border: 1px solid var(--reader-line);
+    border-radius: 8px;
+  }
+  .reader-toggle button {
+    min-width: 2.5rem;
+    padding: 0.3rem 0.6rem;
+    color: var(--reader-muted);
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  .reader-toggle button + button { border-left: 1px solid var(--reader-line); }
+  .reader-toggle button[aria-pressed="true"] { background: var(--reader-line); color: var(--reader-ink); }
+
+  .reader-title { margin-bottom: 2rem; text-align: center; }
+  .reader-title h1 {
+    margin-top: 0.5rem;
+    font-family: var(--reader-font);
+    font-size: clamp(1.9rem, 6vw, 2.75rem);
+    line-height: 1.12;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+  .reader-byline { margin-top: 0.5rem; color: var(--reader-muted); }
+  .reader-dedication { margin-top: 1.5rem; color: var(--reader-muted); font-family: var(--reader-font); font-style: italic; }
+  .reader-back-cover {
+    margin-bottom: 2rem;
+    padding: 1rem 1.25rem;
+    border-left: 3px solid var(--reader-line);
+    font-family: var(--reader-font);
+    line-height: 1.65;
+  }
+  .reader-back-cover p + p { margin-top: 0.75rem; }
+  .reader-contents { counter-reset: none; font-family: var(--reader-font); }
+  .reader-contents a {
+    display: flex;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--reader-line);
+  }
+  .reader-contents a:hover { text-decoration: underline; }
+  .reader-contents span { min-width: 1.5rem; color: var(--reader-muted); font-variant-numeric: tabular-nums; }
+  .reader-note { margin-top: 2rem; color: var(--reader-muted); font-size: 0.8125rem; line-height: 1.5; }
+
+  .reader-chapter {
+    margin-top: 1rem;
+    font-family: var(--reader-font);
+    font-size: var(--reader-size);
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+  }
+  .reader-chapter h1 {
+    margin: 0 0 2rem;
+    font-size: 1.75em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  .reader-chapter-number {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--reader-muted);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .reader-chapter p { margin-bottom: 1.1em; }
+  .reader-chapter p + p { text-indent: 1.5em; }
+  .reader-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--reader-line);
+    color: var(--reader-muted);
+    font-size: 0.875rem;
+  }
+  .reader-end { margin-top: 2rem; text-align: center; font-family: var(--reader-font); font-style: italic; }
+
   /* Live search: old results stay readable but dimmed until the new ones land. */
   .search-form[data-pending] ~ * {
     opacity: 0.55;
