@@ -6,6 +6,7 @@ const place = (firsts, lasts) => ({ firsts, lasts });
 
 export const WORLDS = {
   sea: {
+    atmosphere: ["a steady wind pressed in from the water", "clouds moved slowly above the harbor", "a salt breeze found its way through every gap", "the air carried the chill of open water", "wind rattled something loose nearby", "a low haze softened the horizon"],
     homeKind: "harbor town", awayKind: "the outer islands", passKind: "the strait",
     home: place(["Gull", "Salt", "Grey", "Low", "Tarn", "Kittle"], ["haven", "mouth", "wick", "sound", "holm"]),
     away: place(["Skerry", "Far", "Hollow", "Seal", "Wren"], [" Isle", " Rock", " Reach", " Banks"]),
@@ -23,6 +24,7 @@ export const WORLDS = {
     seasons: ["late autumn", "the herring season", "the first week of spring tides"],
   },
   wild: {
+    atmosphere: ["air moved softly through the branches", "the trees stirred in a restless wind", "light filtered through the canopy in shifting patches", "the air held the dampness of deep shade", "a branch creaked somewhere overhead", "the wind carried the smell of earth"],
     homeKind: "village at the forest edge", awayKind: "the old wood", passKind: "the ridge",
     home: place(["Ash", "Fern", "Bram", "Lind", "Mos", "Elder"], ["ford", "stead", "ley", "dale", "wood"]),
     away: place(["Black", "Thorn", "Owl", "Deep", "Hollow"], ["mere", " Wood", " Clearing", "glen"]),
@@ -40,6 +42,7 @@ export const WORLDS = {
     seasons: ["the end of summer", "the first frost", "the long wet spring"],
   },
   desert: {
+    atmosphere: ["wind drew thin lines in the sand", "dust clung to every exposed surface", "the dry air made each distant sound seem close", "light caught in the smallest grains of sand", "a loose shutter tapped against its frame", "the wind pressed fine grit into the doorframe"],
     homeKind: "oasis town", awayKind: "the deep sands", passKind: "the salt flats",
     home: place(["Qal", "Sar", "Ama", "Tel", "Zir", "Hesh"], ["ab", "eth", "ira", "un", "esh"]),
     away: place(["Red", "Bone", "Glass", "Hollow", "Dry"], [" Wells", " Basin", " Dunes", " Mesa"]),
@@ -57,6 +60,7 @@ export const WORLDS = {
     seasons: ["the end of the dry months", "the season of the short rains", "the festival of the wells"],
   },
   stars: {
+    atmosphere: ["recycled air whispered through the vents", "a low vibration passed through the deck", "a distant sun caught the edge of a viewport", "the black beyond the glass seemed unusually close", "the ventilation fans changed pitch", "a relay clicked inside the wall"],
     homeKind: "mining station", awayKind: "the far relay", passKind: "the transfer orbit",
     home: place(["Vesta", "Kepler", "Halden", "Orin", "Tamsin"], [" Station", " Ring", " Deep", " Yard"]),
     away: place(["Outer", "Cold", "Last", "Silent", "Dark"], [" Relay", " Beacon", " Moon", " Array"]),
@@ -64,7 +68,7 @@ export const WORLDS = {
     trades: ["hull welder", "signal analyst", "hydroponics tech", "navigator", "shuttle mechanic"],
     rivalRoles: ["the station administrator", "a company auditor", "the convoy captain", "the chief of security"],
     elderRoles: ["a retired pilot", "the station's oldest engineer", "an archivist who remembered Earth"],
-    objects: [["a corrupted flight recorder", "the recorder"], ["a hand-written star chart", "the chart"], ["a cracked data key", "the key"], ["an unlogged message on an old frequency", "the message"]],
+    objects: [["a corrupted flight recorder", "the recorder"], ["a hand-written star chart", "the chart"], ["a cracked data key", "the key"], ["a printout of an unlogged message", "the printout"]],
     secrets: ["a signal the company had been erasing for years", "why the first relay crew never came home", "an orbit no navigator was allowed to plot", "how much air the station really had left"],
     wants: ["to earn a berth on the next ship out", "to decode the signal before the company erased it", "to see a sky with weather in it"],
     flaws: ["trusted machines more than people", "followed procedure past the point of sense", "kept quiet when it mattered most"],
@@ -74,6 +78,7 @@ export const WORLDS = {
     seasons: ["the last week of the contract cycle", "the long eclipse", "the shift change before the audit"],
   },
   time: {
+    atmosphere: ["light lay pale on the clock faces", "the air carried a trace of machine oil", "a draft moved the corner of a loose page", "the glass trembled faintly in its frame", "a bell sounded somewhere beyond the walls", "the wind brought a distant whistle"],
     homeKind: "clockmaker's town", awayKind: "the old capital", passKind: "the border crossing",
     home: place(["Horl", "Tick", "Brass", "Vell", "Sand"], ["burg", "hall", "gate", "ton", "mark"]),
     away: place(["Old", "Winter", "Crown", "Iron", "Grey"], [" Capital", "chester", " Court", " Archive"]),
@@ -91,6 +96,7 @@ export const WORLDS = {
     seasons: ["the week before the centenary", "midwinter", "the last days of the old calendar"],
   },
   family: {
+    atmosphere: ["clouds moved slowly above the fields", "a loose latch tapped in the breeze", "the air carried the smell of turned earth", "wind stirred the curtain at an open window", "the light shifted across the worn floor", "a draft slipped beneath the door"],
     homeKind: "family farmhouse", awayKind: "the city", passKind: "the long road",
     home: place(["Lauk", "Birz", "Rud", "Ozol", "Kalna", "Mežu"], ["mājas", "kalns", "lejas", "muiža", "ciems"]),
     away: place(["River", "North", "Harbor", "East", "Market"], [" City", "port", " Quarter", "side"]),
@@ -108,6 +114,7 @@ export const WORLDS = {
     seasons: ["the week of the funeral", "the harvest", "the long summer holidays"],
   },
   city: {
+    atmosphere: ["a breeze carried the river smell between the buildings", "a tram rattled somewhere beyond the window", "clouds made a moving pattern on the brickwork", "wind worried a loose sheet of newsprint", "the air held the dampness of the river", "a faraway engine kept starting and stopping"],
     homeKind: "riverside district", awayKind: "the old quarter", passKind: "the night trams",
     home: place(["Canal", "Market", "Lantern", "Ferry", "Copper"], [" Street", " Row", " Lane", " Yard"]),
     away: place(["Old", "Saint", "High", "Blind", "Iron"], [" Quarter", " Hill", " Arches", " Docks"]),
@@ -125,10 +132,11 @@ export const WORLDS = {
     seasons: ["election week", "the wettest November on record", "the summer of the strikes"],
   },
   inquiry: {
+    atmosphere: ["light lay in narrow bars across the floor", "a draft stirred the edge of a page", "distant footsteps carried through the building", "the air held a faint smell of chalk", "a window rattled softly in its frame", "light caught the scratches on the glass"],
     homeKind: "university town", awayKind: "the observatory", passKind: "the examination",
     home: place(["Aster", "Quill", "Larch", "Meri", "Fenn"], ["ford", "bridge", "minster", "ham", "field"]),
     away: place(["Kell", "High", "North", "Clear", "Saint"], [" Observatory", " Library", " Institute", " Hall"]),
-    pass: ["the qualifying examination", "the night of the lecture", "the long winter term", "the review board"],
+    pass: ["the last train", "the valley line", "the north platform", "the river crossing"],
     trades: ["student of geometry", "laboratory assistant", "junior lecturer", "translator of old mathematics", "instrument maker"],
     rivalRoles: ["the head of department", "a celebrated professor", "a fellow student", "the journal's editor"],
     elderRoles: ["a retired professor", "the librarian of the rare books room", "a schoolteacher who first saw {H.poss} talent"],
@@ -142,6 +150,7 @@ export const WORLDS = {
     seasons: ["the winter term", "the week of examinations", "the long vacation"],
   },
   literary: {
+    atmosphere: ["the air in the reading room was cool and still", "a draft carried the smell of old paper", "light rested on the edges of the shelves", "a loose page stirred beneath an open window", "a floorboard creaked beyond the door", "dust hung motionless in a patch of light"],
     homeKind: "town with too many bookshops", awayKind: "the great library", passKind: "the reading room doors",
     home: place(["Vell", "Page", "Inkle", "Rook", "Folio"], ["ham", "bury", "wick", "ton", "cross"]),
     away: place(["Grand", "Hidden", "Lower", "Sunken", "Round"], [" Library", " Stacks", " Archive", " Reading Room"]),

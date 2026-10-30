@@ -9,6 +9,7 @@ Book search and reservations on Next.js 16, Neon Postgres and Neon Auth.
 - **Users:** register, sign in, search (filter by available now and publication year), reserve (max 10 active), return, cancel or delete reservations.
 - **Home page:** "This week's top books" above the catalog, on the unfiltered first page.
 - **Babel back covers:** read an imagined jacket blurb grounded in the book's title and description, with its premise, thematic stakes and an open hook. The same metadata opens the same copy; editions sharing a title can differ. Generation is local and needs no AI service. Missing descriptions use title-led copy.
+- **Babel Editions:** ten short chapters of original imagined fiction, with planned discoveries and endings, a book-style reader, appearance settings, chapter resume and a self-contained offline download. Existing links keep working as the writing improves.
 - **Admins** (`/admin`):
   - Books: add, edit, delete and restore, see who currently holds a copy, export to CSV. Tick **Top pick this week** to feature a book on the home page for 7 days (newest 6 show; see `TOP_PICK_DAYS` in `src/lib/queries/search-sql.mjs`).
   - Reservations: paginated priority queues, exact pickup and return deadlines in UTC, member filters, pickup/return/extend/cancel actions, and CSV export (up to 50,000 newest records).

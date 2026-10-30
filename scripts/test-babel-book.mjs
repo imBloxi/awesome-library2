@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { generateEdition, inventBook, extractNames, chooseWorld, titleCase, MAX_EDITION } from "../src/lib/babel-book/index.mjs";
-import { NAMES } from "../src/lib/babel-book/worlds.mjs";
+import { generateEdition, inventBook, extractNames, chooseWorld, titleCase, buildBible, MAX_EDITION } from "../src/lib/babel-book/index.mjs";
+import { STRUCTURES } from "../src/lib/babel-book/beats.mjs";
+import { WORLDS, NAMES } from "../src/lib/babel-book/worlds.mjs";
 
 const TITLES = ["The River Winter", "The Glass City", "Desert Stars", "A Guide to Calculus", "Letters of Memory", "The Silent Library", "Star Harbor", "Untitled Thing"];
 const premise = "When Marta returns to Rīga after twenty years, she finds her mother's letters in the attic.";
@@ -116,4 +117,138 @@ test("the offline file escapes everything and names itself safely", async () => 
   assert.equal(editionFileName("📚📚", 1), "book-babel-edition-1.html");
   assert.equal(parseRouteInt("12", 99), 12);
   for (const bad of ["0", "01", "-1", "1e3", "100", "", "abc", "12345678901"]) assert.equal(parseRouteInt(bad, 99), null, bad);
+});
+
+// These exercise events a reader can follow, including all structure/ending branches.
+const forcedEdition = (world, structure, ending, edition = 1) => {
+  const bible = buildBible({ world, seed: `editorial-${world}` });
+  bible.structure = structure;
+  bible.ending = ending;
+  return { bible, edition: generateEdition({ title: `Editorial ${world}`, bookId: world, edition, bible }) };
+};
+
+test("discovery, injury, factual revelation and recovery cannot disappear", () => {
+  for (const world of Object.keys(WORLDS)) {
+    for (const structure of Object.keys(STRUCTURES)) {
+      for (const ending of ["kept", "given", "released"]) {
+        const { bible, edition } = forcedEdition(world, structure, ending);
+        const chapters = edition.chapters.map((c) => c.paragraphs.join("\n"));
+        const discovery = STRUCTURES[structure].indexOf("discovery");
+        assert.doesNotMatch(chapters.slice(0, discovery).join("\n"), new RegExp(bible.slots.objS), `${world}/${structure}: object before discovery`);
+        assert.match(chapters[discovery], new RegExp(`${bible.cast.H.name} found`), "hero finds the object as the premise promises");
+        const loss = STRUCTURES[structure].indexOf("loss");
+        assert.match(chapters[loss], new RegExp(`${bible.cast.A.name} was hurt`), "injury precedes healing");
+        assert.doesNotMatch(chapters.slice(loss, -2).join("\n"), /(?:carried|went over|kept checking|turned) the (?:seeds|letters|key|proof|map|notebook|book)/, "stolen object is unavailable");
+        const midpoint = STRUCTURES[structure].indexOf("midpoint");
+        assert.ok(bible.slots.truth?.length > 30, `${world}: concrete resolution in the story bible`);
+        const truth = bible.slots.truth.replace(/\{R\}/g, bible.cast.R.name);
+        assert.ok(chapters[midpoint].includes(truth), "revelation states the factual resolution");
+        assert.ok(chapters.at(-2).includes(truth), "confrontation discusses the same fact");
+        assert.match(chapters.at(-2), /recovered/, "explicit recovery before every ending");
+      }
+    }
+  }
+});
+
+test("story texture follows the current place and a homecoming stays at home", () => {
+  for (const structure of Object.keys(STRUCTURES)) {
+    for (let edition = 1; edition <= 20; edition++) {
+      const { bible, edition: e } = forcedEdition("sea", structure, "given", edition);
+      const beats = STRUCTURES[structure];
+      const threshold = beats.indexOf("threshold");
+      if (threshold >= 0) {
+        const awayText = e.chapters.slice(threshold + 1, -1).flatMap(c => c.paragraphs).join("\n");
+        assert.doesNotMatch(awayText, new RegExp(`At the edge of ${bible.slots.home}|Every harbor town has its hour`));
+      } else {
+        assert.doesNotMatch(allText(e), /the last evening in|the worst time to leave|packed what/);
+        assert.doesNotMatch(allText(e), new RegExp(`everything that went wrong in ${bible.slots.away}`));
+      }
+    }
+  }
+});
+
+test("plural objects, vowel trades and season headings read grammatically", () => {
+  for (let seed = 1; seed <= 100; seed++) {
+    const book = inventBook(seed);
+    const e = generateEdition({ ...book, bookId: `invented-${seed}` });
+    const text = `${book.description}\n${allText(e)}`;
+    assert.doesNotMatch(text, /\ba (?:instrument|archivist|old)\b/i);
+    assert.doesNotMatch(text, /does the (?:letters|seeds)\b|(?:letters|seeds)[^.\n]*\. It was older|(?:letters|seeds)[^.\n]*\. By the time[^.\n]*it was gone/);
+    assert.doesNotMatch(text, /\bAn Ordinary the\b|\bthere was (?:gulls|bees|boots|bells|pages)\b|\bcame round again, as it always does\b/);
+    assert.doesNotMatch(text, /Outside,[^.\n]*(?:morning|noon)|long after midnight|snow had buried|summer evening refused/);
+  }
+});
+
+test("sentence-initial people are retained without treating ordinary prose as names", () => {
+  assert.deepEqual(extractNames("Marta returns to Rīga after twenty years. She finds letters."), { people: ["Marta"], places: ["Rīga"] });
+  assert.deepEqual(extractNames("Elizabeth Bennet returns to Pemberley. She keeps a secret."), { people: ["Elizabeth Bennet"], places: ["Pemberley"] });
+  assert.deepEqual(extractNames("Winter comes early. The village waits."), { people: [], places: [] });
+});
+
+test("metadata clipping preserves complete Unicode characters", () => {
+  const e = generateEdition({ title: `x${"📚".repeat(200)}` });
+  assert.ok(e.title.length <= 300);
+  assert.doesNotMatch(e.title, /\p{Cs}/u, "no unpaired surrogate after clipping");
+});
+
+test("chapter atmosphere varies without seasonal or clock contradictions", () => {
+  for (const world of Object.keys(WORLDS)) {
+    const { edition: e } = forcedEdition(world, "crossing", "released");
+    const atmosphere = e.chapters[0].paragraphs[1].split(". ")[0];
+    assert.equal(allText(e).split(atmosphere).length - 1, 1, `${world}: repeated atmospheric sentence`);
+    assert.doesNotMatch(allText(e), /near the end of the week of the funeral|near the end of the week of examinations/);
+  }
+});
+
+test("the science-fiction discovery has a physical carrier", () => {
+  const bible = buildBible({ world: "stars", seed: "review-stars" });
+  bible.structure = "crossing";
+  const e = generateEdition({ title: "Review stars", bible });
+  assert.doesNotMatch(allText(e), /found an unlogged message on an old frequency, wedged|turned the message over in/);
+});
+
+test("kept plural objects and callbacks retain agreement through the epilogue", () => {
+  const book = inventBook(2);
+  book.bible.ending = "kept";
+  const e = generateEdition({ ...book, bookId: "plural-kept" });
+  const final = e.chapters.at(-1).paragraphs.join("\n");
+  assert.doesNotMatch(final, /letters and turned it over|\. It (?:did|only)/);
+  assert.doesNotMatch(allText(e), /the letters was taken|the seeds was taken/);
+});
+
+test("vowel occupations and place kinds agree in returning stories and dedications", () => {
+  for (let seed = 1; seed <= 20; seed++) {
+    const bible = buildBible({ world: "time", seed: String(seed) });
+    bible.structure = "return";
+    const e = generateEdition({ title: "The Archive", edition: seed, bible });
+    assert.doesNotMatch(`${e.dedication}\n${allText(e)}`, /\ba archivist\b/);
+    const desert = forcedEdition("desert", "return", "kept", seed).edition;
+    assert.doesNotMatch(desert.dedication, /\ba oasis town\b/);
+  }
+});
+
+test("a caller can select another known mystery without a stale factual answer", () => {
+  const bible = buildBible({ world: "sea", seed: "editable-bible" });
+  const firstSecret = bible.slots.secret;
+  bible.slots.secret = WORLDS.sea.secrets.find(secret => secret !== firstSecret);
+  const e = generateEdition({ title: "Changed question", bible });
+  const reveal = e.chapters[STRUCTURES[bible.structure].indexOf("midpoint")].paragraphs[0];
+  assert.ok(!reveal.includes(bible.slots.truth.replace(/\{R\}/g, bible.cast.R.name)), "known question updates its factual answer");
+});
+
+test("plural objects retain agreement during crossings and discovery dialogue", () => {
+  let pluralQuestions = 0;
+  let pluralReflections = 0;
+  for (const [world, objS] of [["family", "the letters"], ["wild", "the seeds"]]) {
+    for (let edition = 1; edition <= 30; edition++) {
+      const bible = buildBible({ world, seed: `plural-dialogue-${edition}` });
+      bible.structure = "crossing";
+      [bible.slots.obj, bible.slots.objS] = WORLDS[world].objects.find(object => object[1] === objS);
+      const text = allText(generateEdition({ title: "A Plural Discovery", edition, bible }));
+      assert.equal(text.match(/the (?:seeds|letters) was safe|Why did you keep it\?|left it where it was|what to do with it now/)?.[0] ?? null, null, "no singular agreement for plural objects");
+      if (text.includes("Why did you keep them?")) pluralQuestions++;
+      if (text.includes("left them where they were")) pluralReflections++;
+    }
+  }
+  assert.ok(pluralQuestions > 0 && pluralReflections > 0, "both plural dialogue forms were exercised");
 });

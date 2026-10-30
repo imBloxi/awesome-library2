@@ -18,6 +18,7 @@ export async function catalogEdition(id, edition) {
     byline: `Imagined from “${book.title}” by ${book.author}`,
     backCover: babelPassage(book.title, book.id, book.description),
     rollPath: `/books/${book.id}/read`,
+    cover: { id: book.id, title: book.title, author: book.author },
     edition: generateEdition({ title: book.title, description: book.description, bookId: book.id, edition: n }),
   };
 }

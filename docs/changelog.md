@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-30: Better Babel writing and reading
+
+- Mandatory discoveries, injuries, revelations and recoveries now stay in order. Supporting scenes respect the current location and whether the object has been discovered or stolen.
+- Added 36 factual mystery resolutions, improved articles/plural agreement, varied compatible atmosphere, initial-name extraction and safe Unicode clipping.
+- Reworked the reader with a book-jacket title page, reading estimates, upfront original-story notice, compact appearance/contents controls, chapter-position indicator and title-aware navigation.
+- Resume links now work on catalog and invented edition contents. Saved settings and chapter URLs are validated; shortcuts no longer hijack reader controls or selected text.
+- Paper, sepia and dark themes have readable hover/focus states and larger touch targets. Offline files include a named contents navigation and return links without adding scripts or network requests.
+
 ## 2026-10-30: Instant UI, Babel Editions, waitlists and admin tools
 
 **Faster**

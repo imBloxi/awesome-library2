@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MAX_EDITION } from "@/lib/babel-book/limits.mjs";
+import { READER_DEFAULTS, normalizeReaderPrefs, normalizeReadingPosition, chapterDirection } from "@/lib/reader-state.mjs";
 
 const PREFS_KEY = "babel:prefs";
-const DEFAULTS = { size: "m", font: "serif", theme: "light" };
 const OPTIONS = {
   size: [["s", "A−", "Smaller text"], ["m", "A", "Normal text"], ["l", "A+", "Larger text"]],
   font: [["serif", "Serif", "Serif font"], ["sans", "Sans", "Sans-serif font"]],
@@ -31,25 +31,31 @@ export const lastReadKey = (bookKey) => `babel:last:${bookKey}`;
 
 // The reading surface: text settings remembered on this device, the current place saved
 // for "Continue reading", and ←/→ to turn chapters.
-export function ReaderFrame({ bookKey, position, prevHref, nextHref, children }) {
+export function ReaderFrame({ bookKey, basePath, chapterCount = 10, label = "Reading room", position, prevHref, nextHref, children }) {
   const router = useRouter();
-  const [prefs, setPrefs] = useState(DEFAULTS);
+  const [prefs, setPrefs] = useState(READER_DEFAULTS);
 
   useEffect(() => {
     // Read after mount so server and client render the same first frame.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPrefs({ ...DEFAULTS, ...load(PREFS_KEY, {}) });
+    setPrefs(normalizeReaderPrefs(load(PREFS_KEY, {})));
   }, []);
 
   useEffect(() => {
-    if (position) save(lastReadKey(bookKey), position);
-  }, [bookKey, position]);
+    const valid = normalizeReadingPosition(bookKey, position, { basePath, chapterCount });
+    if (valid) save(lastReadKey(bookKey), valid);
+  }, [bookKey, basePath, chapterCount, position]);
 
   useEffect(() => {
     function onKey(e) {
-      if (e.altKey || e.ctrlKey || e.metaKey || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
-      if (e.key === "ArrowLeft" && prevHref) router.push(prevHref);
-      if (e.key === "ArrowRight" && nextHref) router.push(nextHref);
+      const interactive = e.target.isContentEditable || Boolean(e.target.closest?.(
+        "input, textarea, select, button, a, summary, [role='button'], [role='slider'], [role='tab'], [role='textbox'], [role='combobox']"
+      ));
+      const direction = chapterDirection(e, { interactive, selection: Boolean(window.getSelection()?.toString()) });
+      const href = direction < 0 ? prevHref : direction > 0 ? nextHref : null;
+      if (!href) return;
+      e.preventDefault();
+      router.push(href);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -63,16 +69,25 @@ export function ReaderFrame({ bookKey, position, prevHref, nextHref, children })
 
   return (
     <div className="reader" data-size={prefs.size} data-font={prefs.font} data-theme={prefs.theme}>
-      <div role="toolbar" aria-label="Reading settings" className="reader-toolbar">
-        {Object.entries(OPTIONS).map(([name, options]) => (
-          <div key={name} className="reader-toggle" role="group" aria-label={name}>
-            {options.map(([value, label, title]) => (
-              <button key={value} type="button" title={title} aria-pressed={prefs[name] === value} onClick={() => set(name, value)}>
-                {label}
-              </button>
+      <div className="reader-toolbar">
+        <p className="reader-toolbar-label">{label}</p>
+        <details className="reader-settings">
+          <summary><span aria-hidden="true">Aa</span> Appearance</summary>
+          <div className="reader-settings-panel">
+            {Object.entries(OPTIONS).map(([name, options]) => (
+              <fieldset key={name} className="reader-setting">
+                <legend className="reader-setting-label">{name === "size" ? "Text size" : name === "font" ? "Typeface" : "Page color"}</legend>
+                <div className="reader-toggle">
+                  {options.map(([value, text, title]) => (
+                    <button key={value} type="button" title={title} aria-label={title} aria-pressed={prefs[name] === value} onClick={() => set(name, value)}>
+                      {text}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
             ))}
           </div>
-        ))}
+        </details>
       </div>
       {children}
     </div>
@@ -98,12 +113,24 @@ export function ContinueReading({ bookKey }) {
   const [last, setLast] = useState(null);
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLast(load(lastReadKey(bookKey), null));
+    setLast(normalizeReadingPosition(bookKey, load(lastReadKey(bookKey), null)));
   }, [bookKey]);
-  if (!last?.href || typeof last.href !== "string" || !/^\/(?![/\\])/.test(last.href)) return null;
+  const current = normalizeReadingPosition(bookKey, last);
+  if (!current) return null;
   return (
-    <Link href={last.href} className="link text-sm">
-      Continue reading: edition {Number(last.edition) || 1}, chapter {Number(last.chapter) || 1}
+    <Link href={current.href} className="link text-sm">
+      Continue reading: edition {current.edition}, chapter {current.chapter}
     </Link>
   );
+}
+
+export function ReaderResume({ bookKey, basePath, chapterCount }) {
+  const [last, setLast] = useState(null);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLast(normalizeReadingPosition(bookKey, load(lastReadKey(bookKey), null), { basePath, chapterCount }));
+  }, [bookKey, basePath, chapterCount]);
+  const current = normalizeReadingPosition(bookKey, last, { basePath, chapterCount });
+  if (!current) return null;
+  return <Link href={current.href} className="btn btn-primary">Continue chapter {current.chapter}</Link>;
 }

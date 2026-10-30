@@ -47,10 +47,13 @@ Click a title to open `/books/<id>`:
 ## Babel Editions
 
 - **Read a Babel Edition** opens edition 1; **Roll a random edition** opens another. Each edition has its own characters and plot, built from the book's title and description, about 2,500 words in ten chapters. The same edition number always reads the same, so you can share the link.
-- In the reader: **←/→** turn chapters; **A− A A+**, **Serif/Sans** and **Light/Sepia/Dark** change the page and are remembered on this device; the book page offers **Continue reading** where you left off.
-- **Download for offline** saves one HTML file you can open anywhere.
+- The title page shows the cover, estimated reading time and an upfront original-story note. **Start from chapter 1** begins a book; **Continue chapter N** returns to the last chapter opened in that edition on this device. Catalog book pages also keep their **Continue reading** link.
+- Open **Appearance** for text size, Serif/Sans and Light/Sepia/Dark. Choices are remembered on this device; reading still works when storage is blocked.
+- Open **Contents** to jump chapters. Chapter pages show your chapter position, a short reading estimate, and the titles of the previous/next chapters. **←/→** turn chapters when you are reading; they leave buttons, links, editable fields and selected text alone.
+- **Download for offline** saves a self-contained HTML file, with its own contents and a return link after every chapter. It uses no scripts or external resources.
 - **Babel** in the header (`/babel`) invents whole books that don't exist, from a number.
 - These are original stories, not the real books.
+- Stories use planned discoveries, consequences and endings. The same metadata and edition number repeat within the current generator version; writing improvements can update editions at existing links. Names and themes are drawn from limited metadata patterns, so an imagined edition is not a full adaptation of the published book.
 
 ## Your account
 

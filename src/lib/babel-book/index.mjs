@@ -10,7 +10,7 @@
 //   {H.subj} {H.obj} {H.poss} {H.self} {H.was} {H.has}   pronouns; {H.Subj} capitalizes
 //   {home} {away} {pass} {homeKind} {awayKind} {obj} {objS} {secret} {want} {flaw}
 //   {threat} {travel} {vessel} {season} {trade}
-//   {sense} {weather}          a fresh detail each time, without repeats until all are used
+//   {sense} {weather}          fresh compatible details, without repeats until all are used
 //   {cb}                       a callback to something that happened in an earlier chapter
 //   A capital first letter on any slot ({Weather}, {ObjS}) capitalizes the result.
 
@@ -18,12 +18,13 @@ import { BABEL_THEMES } from "../babel-themes.mjs";
 import { makeRandom } from "./random.mjs";
 import { WORLDS, THEME_WORLD, NAMES, SURNAMES, PRONOUNS } from "./worlds.mjs";
 import { STRUCTURES, BEATS, CALLBACKS, INTERLUDES, DIALOGUES, SCENES } from "./beats.mjs";
+import { WORLD_RESOLUTIONS } from "./resolutions.mjs";
 
 import { MAX_EDITION, MAX_INVENTED_SEED } from "./limits.mjs";
 export { MAX_EDITION, MAX_INVENTED_SEED };
 
 const clean = (value, limit) =>
-  typeof value === "string" ? value.normalize("NFKC").replace(/\p{Cc}/gu, " ").replace(/\s+/g, " ").trim().slice(0, limit) : "";
+  typeof value === "string" ? value.normalize("NFKC").replace(/\p{Cc}/gu, " ").replace(/\s+/g, " ").trim().slice(0, limit).replace(/[\uD800-\uDBFF]$/u, "") : "";
 const capitalize = (text) => text.replace(/^([\s“"'(]*)(\p{Ll})/u, (_, lead, ch) => lead + ch.toUpperCase());
 const SMALL = new Set(["a", "an", "the", "of", "in", "on", "at", "to", "for", "and", "or", "but", "by", "from"]);
 export const titleCase = (text) =>
@@ -55,14 +56,19 @@ const NOT_NAMES = new Set(["The", "A", "An", "In", "On", "At", "When", "But", "A
 
 // Proper names from the description, so a real premise keeps its people and places.
 // Words after "in/at/to/from/near/across" are taken as places, the rest as people.
-// Sentence-initial words are skipped because they are capitalized anyway.
+// A sentence-initial name is accepted only before a recognizable personal action.
+// This is a conservative hint extractor, not a parser for arbitrary source stories.
 export function extractNames(description, title = "") {
   const titleWords = wordSet(title);
   const people = [];
   const places = [];
   for (const sentence of description.split(/(?<=[.!?])\s+/u)) {
+    const candidate = sentence.match(/^(\p{Lu}[\p{Ll}\p{M}'’-]+(?:\s\p{Lu}[\p{Ll}\p{M}'’-]+)?)\s+(?:returns?|returned|finds?|found|discovers?|discovered|leaves?|left|travels?|traveled|inherits?|inherited|meets?|met|visits?|visited)\b/u);
+    const initial = candidate && !NOT_NAMES.has(candidate[1].split(" ")[0]) && !titleWords.has(candidate[1].toLowerCase()) ? candidate : null;
+    if (initial && !people.includes(initial[1])) people.push(initial[1]);
     const re = /(?<=(\S+)\s)(\p{Lu}[\p{Ll}\p{M}'’-]+(?:\s\p{Lu}[\p{Ll}\p{M}'’-]+)?)/gu;
     for (const match of sentence.matchAll(re)) {
+      if (initial && match.index < initial[1].length) continue;
       const name = match[2];
       const first = name.split(" ")[0];
       if (NOT_NAMES.has(first) || first.length < 3 || name.length > 40 || titleWords.has(first.toLowerCase())) continue;
@@ -123,17 +129,37 @@ export function buildBible({ title = "", description = "", seed, world: forcedWo
   const home = found.places[0] ?? makePlace(rnd, world.home);
   const years = source.match(/\b(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|forty|fifty|\d{1,2})\s+years\b/iu);
   const [obj, objS] = rnd.pick(world.objects);
-  return {
+  return editorialBible({
     world: worldKey,
     structure: worldKey === "inquiry" || worldKey === "city" ? rnd.pick(["mystery", "mystery", "crossing"]) : rnd.pick(Object.keys(STRUCTURES)),
     ending: rnd.pick(["kept", "given", "released"]),
     cast: { H: hero, A: ally, R: rival, E: elder },
     slots: {
       home, away: makePlace(rnd, world.away, home), pass: rnd.pick(world.pass),
-      homeKind: world.homeKind, awayKind: world.awayKind,
+      homeKind: found.places.length ? "place" : world.homeKind, awayKind: world.awayKind,
       obj, objS, secret: rnd.pick(world.secrets), want: rnd.pick(world.wants), flaw: rnd.pick(world.flaws),
       threat: world.threat, travel: world.travel, vessel: world.vessel, season: rnd.pick(world.seasons),
       trade: hero.trade, yearsAway: years ? years[1].toLowerCase() : rnd.pick(["eleven", "nine", "fifteen", "twenty"]),
+    },
+  });
+}
+
+const article = (noun) => /^(?:[aeiou])/iu.test(noun) && !/^university\b/iu.test(noun) ? "an" : "a";
+
+// Derive agreement and resolution slots for newly built and previously supplied bibles.
+// Keep the public bible shape extensible and do not mutate a caller's saved bible.
+function editorialBible(bible) {
+  const world = WORLDS[bible.world];
+  const plural = /^(?:the letters|the seeds)$/u.test(bible.slots.objS);
+  const secretIndex = world.secrets.indexOf(bible.slots.secret);
+  return {
+    ...bible,
+    cast: Object.fromEntries(Object.entries(bible.cast).map(([key, person]) => [key, { ...person, article: article(person.trade ?? "person") }])),
+    slots: {
+      ...bible.slots,
+      objThey: plural ? "they" : "it", objThem: plural ? "them" : "it", objWere: plural ? "were" : "was", objDo: plural ? "do" : "does",
+      homeArticle: article(bible.slots.homeKind),
+      truth: secretIndex >= 0 ? WORLD_RESOLUTIONS[bible.world][secretIndex] : bible.slots.truth ?? "The original record bore {R}'s signature; the version everyone had been shown had been altered.",
     },
   };
 }
@@ -152,7 +178,8 @@ function fill(template, ctx, depth = 0) {
     } else {
       const name = key[0].toLowerCase() + key.slice(1);
       if (name === "sense") value = ctx.rnd.deal("sense", ctx.world.senses);
-      else if (name === "weather") value = ctx.rnd.deal("weather", ctx.world.weather);
+      else if (name === "weather") value = ctx.rnd.deal("atmosphere", ctx.world.atmosphere);
+      else if (name === "place") value = ctx.state.place;
       else if (name === "cb") value = ctx.callbacks.length ? ctx.rnd.pick(ctx.callbacks) : "the beginning of all this";
       else value = ctx.bible.slots[name];
       if (value == null) return whole;
@@ -168,22 +195,36 @@ const paragraph = (template, ctx) => capitalize(fill(template, ctx));
 function realizeChapter(beatKey, index, total, ctx) {
   const beat = BEATS[beatKey];
   const rnd = ctx.rnd;
-  // Keep the beat's paragraphs in order; drop at most one from the middle for variety.
-  let body = beat.paragraphs.map((p) => paragraph(p, ctx));
-  if (body.length > 3 && rnd.chance(0.5)) body.splice(rnd.int(1, body.length - 2), 1);
-  if (beat.endings) body.push(paragraph(beat.endings[ctx.bible.ending], ctx));
-
-  // Texture between story beats: two interludes, and a short conversation in most chapters.
-  // The banks are large enough that a 10-chapter book never repeats one.
-  const extras = [
-    paragraph(rnd.deal("scene", SCENES), ctx),
-    paragraph(rnd.deal("interlude", INTERLUDES), ctx),
-    paragraph(rnd.deal("interlude", INTERLUDES), ctx),
-  ];
-  if (index < total - 1 && rnd.chance(0.8)) {
-    extras.push(rnd.deal("dialogue", DIALOGUES).map((line) => paragraph(line, ctx)).join("\n"));
+  // Core events are mandatory. A coda follows the complete scene, so a quiet
+  // conversation cannot interrupt discovery, an injury, or the confrontation.
+  const templates = beat.variants?.[ctx.bible.structure] ?? beat.paragraphs;
+  const body = templates.map((p) => paragraph(p, ctx));
+  if (beatKey === "discovery") ctx.state.discovered = ctx.state.hasObject = true;
+  if (beatKey === "rival_pressure") ctx.state.metRival = true;
+  if (beatKey === "midpoint") ctx.state.revealed = true;
+  if (beatKey === "threshold") ctx.state.place = ctx.bible.slots.away;
+  if (beatKey === "loss") ctx.state.hasObject = false;
+  if (beatKey === "confrontation") ctx.state.hasObject = true;
+  if (beatKey === "aftermath") {
+    ctx.state.place = ctx.bible.slots.home;
+    ctx.state.finished = true;
+    ctx.state.hasObject = ctx.bible.ending === "kept";
   }
-  for (const extra of extras) body.splice(rnd.int(1, Math.max(1, body.length - (beat.endings ? 1 : 0))), 0, extra);
+
+  const extra = (bank) => {
+    const available = bank.filter((entry) => !ctx.used.has(entry) && (!entry.when || entry.when(ctx.state, ctx.bible)));
+    if (!available.length) return;
+    const entry = rnd.pick(available);
+    ctx.used.add(entry);
+    body.push(...entry.lines.map((line) => paragraph(line, ctx)));
+  };
+  // Endings keep their dramatic focus; texture belongs to the chapters leading in.
+  if (beatKey !== "confrontation" && beatKey !== "aftermath") {
+    extra(SCENES);
+    extra(INTERLUDES);
+    if (index < total - 1 && rnd.chance(0.8)) extra(DIALOGUES);
+  }
+  if (beat.endings) body.push(paragraph(beat.endings[ctx.bible.ending], ctx));
 
   const callback = CALLBACKS[beatKey];
   if (callback) ctx.callbacks.push(fill(rnd.pick(callback), ctx));
@@ -196,8 +237,8 @@ export function generateEdition({ title = "", description = "", bookId = "", edi
   const source = clean(description, 5000);
   const n = Math.min(MAX_EDITION, Math.max(1, Math.trunc(Number(edition)) || 1));
   const seed = `${cleanTitle.toLowerCase()}\0${source.toLowerCase()}\0${String(bookId ?? "").slice(0, 64)}\0${n}`;
-  const story = bible ?? buildBible({ title: cleanTitle, description: source, seed });
-  const ctx = { bible: story, world: WORLDS[story.world], rnd: makeRandom(`text\0${seed}`), callbacks: [] };
+  const story = editorialBible(bible ?? buildBible({ title: cleanTitle, description: source, seed }));
+  const ctx = { bible: story, world: WORLDS[story.world], rnd: makeRandom(`text\0${seed}`), callbacks: [], used: new Set(), state: { place: story.slots.home, discovered: false, hasObject: false, metRival: false, finished: false } };
   const beats = STRUCTURES[story.structure];
   const chapters = beats.map((beat, i) => realizeChapter(beat, i, beats.length, ctx));
   const words = chapters.reduce((sum, c) => sum + c.paragraphs.join(" ").split(/\s+/).length, 0);
@@ -214,9 +255,9 @@ export function generateEdition({ title = "", description = "", bookId = "", edi
 }
 
 const DEDICATIONS = [
-  "For everyone who ever stayed one more year in a {homeKind}.",
+  "For everyone who ever stayed one more year in {homeArticle} {homeKind}.",
   "For the ones who kept the secret, and the ones who didn't.",
-  "For {A}, wherever {A.subj} {A.was} now.",
+  "For {A}, wherever {A.subj} may be.",
   "For anyone who has held a thing that should not exist.",
 ];
 
@@ -232,19 +273,19 @@ export function inventBook(seedNumber) {
   const { home, obj, objS, secret } = bible.slots;
   const noun = titleCase(objS.replace(/^the /, ""));
   const adjectives = ["Silent", "Last", "Hidden", "Winter", "Lost", "Borrowed", "Unfinished", "Quiet", "Salt", "Second"];
-  const title = rnd.pick([
+  const title = capitalize(rnd.pick([
     `The ${rnd.pick(adjectives)} ${noun}`,
     `The ${home} ${noun}`,
     `What the ${noun} Kept`,
-    `A ${noun} for ${H.name}`,
+    `${bible.slots.objDo === "do" ? "" : `${article(noun)} `}${noun} for ${H.name}`,
     `${titleCase(bible.slots.season)} in ${home}`,
-  ]);
+  ]));
   const author = `${rnd.pick([...NAMES.she, ...NAMES.he, ...NAMES.they])} ${rnd.pick(SURNAMES)}`;
   const ctx = { bible, world: WORLDS[world], rnd, callbacks: [] };
   const description = [
-    fill(`In ${home}, {H.full}, a {H.trade}, finds ${obj}.`, ctx),
-    capitalize(fill(`It points toward ${secret}, and ${R.name}, {R.role}, would much rather it stayed buried.`, ctx)),
-    fill(`What does {H} owe the truth, and what does ${objS} owe {H.obj}?`, ctx),
+    fill(`In ${home}, {H.full}, {H.article} {H.trade}, finds ${obj}.`, ctx),
+    capitalize(fill(`The discovery raises a question about ${secret}, and ${R.name}, {R.role}, would much rather it stayed buried.`, ctx)),
+    fill(`What does {H} owe the truth, and what {objDo} ${objS} owe {H.obj}?`, ctx),
   ].join(" ");
   return { seed, title, author, description, bible };
 }

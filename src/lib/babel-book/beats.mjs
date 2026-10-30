@@ -1,6 +1,6 @@
 // Plot structures and prose templates for Babel Editions.
 // A structure is an ordered list of beats; each beat has chapter titles and paragraph
-// templates. Templates are filled by realize.mjs (see the slot list there).
+// templates. Templates are filled by index.mjs (see the slot list there).
 // Rules for writers: past tense, third person, no new named characters, no new places
 // beyond the world's, and nothing that contradicts the story state at that beat.
 
@@ -17,19 +17,19 @@ export const CALLBACKS = {
   threshold: ["the crossing at {pass}", "the first night beyond {pass}"],
   trial: ["the hard days in {away}", "the night {A} kept watch"],
   midpoint: ["what {objS} had finally shown", "the moment the pattern came clear"],
-  loss: ["the night {objS} was taken", "everything that went wrong in {away}"],
+  loss: ["the night {objS} {objWere} taken", "the empty hiding place"],
   witness: ["what {E} had told {H.obj}", "{E}'s kitchen table"],
   memory: ["the summer {H} was twelve", "the last time the family was together"],
   false_lead: ["the wasted week", "the door that opened on nothing"],
-  decision: ["the morning {H} chose to go", "the promise made to {A}"],
+  decision: ["the plan they made together", "the promise made to {A}"],
 };
 
 export const BEATS = {
   open_home: {
-    titles: ["{home}", "An Ordinary {Season}", "The {Trade}"],
+    titles: ["{home}", "Before the Change", "The {Trade}"],
     paragraphs: [
-      "In {home}, where there was always {sense}, {H.full} worked as a {H.trade}. It was steady work, and {H.subj} {H.was} good at it, which was the trouble: nobody in {home} expected anything else of {H.obj}.",
-      "{Weather}. {H} had lived through enough of these days to know their shape: the early start, {sense}, the same faces at the same hour. Most people in a {homeKind} learned to call that peace. {H} had never managed it.",
+      "In {home}, amid {sense}, {H.full} worked as {H.article} {H.trade}. It was steady work, and {H.subj} {H.was} good at it, which was the trouble: nobody in {home} expected anything else of {H.obj}.",
+      "{Weather}. {H} had lived through enough of these days to know their shape: the early start, {sense}, the same faces at the same hour. Most people in {homeArticle} {homeKind} learned to call that peace. {H} had never managed it.",
       "What {H} wanted, and told no one, was {want}. It sat under every ordinary task like a stone under a floorboard, and on the bad days {H.subj} could feel it through {H.poss} shoes.",
       "{A}, who had known {H} since they were children, liked to say that {H} {flaw}. {A} said it fondly, which made it worse, because it was true.",
       "Evenings, {H} walked the long way home past the edge of {home}, where you could see toward {away}, and let {H.self} imagine. It was the kind of habit that looks harmless until the day it isn't.",
@@ -38,8 +38,8 @@ export const BEATS = {
   open_return: {
     titles: ["Coming Back to {home}", "The Road In", "What Was Left"],
     paragraphs: [
-      "{H.full} had not been back to {home} in {yearsAway} years, and the {homeKind} had the decency to look smaller. {Weather}. At the gate there was {sense}, and for a moment {H.subj} {H.was} twelve again and in trouble.",
-      "{H.Subj} had built a life elsewhere as a {H.trade}, a careful life with nothing in it that could be taken away. Coming back felt like walking into a room where everyone had stopped talking.",
+      "{H.full} had not been back to {home} in {yearsAway} years, and the {homeKind} had the decency to look smaller. {Weather}. At the entrance, {H.subj} paused, taking in {sense}, and for a moment {H.subj} {H.was} twelve again and in trouble.",
+      "{H.Subj} had built a life elsewhere as {H.article} {H.trade}, a careful life with nothing in it that could be taken away. Coming back felt like walking into a room where everyone had stopped talking.",
       "{A} was waiting on the step, older and unsurprised. “You took your time,” {A} said, and then held on to {H.obj} for longer than either of them expected.",
       "Under the welcome, the old wish was still there: {want}. {H} had told {H.self} it was gone. It was not gone. It had only been waiting for {H.obj} to come home.",
     ],
@@ -47,11 +47,11 @@ export const BEATS = {
   discovery: {
     titles: ["{ObjS}", "What Turned Up", "A Thing That Should Not Exist"],
     paragraphs: [
-      "It was {A} who found {obj}, wedged where no one would have thought to look, and it was {H} who understood, a beat too late to pretend otherwise, that it changed things.",
-      "{H} turned {objS} over in {H.poss} hands. It was older than it had any right to be, and someone had taken care to keep it hidden. Whatever it pointed toward, it pointed toward {secret}.",
-      "That night {H} could not sleep. Outside there was {sense}, ordinary as ever, and {objS} sat on the table like a question that had learned to wait.",
-      "“Put it back,” {A} said. “Whatever it is, it was fine before you found it.” But {A} was already leaning closer to look.",
-      "In daylight it looked less like an omen and more like what it was: {obj}, a little worn, a little ordinary. But ordinary things are the best hiding places. Everyone in {home} knew that, and everyone forgot it.",
+      "{H} found {obj}, wedged where no one would have thought to look. {A} was there when {H.subj} drew {objThem} out. Neither spoke at first; then {H} understood, a beat too late to pretend otherwise, that it changed things.",
+      "{H} turned {objS} over in {H.poss} hands. {ObjThey} {objWere} older than either of them had expected, and someone had taken care to keep {objThem} hidden. The discovery raised a question about {secret}.",
+      "That night {H} could not sleep. Beyond the room, life continued: {sense}, ordinary as ever, and {objS} sat on the table like a question that had learned to wait.",
+      "“Put {objThem} back,” {A} said. “Whatever this means, we were better off before you found {objThem}.” But {A} was already leaning closer to look.",
+      "In daylight the find looked less like an omen and more like what it was: {obj}, a little worn, a little ordinary. But ordinary things are the best hiding places. Everyone in {home} knew that, and everyone forgot it.",
     ],
   },
   rival_pressure: {
@@ -60,7 +60,7 @@ export const BEATS = {
       "{R}, {R.role}, came by the next morning with the smile of someone who had already decided how the conversation would end. Word of {objS} had travelled faster than {H} had thought possible.",
       "“I'll be plain,” {R} said. “That belongs to {home}, and {home} has managed very well without whatever you think it means. I can make it worth your while to forget it.”",
       "The offer was generous. That was what frightened {H}. Nobody paid that much for something worthless, and nobody threatened that softly unless they had done it before.",
-      "After {R} left, {H} stood for a long time with {objS} in {H.poss} hand. {Weather}. Somewhere under the fear, {H.subj} noticed something else: for the first time in years, {H.subj} {H.was} not bored.",
+      "After {R} left, {H} stood for a long time with {objS} laid out before {H.obj}. {Weather}. Somewhere under the fear, {H.subj} noticed something else: for the first time in years, {H.subj} {H.was} not bored.",
       "{H} told {A} everything that afternoon. {A} listened without interrupting, which was how {H} knew {A.subj} {A.was} worried.",
     ],
   },
@@ -73,21 +73,29 @@ export const BEATS = {
       "It was {season}, the worst time to leave and, {H} suspected, the only time {H.subj} ever would.",
       "The last evening in {home} was strangely gentle. {Sense}, {sense}, and the light going slowly the way it does when you are paying attention for the last time.",
     ],
+    variants: {
+      return: [
+        "{H} put the surviving copy of the statement on the table. Leaving {home} again would have been easy. This time {H.subj} meant to stay until {R} had answered for it.",
+        "“If you go to see {R}, I go with you,” {A} said. {H} had expected an argument and was ashamed of how relieved {H.subj} felt.",
+        "{E} helped them put the events in order, checking each date twice. They agreed to speak plainly and to keep a second copy somewhere safe.",
+        "Before they left the room, {H} looked once more at the familiar walls. The old wish, {want}, had brought {H.obj} back. What happened next would decide whether {H.subj} could stay.",
+      ],
+    },
   },
   threshold: {
     titles: ["{Pass}", "Crossing Over", "The Far Side"],
     paragraphs: [
-      "They {travel} out at first light. {Pass} was everything people said it was, and some things they had been too polite to mention. {Weather}, and {vessel} felt very small.",
-      "By the second day {home} had shrunk to a rumor behind them. {H} kept checking that {objS} was safe, the way you touch a sore tooth, until {A} told {H.obj} to stop.",
-      "When at last they reached {away}, it did not look like the end of anything. It looked like {awayKind} always looks to strangers: indifferent, beautiful, and full of people with reasons to lie.",
-      "They talked, on the way, about everything except what waited at the end: old friends, bad weather, a song neither of them could remember the end of. It helped. Most things help a little, if you let them.",
+      "They set out for {away}, carrying what they could. Reaching {pass} felt like the first real break with the life they had left behind. {Weather}. {H} checked the route again rather than admit how unsure {H.subj} felt.",
+      "By the time they reached the far side, {home} had shrunk to a rumor behind them. {H} kept checking that {objS} {objWere} safe, the way you touch a sore tooth, until {A} told {H.obj} to stop.",
+      "When at last they reached {away}, it did not look like the end of anything. To strangers it had the look of {awayKind}: indifferent, beautiful, and full of people with reasons to lie.",
+      "On the way they had talked about everything except what waited at the end: old friends, bad weather, a song neither of them could remember the end of. It had helped. Now word reached them that {R} had arrived ahead of them, and the small comfort of the journey fell away.",
     ],
   },
   trial: {
     titles: ["Hard Days", "In {away}", "What the Place Asked"],
     paragraphs: [
-      "{away} did not welcome them. Doors closed when they asked their questions; prices doubled when they paid in coin from {home}. {Sense}, everywhere, and nowhere a friendly face.",
-      "There was a night when {threat} came close enough to touch, and {H} learned what {H.subj} {H.was} made of, which turned out to be less than {H.subj} had hoped and more than {H.subj} had feared.",
+      "{away} did not welcome them. Doors closed when they asked their questions; the simplest requests took hours, and nobody seemed to have the key to the room they needed. {Sense}, everywhere, and nowhere a friendly face.",
+      "One night someone searched their room while they were out. Nothing was missing, but the folded clothes lay in a different order. {H} learned how little a closed door could promise.",
       "{A} kept watch while {H} slept, and in the morning neither of them mentioned it. Some debts are paid by not being spoken.",
       "“We could still go back,” {A} said once, very quietly. {H} did not answer, and that was an answer.",
       "{H} learned the small rules of {away}: which doors could be knocked on, which questions could be asked aloud, and which could only be asked with money.",
@@ -96,16 +104,16 @@ export const BEATS = {
   midpoint: {
     titles: ["The Pattern", "What {ObjS} Showed", "Halfway"],
     paragraphs: [
-      "It came clear all at once, the way the hardest things do. {H} had been reading {objS} wrong from the start. It was not a puzzle; it was a confession, and it led straight to {secret}.",
+      "The answer was in a dated statement in the public records. {H} checked it against {objS} and the accounts they had collected. The details agreed. {Truth}",
       "{H} sat back and laughed, a short unhappy sound. Everything {R} had said made a different kind of sense now. So did the softness of the threat.",
       "“You know what this means,” {A} said. It was not a question. Knowing was a door that only opened one way, and they were both through it.",
-      "They sat up the rest of the night going over it again and again, and every time it came out the same. {Weather}, and neither of them noticed.",
+      "They made two copies of the statement and checked each one against the original. {H} kept one and gave the other to {A}. For the first time, the evidence could survive being taken from either of them.",
     ],
   },
   loss: {
     titles: ["The Worst Night", "Taken", "What It Cost"],
     paragraphs: [
-      "They came for {objS} on the darkest night of {season}. By the time {H} woke, it was gone, and so was the certainty {H.subj} had built around it.",
+      "Someone forced the lock while {H} slept. By the time {H} woke, {objS} {objWere} gone. The copy of the statement was still inside {H.poss} coat; whoever had searched the room had not known to look for it.",
       "{A} was hurt, not badly, but badly enough that {H} could not pretend any longer this was a story about {H.self}. {Weather}. {H} sat beside {A} until morning and understood exactly what {H.poss} wanting had cost.",
       "There is a particular silence after a mistake that cannot be undone. {H} listened to it for a long time. Then, because there was nothing else to do, {H.subj} began to plan.",
       "\u201cThis isn't your fault,\u201d {A} said, which was generous and not entirely true, and they both knew it, and {H} was grateful anyway.",
@@ -114,8 +122,8 @@ export const BEATS = {
   witness: {
     titles: ["{E}", "An Old Account", "The One Who Remembered"],
     paragraphs: [
-      "{E}, {E.role}, had been waiting for someone to ask. The tea was already poured when {H} arrived, and {E} looked at {objS} the way one looks at an old enemy grown frail.",
-      "“I was there,” {E} said. “Not at the centre of it. Nobody honest was at the centre of it. But I was close enough to know that what they told you about {secret} was a kindness, and kindnesses are not always true.”",
+      "{E}, {E.role}, had been waiting for someone to ask. The tea was already poured when {H} arrived. When {H} set down {objS}, {E} took a long time to answer the first question.",
+      "“I was there,” {E} said. “Not at the centre of it. Nobody honest was at the centre of it. But I was close enough to know an account was filed before anyone began changing the story. Find that account. Memory is useful, but you will need something you can put on a table.”",
       "{E} told the rest slowly, with long pauses in which there was only {sense}. {H} wrote nothing down. Some things you are only trusted to remember.",
       "When {H} rose to leave, {E} held on to {H.poss} sleeve for a moment. \u201cBe careful who you tell,\u201d {E} said. \u201cNot because they'll stop you. Because some of them will thank you, and you won't know what to do with that.\u201d",
     ],
@@ -123,7 +131,7 @@ export const BEATS = {
   memory: {
     titles: ["Twelve Years Old", "Before", "The Last Summer"],
     paragraphs: [
-      "The summer {H} was twelve, the whole family had been in {home} together for the last time. {H} remembered {sense}, and laughter from the kitchen, and a door that was always kept shut.",
+      "When {H} was twelve, the whole family had been in {home} together for the last time. {H} remembered {sense}, and laughter from the kitchen, and a door that was always kept shut.",
       "{R} had been there too, younger then, and already better than anyone at deciding what other people were allowed to know.",
       "Memory is not a record; it is a story we keep telling until it becomes true. Standing in the old rooms now, {H} began to suspect that {H.poss} own story had been edited by someone else.",
       "{H} went from room to room touching things, the banister, the cold stove, a doorframe still notched with old heights, as if the house might answer if asked the right way.",
@@ -134,7 +142,7 @@ export const BEATS = {
     paragraphs: [
       "They spent a week following the obvious answer, and the obvious answer led to an empty room. {H} stood in the dust of it and felt the hours drain out of {H.obj}.",
       "“It was meant to look like this,” {A} said. “Someone wanted us tired.” It was the first sensible thing either of them had said in days.",
-      "{H} went back to {objS} and started again from the beginning. This time {H.subj} read what was missing as carefully as what was there.",
+      "{H} went back to {objS} and started again from the beginning. This time {H.subj} compared the small details with the notes from their visits, looking for what the first explanation had left out.",
       "There was a kind of gift in failure, {H} decided later. It cleared away the answers you wanted, and left you alone with the one that was true.",
     ],
   },
@@ -142,83 +150,80 @@ export const BEATS = {
     titles: ["Face to Face", "{R}'s Account", "The Truth, Out Loud"],
     paragraphs: [
       "{H} found {R} where {H.subj} had known {R.subj} would be, and for once {R} did not smile. {Weather}. Everything that had been said quietly for years was finally going to be said out loud.",
-      "“You think this makes you brave,” {R} said. “It makes you the person who broke something that was holding.” {H} had rehearsed a hundred answers. In the end {H.subj} only said the truth about {secret}, plainly, and watched it land.",
+      "“You think this makes you brave,” {R} said. “It makes you the person who broke something that was holding.” {H} put the copied statement on the table and read its conclusion aloud. {Truth} {H} let {R} read it too. “There is another copy. Taking this one will not change what happened.”",
       "{R} was not a monster. That was the hardest part. {R} was someone who had made one convenient choice and then defended it for the rest of a life, and {H} could see, with a kind of horror, how easy that would be.",
-      "For a long moment neither of them moved. {Sense}. Somewhere far off, the ordinary day went on without them.",
+      "For a long moment neither of them moved. Then {R} opened a locked drawer. {H} recovered {objS} and checked {objThem} carefully before stepping back. {R} had run out of offers; the other copy of the statement had seen to that.",
     ],
     endings: {
-      kept: "When it was over, {objS} was back in {H.poss} hands. {H} did not feel victorious. {H.Subj} felt responsible, which was heavier and, {H.subj} suspected, more useful.",
-      given: "When it was over, {H} did the one thing {R} had never imagined: {H.subj} gave {objS} away, to {home}, to everyone, so that no single person could ever own it again.",
-      released: "When it was over, {H} let {objS} go. Some truths, {H.subj} decided, are better held by the people they hurt than paraded in front of the people they don't.",
+      kept: "When it was over, {H} chose to keep {objS}. {H} did not feel victorious. {H.Subj} felt responsible, which was heavier and, {H.subj} suspected, more useful.",
+      given: "When it was over, {H} did the one thing {R} had never imagined: {H.subj} placed {objS} and a copy of the statement in the public archive. Anyone could ask to see the evidence now; no single person could make it disappear.",
+      released: "Once back in {home}, {H} placed {objS} and the statement in {E}'s care, to be shared first with the people whose lives the account had changed. {H} had carried the evidence far enough.",
     },
   },
   aftermath: {
     titles: ["After", "{home}, Again", "What Remained"],
     paragraphs: [
-      "{Season} came round again, as it always does. {home} was the same and not the same; there was still {sense}, but people looked at {H} differently now, and {H} looked back.",
+      "By the time another year had passed, {H} and {A} were settled in {home} again. The place was the same and not the same; there was still {sense}, but people looked at {H} differently now, and {H} looked back.",
       "{A} healed, mostly. On the good days they talked about {cb} as if it had happened to other people. On the bad days they did not talk at all, and that was allowed too.",
       "{H} had not got what {H.subj} wanted, exactly. {H.Subj} had wanted {want}. What {H.subj} had got instead was harder to name: a life with the doors open.",
-      "{E} came by once, near the end of {season}, and looked at {H} for a long time. \u201cWell,\u201d {E} said at last. \u201cYou didn't hurry it.\u201d It was the closest thing to praise {H} ever got from {E}, and {H} kept it.",
+      "One afternoon {E} came by and looked at {H} for a long time. \u201cWell,\u201d {E} said at last. \u201cYou saw it through.\u201d It was the closest thing to praise {H} ever got from {E}, and {H} kept it.",
     ],
     endings: {
-      kept: "Some nights {H} still took out {objS} and turned it over in the lamplight. It did not ask anything of {H.obj} anymore. It only reminded {H.obj} that {H.subj} had once been brave, and could be again.",
-      given: "In time the story of {secret} became part of the town's story, told wrong and retold, argued over in kitchens. {H} found {H.subj} did not mind. A truth that belongs to everyone is allowed to be untidy.",
-      released: "Nobody in {home} ever learned the whole of it. {H} carried what {H.subj} knew lightly, the way you carry a stone from a beach: not as a burden, but as proof that you were there.",
+      kept: "Some nights {H} still took out {objS} and turned {objThem} over in the lamplight. {ObjThey} did not ask anything of {H.obj} anymore. {ObjThey} only reminded {H.obj} that {H.subj} had once been brave, and could be again.",
+      given: "In time the account in the archive became part of the place's story, told wrong and retold, argued over in doorways. {H} found {H.subj} did not mind. A truth that belongs to everyone is allowed to be untidy.",
+      released: "The people who needed the statement had read it before it became anyone else's story. {H} carried what {H.subj} knew lightly, the way you carry a stone from a beach: not as a burden, but as proof that you were there.",
     },
   },
 };
 
-// Place and work: the world doing its ordinary business around the story.
+// Supporting scenes follow the completed beat. Conditions describe what the coda
+// needs; index.mjs deals each entry once and never interrupts mandatory action.
+const scene = (text, when) => ({ lines: [text], when });
+const discovered = (state) => state.discovered;
+const holding = (state) => state.hasObject;
+const pressure = (state) => state.metRival && !state.finished;
+const home = (state, bible) => state.place === bible.slots.home;
+
 export const SCENES = [
-  "The work did not stop for anyone's troubles. {H} did what a {H.trade} does, hands busy and head elsewhere, while {sense} and {sense} went on around {H.obj} as they always had.",
-  "By noon {weather}. People hurried past with their own concerns, and {H} envied them a little: the plainness of their errands, the way none of them was carrying {objS}.",
-  "Every {homeKind} has its hour when everyone is out at once. {H} moved through it carefully, nodding to faces {H.subj} half knew, listening for {R}'s name and hearing it twice.",
-  "There was a bench where {H} liked to sit and think, and {H.subj} sat there now for a long while. {Sense}. A child ran past chasing something only the child could see.",
-  "{A} brought food wrapped in paper and made {H} eat it. \u201cYou're no use to anyone hungry,\u201d {A} said, which was the sort of practical tenderness {A} specialized in.",
-  "Rumors moved through the place like weather. Some said {R} was worried; some said {R} was never worried; one old voice said {secret} was nothing new and everyone over sixty knew it.",
-  "{H} went over {objS} again at the kitchen table, slowly, by lamplight, the way {E} had once taught {H.obj} to look at things: as if they might still change their minds.",
-  "The evening came down soft and early. {Sense} gave way to {sense}, and lights went on in windows one by one, each of them someone else's ordinary life.",
-  "There were errands to run, and {H} ran them, grateful for small tasks with clear ends. Bread. A borrowed tool returned. A conversation about the weather, in which {weather} was agreed upon by everyone.",
-  "At the edge of {home} the road ran on toward {away}, as it always had. {H} stood looking at it for a while. Roads are only promises, {H.subj} thought, and promises are only roads.",
-  "{H} slept badly and dreamed of {objS}, and of a door that opened onto {sense}. In the morning {H.subj} could not remember what had been waiting behind it, only that it had known {H.poss} name.",
-  "Someone had left flowers at the old marker on the corner, as someone always did, though nobody would admit to it. {H} had passed them a thousand times. Today {H.subj} stopped.",
+  scene("The work did not stop for anyone's troubles. {H} returned to the small tasks of {H.poss} trade, hands busy and head elsewhere. Familiar work offered no answers, but it gave {H.obj} something that could be finished.", home),
+  scene("{H} paused to take in {sense}. People went about their own concerns nearby, and {H} envied the plainness of their errands. None of them seemed to be wondering what a closed door might hide."),
+  scene("In {place}, people had learned to notice strangers without seeming to. {H} listened longer than {H.subj} spoke, and came away knowing which questions made a conversation stop.", pressure),
+  scene("There was a quiet place to sit, and {H} stayed there until {H.poss} thoughts became less hurried. There was more to do. It still helped to let the world be larger than the problem."),
+  scene("{A} brought food wrapped in paper and made {H} eat it. “You're no use to anyone hungry,” {A} said. {H} finished the food before trying to answer; for once, that seemed the right order."),
+  scene("Rumors had given {R} a dozen different intentions. {H} wrote down only what {H.subj} had heard directly and crossed out the rest. The page became much shorter, and considerably more useful.", pressure),
+  scene("{H} examined {objS} once more, slowly, making a note of each detail instead of trusting memory. The plain act of description kept drawing {H.obj} back from the explanations {H.subj} wanted to believe.", holding),
+  scene("There were errands to run, and {H} ran them, grateful for small tasks with clear ends. A borrowed tool returned. A message delivered. Ordinary obligations still expected to be met.", home),
+  scene("{H} looked toward the way out of {home}, considering how little anyone would ask if {H.subj} simply left. Then {H.subj} turned back. Staying was a decision, even when it looked like standing still.", home),
+  scene("With {objS} out of reach, {H} listed the details {H.subj} could still remember. It was a poor substitute for the thing itself. Beside the list, {A} added two details {H} had missed.", state => state.discovered && !state.hasObject),
+  scene("{H} and {A} compared their notes. Where their memories differed, they left a space instead of choosing the more convenient version. They would have to ask again, and listen better.", discovered),
+  scene("{A} asked a simple question and waited through {H}'s first answer, then the second. By the third, {H} had stopped trying to sound certain. They could begin from there.", discovered),
 ];
 
-// Paragraphs that can sit in any chapter: weather and texture, reflection, conversation.
 export const INTERLUDES = [
-  "Nobody tells you how much of any story is simply getting through the day. {H} ate when {H.subj} remembered to, slept badly, and woke each morning to {sense}, as if the world had not noticed anything had changed.",
-  "{A} found {H} at the window long after midnight. Neither of them said anything. Outside, {weather}, and the not-saying was a kind of company.",
-  "{H} made lists, because lists were something to hold. What was known. What was only feared. What {R} wanted, and what {R} had been careful never to say.",
-  "There is a tiredness that sleep does not reach. {H} carried it everywhere now, the way {H.subj} carried {objS}: close, and with a care that was almost tenderness.",
-  "Somewhere a door banged in the wind and {H} flinched, and then was ashamed of flinching. {Weather}, and after that there was only {sense}.",
-  "{H} caught {H.poss} reflection in a dark pane of glass and did not, for a moment, recognize the person looking back. It was not an unpleasant feeling. It was only new.",
-  "In the evenings {A} told stories, mostly untrue and always better for it, and {H} let them wash over {H.obj}. Beyond the walls there was {sense}, as there always was.",
-  "It would have been easy to stop. {H} kept noticing how easy. That was the strange part: the way the easy road stayed open beside the hard one, the whole way, patient as a dog.",
-  "{H} wrote a letter to no one and burned it. The words had needed to exist for a little while; they did not need to last.",
-  "The days found a rhythm. {Sense} at waking, {sense} at dusk, and in between the slow work of not giving up.",
-  "Once, without warning, {H} thought of {E}, and of a thing {E} had said years ago that had made no sense at the time. It made a little more sense now.",
-  "{H} was not a brave person. {H.Subj} had always known that about {H.self}. But it turned out bravery was less a quality than a habit, and habits can be learned late.",
-  "Sometimes {H} wondered what {R} was doing at that exact moment, and whether {R} ever lay awake, too. It was an uncomfortable thing to wonder. It made {R} into a person.",
-  "Over breakfast {A} said, out of nowhere, \u201cYou've changed.\u201d {H} asked whether that was good. {A} considered it, honestly, the way {A.subj} considered everything. \u201cAsk me at the end.\u201d",
-  "{Weather}. {H} stood still long enough to notice {sense}, and to wonder when {H.subj} had stopped noticing things like that.",
-  "There were hours when nothing happened at all, when {sense} and the slow turning of the day made up the whole of the world. {H} had once found such hours unbearable. Now {H.subj} held on to them.",
-  "{A} had a way of humming when {A.subj} {A.was} worried, and {A.subj} hummed a great deal in those days. {H} pretended not to hear, which was its own kind of kindness.",
-  "Later, {H} would remember this part less clearly than the rest: the waiting, {sense}, the feeling of standing at the edge of something without yet knowing its name.",
-  "{H} thought about {cb}, and about how certain {H.subj} had been then, and how little that certainty had turned out to weigh.",
-  "It occurred to {H}, not for the first time, that {H.subj} {flaw}. Knowing it did not seem to help. Perhaps it was not supposed to.",
+  scene("{H} slept badly. The next day simple tasks took twice as long, and {A} quietly took over the ones that could not wait. {H} noticed and, with some difficulty, said thank you."),
+  scene("{H} caught {H.poss} reflection in a pane of glass and stopped to straighten {H.poss} collar. It was an absurd thing to care about. It was also something {H.subj} could put right."),
+  scene("{H} made a list of questions and left room beneath each one. A blank space was less comforting than a guess, but it did not have to be unlearned later.", discovered),
+  scene("{A} had a way of humming when {A.subj} {A.was} worried. {H} used to find it distracting. Now the small, unfinished tune was a way of knowing {H.subj} {H.was} not alone."),
+  scene("{H} wrote a letter, read it, and put it aside without sending it. The first version had explained too much and admitted too little. A second attempt would have to be shorter."),
+  scene("For a while they spoke of ordinary things. {H} learned something about {A}'s work that {H.subj} had never thought to ask. It embarrassed {H.obj} that a friend could be so familiar and still so little known."),
+  scene("{H} thought about what {R} had offered. The money would have answered several smaller worries. Naming them made the offer harder to refuse and the reason for refusing it clearer.", pressure),
+  scene("It occurred to {H}, not for the first time, that {H.subj} {flaw}. This time {H.subj} tried to name one thing to do differently. A small thing would have to count."),
+  scene("{H} thought about {cb}. The memory had become tidier with each retelling. {H.Subj} tried to recall the awkward parts too, especially the things {H.subj} had not understood.", pressure),
+  scene("The silence between {H} and {A} was comfortable until one of them tried to explain it. Then they both laughed, and allowed the explanation to remain unfinished."),
+  scene("Without {objS}, {H} felt the shape of the loss in every empty pocket. {A} reminded {H.obj} that knowing a thing and owning the evidence were different problems. They still had one another's account.", state => state.discovered && !state.hasObject),
+  scene("{H} wrapped {objS} carefully before putting {objThem} away. There was a small comfort in doing that properly, however little protection the wrapping really offered.", holding),
 ];
 
+const conversation = (lines, when) => ({ lines, when });
 export const DIALOGUES = [
-  ["\u201cYou don't have to do this alone,\u201d {A} said.", "\u201cI know.\u201d", "\u201cDo you? Because you keep doing it.\u201d"],
-  ["\u201cWhat would {E} say, if {E.subj} saw us now?\u201d", "{H} thought about it. \u201cSomething kind and completely useless.\u201d", "\u201cSo, the usual.\u201d", "\u201cThe usual.\u201d"],
-  ["\u201cI keep thinking about {R},\u201d {H} said.", "\u201cDon't,\u201d {A} said. \u201cThat's what {R.subj} wants.\u201d", "\u201cNo. That's what scares me. I don't think {R.subj} wants anything from me at all.\u201d"],
-  ["\u201cWhat's the first thing you'll do,\u201d {A} asked, \u201cwhen this is over?\u201d", "\u201cSleep for a week.\u201d", "\u201cAnd then?\u201d", "{H} found that {H.subj} did not know, and that not knowing felt, for once, like room."],
-  ["\u201cDo you trust me?\u201d {H} asked.", "{A} didn't answer right away, which was how {H} knew the answer would be true when it came. \u201cMore than I trust you to look after yourself.\u201d"],
-  ["\u201cIt's late,\u201d {A} said.", "\u201cIt's been late for a long time.\u201d", "\u201cThat's very poetic. Go to bed.\u201d"],
-  ["\u201cWhy you?\u201d {A} asked once. \u201cOf everyone in {home}. Why did it have to be you who found it?\u201d", "\u201cI don't think it had to be,\u201d {H} said. \u201cI think I'm just the one who didn't put it back.\u201d"],
-  ["“Are you frightened?” {A} asked.", "“Yes,” {H} said. “Are you?”", "“Only of turning back.”"],
-  ["“You could have told me,” {A} said.", "“I didn't know how.”", "“That's never once stopped you from talking before.”", "{H} laughed despite {H.self}, and some of the weight went out of the evening."],
-  ["“What will you do if it's true?” {A} asked.", "{H} took a long time to answer. “I suppose I'll have to stop pretending I didn't know.”"],
-  ["“Tell me about {home},” {A} said, “the way you'd tell a stranger.”", "So {H} did, and found that {H.subj} loved it more in the telling than {H.subj} ever had in the living."],
-  ["“Do you ever wish you'd never found it?”", "“Every day,” {H} said. “And then I look at it again.”"],
+  conversation(["“You don't have to do this alone,” {A} said.", "“I know.”", "“Then let me finish a sentence before you decide what I mean.”", "{H} nodded, and tried again."], discovered),
+  conversation(["“What will you do when this is over?” {A} asked.", "“Sleep for a week.”", "“And then?”", "{H} had no answer yet. For once {H.subj} left it at that."], pressure),
+  conversation(["“Do you trust me?” {H} asked.", "{A} took the question seriously. “Enough to tell you when you're wrong.”", "“That wasn't quite what I meant.”", "“I know.”"]),
+  conversation(["“Why did you keep {objThem}?” {A} asked.", "“I thought someone might come looking.”", "“And now?”", "“Now I want to know who.”"], state => state.hasObject && !state.revealed),
+  conversation(["“You could have told me,” {A} said.", "“I didn't know how.”", "“You could have started with that.”", "{H} looked down, then began again."], discovered),
+  conversation(["“Tell me about {home},” {A} said, “as if I'd never seen it.”", "{H} tried, and found {H.self} describing the smallest things first: familiar turns, a doorway, the sound of coming home."]),
+  conversation(["“Do you wish you'd left {objThem} where {objThey} {objWere}?” {A} asked.", "“Sometimes,” {H} said. “That doesn't tell me what to do with {objThem} now.”"], holding),
+  conversation(["“Are you frightened?” {A} asked.", "“Yes.”", "“Good. I was beginning to think I was the only one.”", "Neither smiled, but they sat a little closer."], discovered),
+  conversation(["“What if we're wrong?” {H} asked.", "“Then we need to find that out too,” {A} said.", "It was less reassuring than a promise, and more useful."], state => state.discovered && !state.metRival),
+  conversation(["“Read it to me again,” {A} said.", "{H} read the copy of the statement aloud. This time {A} stopped {H.obj} at each date, and they checked the order together."], state => state.revealed),
 ];
