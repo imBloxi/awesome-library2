@@ -24,7 +24,7 @@ export async function signInAction(_prev, formData) {
   if (!parsed.success) return { error: firstIssue(parsed), email: formData.get("email") };
 
   const { error } = await getAuth().signIn.email(parsed.data);
-  if (error) return { error: error.message || "Wrong email or password.", email: parsed.data.email };
+  if (error) return { error: "Sign-in failed. Check your email and password, or try again shortly.", email: parsed.data.email };
   redirect("/");
 }
 

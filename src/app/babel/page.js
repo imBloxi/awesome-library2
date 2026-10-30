@@ -20,7 +20,7 @@ export default function BabelPage() {
           written on the spot by this library&apos;s own story generator. The same number always opens the same book.
         </p>
         <p className="text-sm text-muted">
-          Each catalog book has its own Babel Editions too. Open any book and look for &ldquo;Read a Babel Edition&rdquo;.
+          Collect a reserved library book to unlock these stories. Access lasts while you have an active picked-up loan. Catalogue editions require a loan of that specific book.
         </p>
         <div className="pt-2"><RandomEditionButton basePath="/babel" max={MAX_INVENTED_SEED} label="Invent a book" className="btn btn-primary" /></div>
       </div>

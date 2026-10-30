@@ -1,7 +1,9 @@
 import { cache } from "react";
 import { connection } from "next/server";
 import { redirect } from "next/navigation";
-import { getAuth } from "@/lib/auth/server";
+import { headers } from "next/headers";
+import { getAuthConfig } from "@/lib/env.mjs";
+import { readFreshSession } from "@/lib/auth/session-read.mjs";
 
 // Better Auth stores roles as "admin", "user,admin" or an array.
 function hasAdminRole(role) {
@@ -13,12 +15,13 @@ function hasAdminRole(role) {
 
 // Current user or null. Cached per request, so calling it from several
 // components costs one session read.
-export const getUser = cache(async () => {
-  // Wait for a real request. Without this the session lookup also runs during
-  // prerender/prefetch passes, where Next cancels it (logged as an error by
-  // neon-auth) and the auth server gets called for every prefetch.
+export const getSession = cache(async () => {
   await connection();
-  const { data } = await getAuth().getSession();
+  return readFreshSession(getAuthConfig(), await headers());
+});
+
+export const getUser = cache(async () => {
+  const data = await getSession();
   const u = data?.user;
   if (!u) return null;
   return { id: u.id, name: u.name, email: u.email, isAdmin: hasAdminRole(u.role) };

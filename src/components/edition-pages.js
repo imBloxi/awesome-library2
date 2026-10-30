@@ -7,7 +7,7 @@ import { parseRouteInt } from "@/lib/babel-book/limits.mjs";
 
 // Route bodies shared by /books/[id]/read/... and /babel/...: `load` turns the route params
 // into an edition (or null). Params are awaited inside Suspense, so each URL can be
-// prerendered on first visit and served from the cache after that.
+// resolved behind a fresh session and loan check before any story is generated.
 export function ContentsRoute({ params, load }) {
   return (
     <Suspense fallback={<Skeleton rows={10} />}>
@@ -19,6 +19,7 @@ export function ContentsRoute({ params, load }) {
 async function Contents({ params, load }) {
   const data = await load(await params);
   if (!data) notFound();
+  if (data.locked) return <ReadingLocked {...data} />;
   return (
     <>
       <BackLink {...data.backLink} />
@@ -29,7 +30,7 @@ async function Contents({ params, load }) {
         byline={data.byline}
         backCover={data.backCover}
         rollPath={data.rollPath}
-        downloadHref={`${data.basePath}/download`}
+
         cover={data.cover}
       />
     </>
@@ -47,6 +48,7 @@ export function ChapterRoute({ params, load }) {
 async function Chapter({ params, load }) {
   const p = await params;
   const data = await load(p);
+  if (data?.locked) return <ReadingLocked {...data} />;
   const index = parseRouteInt(p.chapter, data?.edition.chapters.length ?? 0);
   if (!data || !index) notFound();
   return (
@@ -62,5 +64,21 @@ function BackLink({ href, label }) {
     <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted">
       <Link href={href} className="hover:text-ink">{label}</Link>
     </nav>
+  );
+}
+
+export function ReadingLocked({ signedIn, bookId }) {
+  return (
+    <section className="ctos-access" aria-labelledby="reader-access-heading">
+      <p className="ctos-eyebrow">ctOS / Reader authorization</p>
+      <h1 id="reader-access-heading">Reading access is locked</h1>
+      <p>{signedIn
+        ? bookId ? "Reserve this book and collect it from the library to unlock its editions. Access lasts while your loan is checked out." : "Collect a reserved book from the library to unlock Babel. Access lasts while you have at least one checked-out loan."
+        : "Sign in to check your reading access. A confirmed library pickup is required to unlock the reader."}</p>
+      <Link className="btn btn-primary" href={signedIn ? bookId ? `/books/${bookId}` : "/reservations" : "/auth/sign-in"}>
+        {signedIn ? bookId ? "View book and reserve" : "Open my library" : "Sign in"}
+      </Link>
+      <Link className="btn" href="/">Browse the catalogue</Link>
+    </section>
   );
 }

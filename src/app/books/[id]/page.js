@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBookDetails, getAvailability, listBooksByAuthor, listAlsoBorrowed } from "@/lib/queries/books";
 import { getMemberBookState } from "@/lib/queries/reservations";
+import { canReadCatalogBook } from "@/lib/queries/reading";
 import { getUser } from "@/lib/dal";
 import { BookCover } from "@/components/book-cover";
 import { CoverShelf } from "@/components/book-table";
@@ -80,11 +81,9 @@ async function BookDetails({ params }) {
               An original story inspired by this book’s title and description, in ten short chapters.
               This is imagined fiction, not the published book’s text.
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <Link href={`/books/${book.id}/read/1`} className="btn btn-sm">Read a Babel Edition</Link>
-              <RandomEditionButton basePath={`/books/${book.id}/read`} label="Roll a random edition" className="btn btn-sm" />
-              <ContinueReading bookKey={`book-${book.id}`} />
-            </div>
+            <Suspense fallback={<p className="mt-3 text-sm text-muted">Checking reading access…</p>}>
+              <ReadingAccess bookId={book.id} />
+            </Suspense>
           </section>
         </div>
       </article>
@@ -136,4 +135,16 @@ async function AlsoBorrowed({ book }) {
       <CoverShelf books={books} />
     </section>
   );
+}
+
+async function ReadingAccess({ bookId }) {
+  const user = await getUser();
+  const allowed = user && await canReadCatalogBook(user.id, bookId);
+  if (!allowed) return <p className="mt-3 text-sm text-muted">{user ? "Reserve and collect this book to unlock reading. A reservation alone does not grant access." : <><Link href="/auth/sign-in" className="link">Sign in</Link>, then reserve and collect this book to unlock reading.</>}</p>;
+  return <div className="mt-3 flex flex-wrap items-center gap-3">
+    <Link href={`/books/${bookId}/read/1`} className="btn btn-sm" prefetch={false}>Open the reader</Link>
+    <RandomEditionButton basePath={`/books/${bookId}/read`} label="Roll a random edition" className="btn btn-sm" />
+    <ContinueReading bookKey={`book-${bookId}`} />
+    <p className="w-full text-xs text-muted">Access is active until this loan is returned. Online reading only.</p>
+  </div>;
 }
