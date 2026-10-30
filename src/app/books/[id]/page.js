@@ -2,13 +2,12 @@ import { Suspense } from "react";
 import { babelPassage } from "@/lib/babel.mjs";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBook, listBooksByAuthor } from "@/lib/queries/books";
+import { getBookDetails, getAvailability, listBooksByAuthor } from "@/lib/queries/books";
 import { getUser } from "@/lib/dal";
-import { reserveAction } from "@/app/actions";
-import { ActionButton } from "@/components/action-button";
 import { BookCover } from "@/components/book-cover";
 import { CoverShelf } from "@/components/book-table";
-import { Availability, Skeleton, TopPickBadge } from "@/components/ui";
+import { ReserveBox } from "@/components/reserve-box";
+import { Skeleton, TopPickBadge } from "@/components/ui";
 
 export default function BookPage({ params }) {
   return (
@@ -28,7 +27,8 @@ async function BookDetails({ params }) {
   const bookId = Number.parseInt(id, 10);
   if (!Number.isSafeInteger(bookId) || bookId <= 0) notFound();
 
-  const [book, user] = await Promise.all([getBook(bookId), getUser()]);
+  // Cached: everything here except the reserve box is part of the prerendered page.
+  const book = await getBookDetails(bookId);
   if (!book) notFound();
 
   return (
@@ -49,26 +49,12 @@ async function BookDetails({ params }) {
               {book.published_year && <CardRow label="Published">{book.published_year}</CardRow>}
               {book.isbn && <CardRow label="ISBN"><span className="tabular-nums">{book.isbn}</span></CardRow>}
               <CardRow label="Copies">{book.total_copies}</CardRow>
-              <CardRow label="Status"><Availability available={book.available} total={book.total_copies} /></CardRow>
           </dl>
 
-          <div className="flex flex-col gap-2">
-            {!user ? (
-              <p className="flex flex-wrap items-center gap-3 text-sm text-muted">
-                <Link href="/auth/sign-in" className="btn btn-primary">Sign in to reserve</Link>
-                <span>or <Link href="/auth/sign-up" className="link">create an account</Link></span>
-              </p>
-            ) : book.available > 0 ? (
-              <>
-                <div><ActionButton action={reserveAction} id={book.id} label="Reserve this book" pendingLabel="Reserving…" variant="primary" /></div>
-                <p className="text-sm text-muted">
-                  We hold it for 7 days. <Link href="/reservations" className="link">See your reservations</Link>
-                </p>
-              </>
-            ) : (
-              <p className="text-sm text-muted">All copies are out right now. Check back in a few days.</p>
-            )}
-          </div>
+          {/* Live: the session and today's free copies are read per request. */}
+          <Suspense fallback={<div className="loading-bar h-20 max-w-md rounded-lg bg-subtle" />}>
+            <ReservePanel book={book} />
+          </Suspense>
 
           {book.description && (
             <section>
@@ -94,6 +80,12 @@ async function BookDetails({ params }) {
       </Suspense>
     </>
   );
+}
+
+async function ReservePanel({ book }) {
+  const [user, live] = await Promise.all([getUser(), getAvailability(book.id)]);
+  if (!live) return null;
+  return <ReserveBox bookId={book.id} available={live.available} total={live.total_copies} signedIn={Boolean(user)} />;
 }
 
 function CardRow({ label, children }) {

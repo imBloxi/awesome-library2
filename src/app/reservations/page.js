@@ -46,13 +46,15 @@ async function Reservations() {
               <div className="flex items-start gap-3">
                 <StatusBadge status={r.status} daysLeft={r.days_left} />
                 {r.status === "picked_up" ? (
-                  <ActionButton action={returnAction} id={r.id} label="Return" pendingLabel="Returning…" />
+                  <ActionButton action={returnAction} id={r.id} label="Return" pendingLabel="Returning…" doneLabel="Returned ✓" />
                 ) : (
                   <ActionButton
                     action={deleteReservationAction}
                     id={r.id}
                     label={r.status === "reserved" ? "Cancel" : "Delete"}
                     pendingLabel="Deleting…"
+                    doneLabel={r.status === "reserved" ? "Cancelled" : "Deleted"}
+                    fadeRow
                     variant="danger"
                     confirm={r.status === "reserved" ? "Cancel this reservation?" : undefined}
                   />

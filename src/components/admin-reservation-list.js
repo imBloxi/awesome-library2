@@ -47,13 +47,13 @@ export function AdminReservationList({ rows, showBook = true }) {
               )}
               {r.status === "reserved" && (
                 <>
-                  <ActionButton action={markPickedUpAction} id={r.id} label="Mark picked up" pendingLabel="Saving…" />
-                  <ActionButton action={extendHoldAction} id={r.id} label="Extend 7 days" pendingLabel="Saving…" />
-                  <ActionButton action={cancelHoldAction} id={r.id} label="Cancel hold" pendingLabel="Cancelling…" variant="danger" confirm="Cancel this hold?" />
+                  <ActionButton action={markPickedUpAction} id={r.id} label="Mark picked up" pendingLabel="Saving…" doneLabel="Picked up ✓" />
+                  <ActionButton action={extendHoldAction} id={r.id} label="Extend 7 days" pendingLabel="Saving…" doneLabel="Extended ✓" />
+                  <ActionButton action={cancelHoldAction} id={r.id} label="Cancel hold" pendingLabel="Cancelling…" doneLabel="Cancelled" fadeRow variant="danger" confirm="Cancel this hold?" />
                 </>
               )}
               {r.status === "picked_up" && (
-                <ActionButton action={adminReturnAction} id={r.id} label="Mark returned" pendingLabel="Saving…" />
+                <ActionButton action={adminReturnAction} id={r.id} label="Mark returned" pendingLabel="Saving…" doneLabel="Returned ✓" fadeRow />
               )}
             </div>
           </li>

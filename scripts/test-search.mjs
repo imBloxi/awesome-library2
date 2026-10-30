@@ -14,6 +14,14 @@ test("no filters: only limit and offset", () => {
   assert.match(text, /order by b\.title, b\.id/);
 });
 
+test("a search ranks exact, then prefix, then closest title or author first", () => {
+  const { text, values } = buildSearchQuery({ ...none, q: "dune" });
+  assert.match(text, /order by lower\(b\.title\) = lower\(\$2\) desc/);
+  assert.match(text, /b\.title ilike \$3 desc/);
+  assert.match(text, /word_similarity\(\$2, b\.title\)/);
+  assert.deepEqual(values, ["%dune%", "dune", "dune%", 21, 0]);
+});
+
 test("rows carry availability and the top-pick flag", () => {
   const { text } = buildSearchQuery(none);
   assert.ok(text.includes(`${AVAILABLE_SQL} as available`));
@@ -38,8 +46,8 @@ test("year bounds are placeholders", () => {
   const { text, values } = buildSearchQuery({ ...none, q: "x", yearFrom: 1900, yearTo: 1950, limit: 5, offset: 10 });
   assert.match(text, /b\.published_year >= \$2/);
   assert.match(text, /b\.published_year <= \$3/);
-  assert.match(text, /limit \$4 offset \$5/);
-  assert.deepEqual(values, ["%x%", 1900, 1950, 5, 10]);
+  assert.match(text, /limit \$6 offset \$7/);
+  assert.deepEqual(values, ["%x%", 1900, 1950, "x", "x%", 5, 10]);
   assert.ok(text.includes("b.deleted_at is null"));
 });
 

@@ -33,9 +33,9 @@ async function Catalog({ searchParams }) {
 
   return (
     <>
-      {/* Keyed on the query: the page doesn't remount when only the URL's search changes,
-          so without this the inputs would keep stale values after "Clear all filters" or Back. */}
-      <SearchForm key={JSON.stringify(params)} action="/" q={q}>
+      {/* The form syncs its inputs to `values`, so Back and "Clear filters" update them
+          without remounting the field you're typing in. */}
+      <SearchForm action="/" q={q} values={params}>
         <CatalogFilters filters={filters} showClear={filtered} />
       </SearchForm>
       {topPicks.length > 0 && (
