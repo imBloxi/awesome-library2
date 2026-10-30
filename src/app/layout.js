@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { getUser } from "@/lib/dal";
+import { getMemberNotices } from "@/lib/queries/reservations";
 import { signOutAction } from "@/app/actions";
 import "./globals.css";
 
@@ -20,9 +21,19 @@ async function UserNav() {
       </>
     );
   }
+  const notices = await getMemberNotices(user.id);
+  const alerts = notices.overdue + notices.expiring + notices.ready;
   return (
     <>
-      <Link href="/reservations" className="btn btn-ghost btn-sm">My reservations</Link>
+      <Link href="/reservations" className="btn btn-ghost btn-sm">
+        My reservations
+        {alerts > 0 && (
+          <span className={`rounded-full px-1.5 text-xs font-semibold text-white ${notices.overdue ? "bg-bad" : "bg-accent"}`}>
+            {alerts}
+            <span className="sr-only"> {alerts === 1 ? "item needs" : "items need"} attention</span>
+          </span>
+        )}
+      </Link>
       {user.isAdmin && <Link href="/admin" className="btn btn-ghost btn-sm">Admin</Link>}
       <form action={signOutAction}>
         <button type="submit" className="btn btn-ghost btn-sm" title={user.email}>Sign out</button>

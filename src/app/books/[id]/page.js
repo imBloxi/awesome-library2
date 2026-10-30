@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { babelPassage } from "@/lib/babel.mjs";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBookDetails, getAvailability, listBooksByAuthor } from "@/lib/queries/books";
+import { getBookDetails, getAvailability, listBooksByAuthor, listAlsoBorrowed } from "@/lib/queries/books";
+import { getMemberBookState } from "@/lib/queries/reservations";
 import { getUser } from "@/lib/dal";
 import { BookCover } from "@/components/book-cover";
 import { CoverShelf } from "@/components/book-table";
@@ -49,6 +50,7 @@ async function BookDetails({ params }) {
               <CardRow label="Author">{book.author}</CardRow>
               {book.published_year && <CardRow label="Published">{book.published_year}</CardRow>}
               {book.isbn && <CardRow label="ISBN"><span className="tabular-nums">{book.isbn}</span></CardRow>}
+              {book.genre && <CardRow label="Genre"><Link href={`/?genre=${encodeURIComponent(book.genre)}`} className="hover:underline">{book.genre}</Link></CardRow>}
               <CardRow label="Copies">{book.total_copies}</CardRow>
           </dl>
 
@@ -90,6 +92,9 @@ async function BookDetails({ params }) {
       <Suspense fallback={null}>
         <MoreByAuthor book={book} />
       </Suspense>
+      <Suspense fallback={null}>
+        <AlsoBorrowed book={book} />
+      </Suspense>
     </>
   );
 }
@@ -97,7 +102,8 @@ async function BookDetails({ params }) {
 async function ReservePanel({ book }) {
   const [user, live] = await Promise.all([getUser(), getAvailability(book.id)]);
   if (!live) return null;
-  return <ReserveBox bookId={book.id} available={live.available} total={live.total_copies} signedIn={Boolean(user)} />;
+  const member = user ? await getMemberBookState(user.id, book.id) : null;
+  return <ReserveBox bookId={book.id} available={live.available} total={live.total_copies} member={member} />;
 }
 
 function CardRow({ label, children }) {
@@ -115,6 +121,17 @@ async function MoreByAuthor({ book }) {
   return (
     <section aria-labelledby="more-by" className="mt-16 border-t border-line pt-10">
       <h2 id="more-by" className="mb-6 text-xl font-semibold tracking-tight">More by {book.author}</h2>
+      <CoverShelf books={books} />
+    </section>
+  );
+}
+
+async function AlsoBorrowed({ book }) {
+  const books = await listAlsoBorrowed(book.id);
+  if (books.length === 0) return null;
+  return (
+    <section aria-labelledby="also-borrowed" className="mt-16 border-t border-line pt-10">
+      <h2 id="also-borrowed" className="mb-6 text-xl font-semibold tracking-tight">Readers also borrowed</h2>
       <CoverShelf books={books} />
     </section>
   );

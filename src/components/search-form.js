@@ -24,7 +24,10 @@ export function SearchForm({ action, q = "", values, placeholder = "Search by ti
     for (const el of formRef.current?.elements ?? []) {
       if (!el.name || el.type === "submit") continue;
       if (el.type === "checkbox") el.checked = params[el.name] === el.value;
-      else if (el !== document.activeElement) el.value = params[el.name] ?? "";
+      else if (el.tagName === "SELECT") {
+        if (params[el.name] != null) el.value = params[el.name];
+        else el.selectedIndex = 0;
+      } else if (el !== document.activeElement) el.value = params[el.name] ?? "";
     }
   }, [syncKey]);
 
@@ -33,7 +36,11 @@ export function SearchForm({ action, q = "", values, placeholder = "Search by ti
   function navigate() {
     clearTimeout(timer.current);
     const sp = new URLSearchParams();
-    for (const [key, value] of new FormData(formRef.current)) {
+    const form = formRef.current;
+    for (const [key, value] of new FormData(form)) {
+      // A select left on its first option is the default (e.g. "Any", or the default sort).
+      const el = form.elements.namedItem(key);
+      if (el?.tagName === "SELECT" && value === el.options[0]?.value) continue;
       if (typeof value === "string" && value.trim()) sp.set(key, value.trim());
     }
     const qs = sp.toString();
@@ -44,7 +51,7 @@ export function SearchForm({ action, q = "", values, placeholder = "Search by ti
 
   function onInput(e) {
     const el = e.target;
-    if (el.type === "checkbox") return navigate();
+    if (el.type === "checkbox" || el.tagName === "SELECT") return navigate();
     const delay = DELAY[el.type];
     if (delay == null) return;
     if (el.type === "number" && el.value && !el.checkValidity()) return;

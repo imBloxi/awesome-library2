@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildSearchQuery, AVAILABLE_SQL, TOP_PICK_ACTIVE_SQL } from "../src/lib/queries/search-sql.mjs";
-import { parseSearchParams, filtersToParams, parsePage } from "../src/lib/search-params.mjs";
+import { parseSearchParams, filtersToParams, parsePage, hasFilters } from "../src/lib/search-params.mjs";
 
 const none = { q: "", available: false, yearFrom: null, yearTo: null, limit: 21, offset: 0 };
 
@@ -55,8 +55,29 @@ test("parses a full query string", () => {
   assert.deepEqual(parseSearchParams({ q: "  hi  ", available: "1", from: "1990", to: "2000", page: "2" }), {
     q: "hi",
     page: 2,
-    filters: { available: true, yearFrom: 1990, yearTo: 2000 },
+    filters: { available: true, yearFrom: 1990, yearTo: 2000, genre: "", sort: "relevance" },
   });
+});
+
+test("genre and sort: parsed, defaulted and round-tripped", () => {
+  const parsed = parseSearchParams({ genre: "  Poetry ", sort: "newest" });
+  assert.equal(parsed.filters.genre, "Poetry");
+  assert.equal(parsed.filters.sort, "newest");
+  assert.deepEqual(filtersToParams(parsed), { genre: "Poetry", sort: "newest" });
+  assert.equal(parseSearchParams({ sort: "relevance" }).filters.sort, "title", "relevance needs a query");
+  assert.equal(parseSearchParams({ q: "x", sort: "bogus" }).filters.sort, "relevance");
+  assert.deepEqual(filtersToParams(parseSearchParams({ q: "x" })), { q: "x" }, "default sort stays out of the URL");
+  assert.equal(hasFilters(parseSearchParams({ sort: "year" })), false, "sorting alone keeps top picks");
+  assert.equal(hasFilters(parseSearchParams({ genre: "Poetry" })), true);
+});
+
+test("genre filter and sorts are placeholders and stable", () => {
+  const g = buildSearchQuery({ ...none, genre: "Poetry", sort: "newest" });
+  assert.match(g.text, /lower\(b\.genre\) = lower\(\$1\)/);
+  assert.match(g.text, /order by b\.created_at desc, b\.id desc/);
+  assert.equal(g.values[0], "Poetry");
+  assert.match(buildSearchQuery({ ...none, sort: "year" }).text, /order by b\.published_year desc nulls last, b\.title, b\.id/);
+  assert.match(buildSearchQuery({ ...none, q: "x", sort: "title" }).text, /order by b\.title, b\.id/);
 });
 
 test("swaps a reversed year range", () => {
@@ -69,10 +90,10 @@ test("ignores junk params", () => {
   assert.deepEqual(parseSearchParams({ available: "banana", from: "abc", to: "99999", page: "-3" }), {
     q: "",
     page: 1,
-    filters: { available: false, yearFrom: null, yearTo: null },
+    filters: { available: false, yearFrom: null, yearTo: null, genre: "", sort: "title" },
   });
   assert.equal(parseSearchParams({ from: "19.5" }).filters.yearFrom, null);
-  assert.deepEqual(parseSearchParams({}).filters, { available: false, yearFrom: null, yearTo: null });
+  assert.deepEqual(parseSearchParams({}).filters, { available: false, yearFrom: null, yearTo: null, genre: "", sort: "title" });
 });
 
 test("cuts long search text and ignores repeated params", () => {

@@ -31,7 +31,7 @@ export function likePattern(q) {
 }
 
 // Catalog search. All user input goes through placeholders.
-export function buildSearchQuery({ q = "", available = false, yearFrom = null, yearTo = null, limit, offset }) {
+export function buildSearchQuery({ q = "", available = false, yearFrom = null, yearTo = null, genre = "", sort = null, limit, offset }) {
   const where = ["b.deleted_at is null"];
   const values = [];
   const param = (v) => {
@@ -42,11 +42,14 @@ export function buildSearchQuery({ q = "", available = false, yearFrom = null, y
   if (q) where.push(`(b.title || ' ' || b.author || ' ' || coalesce(b.isbn, '')) ilike ${param(likePattern(q))}`);
   if (yearFrom != null) where.push(`b.published_year >= ${param(yearFrom)}`);
   if (yearTo != null) where.push(`b.published_year <= ${param(yearTo)}`);
+  if (genre) where.push(`lower(b.genre) = lower(${param(genre)})`);
   if (available) where.push(`${AVAILABLE_SQL} > 0`);
   // With a query, best matches first: exact title, then title prefix, then closest
   // title/author word match. Scoring only runs on rows the filter already matched.
   let order = "b.title, b.id";
-  if (q) {
+  if (sort === "newest") order = "b.created_at desc, b.id desc";
+  else if (sort === "year") order = "b.published_year desc nulls last, b.title, b.id";
+  else if (q && sort !== "title") {
     const term = param(q);
     order = `lower(b.title) = lower(${term}) desc,
       b.title ilike ${param(likePattern(q).slice(1))} desc,
@@ -88,5 +91,32 @@ export function byAuthorQuery(author, excludeId, limit) {
       where b.author = $1 and b.id <> $2 and b.deleted_at is null
       order by b.title, b.id limit $3`,
     values: [author, excludeId, limit],
+  };
+}
+
+// Distinct genres for the catalog filter, most used first.
+export const genresQuery = {
+  text: `select genre, count(*)::int as n from books
+    where deleted_at is null and genre is not null
+    group by genre order by n desc, genre limit 40`,
+  values: [],
+};
+
+// "Readers also borrowed": other books picked up by people who picked up this one.
+// Holds that were never collected don't count as reading.
+export function alsoBorrowedQuery(bookId, limit) {
+  return {
+    text: `select ${BOOK_LIST_COLS} from books b join (
+        select r2.book_id, count(distinct r2.user_id) as readers
+        from reservations r1
+        join reservations r2 on r2.user_id = r1.user_id and r2.book_id <> r1.book_id
+        where r1.book_id = $1 and r1.picked_up_at is not null and r2.picked_up_at is not null
+        group by r2.book_id
+        order by readers desc, r2.book_id
+        limit $2
+      ) x on x.book_id = b.id
+      where b.deleted_at is null
+      order by x.readers desc, b.title, b.id`,
+    values: [bookId, limit],
   };
 }

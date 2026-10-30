@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { searchBooks, listTopPicks } from "@/lib/queries/books";
+import { searchBooks, listTopPicks, listGenres } from "@/lib/queries/books";
 import { SearchForm } from "@/components/search-form";
 import { CatalogFilters } from "@/components/catalog-filters";
 import { BookTable, CoverShelf } from "@/components/book-table";
 import { parseSearchParams, filtersToParams, hasFilters } from "@/lib/search-params.mjs";
 import { PageTitle, Skeleton, Pagination } from "@/components/ui";
 
-const NO_FILTERS = { available: false, yearFrom: null, yearTo: null };
+const NO_FILTERS = { available: false, yearFrom: null, yearTo: null, genre: "", sort: "title" };
 
 export default function CatalogPage({ searchParams }) {
   return (
@@ -26,9 +26,10 @@ async function Catalog({ searchParams }) {
   const filtered = hasFilters({ q, filters });
   // Top picks only on the plain first page, fetched alongside the catalog so it adds no wait.
   const showTop = !filtered && page === 1;
-  const [{ books, hasNext }, topPicks] = await Promise.all([
+  const [{ books, hasNext }, topPicks, genres] = await Promise.all([
     searchBooks({ q, page, filters }),
     showTop ? listTopPicks() : [],
+    listGenres(),
   ]);
 
   return (
@@ -36,7 +37,7 @@ async function Catalog({ searchParams }) {
       {/* The form syncs its inputs to `values`, so Back and "Clear filters" update them
           without remounting the field you're typing in. */}
       <SearchForm action="/" q={q} values={params}>
-        <CatalogFilters filters={filters} showClear={filtered} />
+        <CatalogFilters filters={filters} genres={genres} hasQuery={Boolean(q)} showClear={filtered} />
       </SearchForm>
       {topPicks.length > 0 && (
         <section aria-labelledby="top-books" className="mb-12">

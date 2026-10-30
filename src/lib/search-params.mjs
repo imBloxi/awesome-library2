@@ -18,13 +18,18 @@ function year(v) {
   return n <= 2100 ? n : null;
 }
 
+export const SORTS = ["relevance", "title", "newest", "year"];
+
 export function parseSearchParams(sp) {
   const q = str(sp.q).trim().slice(0, 100);
+  const genre = str(sp.genre).trim().slice(0, 60);
+  // Relevance only means something with a query; without one, title order.
+  const sort = SORTS.includes(sp.sort) && (sp.sort !== "relevance" || q) ? sp.sort : q ? "relevance" : "title";
   const page = parsePage(sp.page);
   let yearFrom = year(sp.from);
   let yearTo = year(sp.to);
   if (yearFrom != null && yearTo != null && yearFrom > yearTo) [yearFrom, yearTo] = [yearTo, yearFrom];
-  return { q, page, filters: { available: str(sp.available) === "1", yearFrom, yearTo } };
+  return { q, page, filters: { available: str(sp.available) === "1", yearFrom, yearTo, genre, sort } };
 }
 
 // Inverse of parseSearchParams, minus the page: for pagination links.
@@ -34,9 +39,13 @@ export function filtersToParams({ q, filters }) {
   if (filters.available) params.available = "1";
   if (filters.yearFrom != null) params.from = String(filters.yearFrom);
   if (filters.yearTo != null) params.to = String(filters.yearTo);
+  if (filters.genre) params.genre = filters.genre;
+  // Default sorts stay out of the URL.
+  if (filters.sort && filters.sort !== (q ? "relevance" : "title")) params.sort = filters.sort;
   return params;
 }
 
+// Sorting alone isn't a filter: the top picks still belong on a re-sorted first page.
 export function hasFilters({ q, filters }) {
-  return Object.keys(filtersToParams({ q, filters })).length > 0;
+  return Object.keys(filtersToParams({ q, filters })).some((key) => key !== "sort");
 }

@@ -6,6 +6,5 @@ export async function GET(request) {
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
     return new Response("Unauthorized", { status: 401 });
   }
-  const expired = await expireStaleHolds();
-  return Response.json({ expired });
+  return Response.json(await expireStaleHolds());
 }

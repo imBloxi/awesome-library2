@@ -16,11 +16,11 @@ export function updateBookSteps(id, data) {
         from books where id = $1 and deleted_at is null
       ), updated as (
         update books b set title = $2, author = $3, isbn = $4, description = $5,
-          published_year = $6, total_copies = $7, top_pick_at = ${topPickAtSql("$8", "$9")}, updated_at = now()
+          published_year = $6, total_copies = $7, top_pick_at = ${topPickAtSql("$8", "$9")}, genre = $10, updated_at = now()
         from state s where b.id = s.id and s.active_count <= $7 returning b.id
       )
       select active_count, exists (select 1 from updated) as updated from state`,
-      params: [id, data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies, data.top_pick, data.top_pick_seen ?? null],
+      params: [id, data.title, data.author, data.isbn, data.description, data.published_year, data.total_copies, data.top_pick, data.top_pick_seen ?? null, data.genre ?? null],
     },
   ];
 }

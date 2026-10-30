@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/dal";
 import { createBook, updateBook, deleteBook, restoreBook, bookTag } from "@/lib/queries/books";
-import { markPickedUp, returnBook, cancelHold, extendHold } from "@/lib/queries/reservations";
+import { markPickedUp, returnBook, cancelHold, extendHold, promoteWaitlist } from "@/lib/queries/reservations";
 import { setUserRole } from "@/lib/queries/users";
 
 const idSchema = z.coerce.number().int().positive();
@@ -21,13 +21,14 @@ const bookSchema = z.object({
     .transform(emptyToNull),
   total_copies: z.coerce.number().int("Copies must be a whole number.").min(0).max(1000),
   top_pick: z.boolean(),
+  genre: z.string().trim().max(60, "Genre is too long.").transform(emptyToNull),
   // The top_pick_at the form showed ticked. Only compared in SQL, never trusted as a date.
   top_pick_seen: z.string().max(64).transform(emptyToNull),
 });
 
 function parseBook(formData) {
   const raw = Object.fromEntries(
-    ["title", "author", "isbn", "description", "published_year", "total_copies", "top_pick_seen"].map((k) => [
+    ["title", "author", "isbn", "description", "published_year", "total_copies", "top_pick_seen", "genre"].map((k) => [
       k,
       formData.get(k) ?? "",
     ])
@@ -52,6 +53,7 @@ export async function createBookAction(_prev, formData) {
   try {
     // A visit to this id before it existed may have cached "not found".
     updateTag(bookTag(await createBook(data)));
+    updateTag("genres");
   } catch (err) {
     return { error: dbError(err), values };
   }
@@ -67,6 +69,9 @@ export async function updateBookAction(id, _prev, formData) {
     const result = await updateBook(id, data);
     if (!result.ok) return { error: result.error, values };
     updateTag(bookTag(id));
+    updateTag("genres");
+    // More copies may serve the waitlist.
+    await promoteWaitlist(id);
   } catch (err) {
     return { error: dbError(err), values };
   }
@@ -80,6 +85,7 @@ export async function deleteBookAction(_prev, formData) {
   const ok = await deleteBook(id.data);
   if (!ok) return { error: "Can't delete: someone has this book reserved or borrowed." };
   updateTag(bookTag(id.data));
+  updateTag("genres");
   refresh();
   return {};
 }
@@ -131,6 +137,7 @@ export async function restoreBookAction(_prev, formData) {
   const ok = await restoreBook(id.data);
   if (!ok) return { error: "This book isn't deleted." };
   updateTag(bookTag(id.data));
+  updateTag("genres");
   refresh();
   return {};
 }
