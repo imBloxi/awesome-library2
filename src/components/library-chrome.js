@@ -22,7 +22,7 @@ async function UserNav() {
   if (!user) {
     return (
       <>
-        <Link href="/auth/sign-in" className="nav-link nav-gateway">Sign in</Link>
+        <Link href="/auth/sign-in" className="nav-link">Sign in</Link>
         <Link href="/auth/sign-up" className="btn btn-primary btn-sm">Register</Link>
       </>
     );
@@ -40,7 +40,7 @@ async function UserNav() {
           </span>
         )}
       </NavLink>
-      <Link href="/account" className="nav-link nav-gateway">Account</Link>
+      <Link href="/account" className="nav-link">Account</Link>
       {user.isAdmin && <NavLink href="/admin">Admin</NavLink>}
       <form action={signOutAction}>
         <button type="submit" className="nav-link" title={user.email}>Sign out</button>

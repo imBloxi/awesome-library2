@@ -40,7 +40,7 @@ function DecodeTitle({ title, seed }) {
     };
   }, [title, seed]);
 
-  return <span ref={ref} className="book-spine-title babel-cipher">{text}</span>;
+  return <span ref={ref} className="book-spine-title babel-cipher" data-long={Array.from(title).length > 22 ? "" : undefined}>{text}</span>;
 }
 
 function Spine({ book, hidden }) {

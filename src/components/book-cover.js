@@ -50,7 +50,7 @@ export function BookSpine({ book, available, vtName = null }) {
       className="book-spine"
       style={{ "--spine-cloth": cloth, "--spine-foil": foil, "--spine-h": `${height}%`, "--spine-w": `${width}rem` }}
     >
-      <span className="book-spine-title">{book.title}</span>
+      <span className="book-spine-title" data-long={Array.from(book.title).length > 22 ? "" : undefined}>{book.title}</span>
       <span className="book-spine-dot" data-available={available > 0 ? "" : undefined} />
     </span>
   );

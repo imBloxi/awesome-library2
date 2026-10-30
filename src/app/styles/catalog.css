@@ -166,6 +166,15 @@
 
   @media (max-width: 639px) {
     .catalog-drawer { padding: 0.75rem; }
-    .filter-clear { margin-left: 0; }
+    .catalog-filters {
+      flex-wrap: nowrap;
+      margin-inline: -0.75rem;
+      padding: 3px 0.75rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .catalog-filters::-webkit-scrollbar { display: none; }
+    .filter-chip { flex-shrink: 0; }
+    .filter-clear { flex-shrink: 0; margin-left: 0.25rem; white-space: nowrap; }
   }
 }

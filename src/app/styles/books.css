@@ -130,6 +130,23 @@
     gap: 2rem 1.25rem;
     padding-bottom: 1.5rem;
   }
+  @media (max-width: 639px) {
+    .cover-shelf {
+      grid-template-columns: none;
+      grid-auto-columns: 8.5rem;
+      grid-auto-flow: column;
+      gap: 1.25rem;
+      margin-inline: -1rem;
+      padding: 0 1rem 1rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-padding-inline: 1rem;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .cover-shelf::-webkit-scrollbar { display: none; }
+    .cover-shelf-item { scroll-snap-align: start; }
+  }
   @media (min-width: 640px) { .cover-shelf { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 768px) { .cover-shelf { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
   /* Each cover stands on its own length of plank; side by side they make one shelf. */
@@ -233,6 +250,7 @@
     min-height: 0;
     overflow: hidden;
     font-family: var(--font-serif);
+    max-width: calc(100% - 6px);
     font-size: clamp(0.72rem, calc(var(--spine-w, 2.5rem) * 0.33), 0.95rem);
     font-weight: 500;
     line-height: 1.1;
@@ -240,6 +258,16 @@
     text-shadow: 0 1px 1px rgb(0 0 0 / 35%);
     white-space: nowrap;
     writing-mode: vertical-rl;
+  }
+  /* Long titles set smaller on two lines, like a real spine. */
+  .book-spine-title[data-long] {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 0.7rem;
+    line-height: 1.12;
+    white-space: normal;
+    word-break: break-word;
   }
   .book-spine-dot {
     flex-shrink: 0;
@@ -290,7 +318,7 @@
   }
   .spine-shelf-wrap {
     position: relative;
-    margin-bottom: 6.5rem;
+    margin-bottom: 5.5rem;
   }
   .spine-shelf > li:hover .spine-card,
   .spine-shelf > li:focus-within .spine-card {
@@ -340,23 +368,28 @@
     padding-bottom: 12px;
   }
   @media (min-width: 640px) { .book-hero-cover { align-self: flex-start; position: sticky; top: 1.5rem; } }
-  /* The details as a library catalogue card: ruled lines and a red header rule. */
+  /* The details as a library catalogue card: a red header rule, blue ruled rows. */
   .catalog-card {
     display: grid;
     grid-template-columns: 6.5rem 1fr;
-    gap: 0 1rem;
     max-width: 28rem;
-    padding: 0.9rem 1.25rem 0.75rem 1.5rem;
+    padding: 0.35rem 1.25rem 0.35rem 1.5rem;
     border: 1px solid #e2ded3;
+    border-top: 3px solid #e7c9c4;
     border-radius: 2px;
-    background:
-      linear-gradient(to bottom, transparent 0.55rem, #e7c9c4 0.55rem 0.6rem, transparent 0.6rem),
-      repeating-linear-gradient(to bottom, transparent 0 1.9rem, #e4eaf1 1.9rem 1.95rem),
-      #fffdf8;
-    background-position: 0 0, 0 0.7rem, 0 0;
+    background: #fffdf8;
     box-shadow: 0 1px 3px rgb(27 31 42 / 6%);
     font-size: 0.9375rem;
-    line-height: 1.95rem;
+    line-height: 1.5;
+  }
+  .catalog-card > dt,
+  .catalog-card > dd {
+    padding: 0.45rem 0;
+    border-bottom: 1px solid #e4eaf1;
+  }
+  .catalog-card > dt:last-of-type,
+  .catalog-card > dd:last-of-type {
+    border-bottom: 0;
   }
   .catalog-card dd { min-width: 0; overflow-wrap: anywhere; }
   .book-aside {

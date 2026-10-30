@@ -31,7 +31,7 @@ export default function BabelPage() {
         </p>
         <div className="pt-2"><RandomEditionButton basePath="/babel" max={MAX_INVENTED_SEED} label="Invent a book" className="btn btn-primary" /></div>
       </div>
-      <section aria-labelledby="endless-shelf" className="mb-14">
+      <section aria-labelledby="endless-shelf" className="mb-10">
         <div className="section-intro">
           <h2 id="endless-shelf" className="section-heading">The endless shelf</h2>
           <p>Every spine is written in the library&apos;s 25 symbols. Point at one to read its title.</p>
