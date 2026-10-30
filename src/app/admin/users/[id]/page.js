@@ -21,7 +21,11 @@ export default function MemberPage({ params }) {
 async function Member({ params }) {
   await requireAdmin();
   const { id: raw } = await params;
-  const id = decodeURIComponent(raw).slice(0, 200);
+  let id = raw;
+  try {
+    id = decodeURIComponent(raw);
+  } catch {}
+  id = id.slice(0, 200);
   const member = await getMember(id);
   if (!member) notFound();
   const [active, waiting, recent] = await Promise.all([
