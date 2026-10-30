@@ -18,6 +18,7 @@ export default function AdminBooksPage({ searchParams }) {
             {/* A file download, not a page: <Link> would prefetch it as one. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/admin/export/books" className="btn">Export CSV</a>
+            <Link href="/admin/books/import" className="btn">Import CSV</Link>
             <Link href="/admin/books/new" className={buttonClass}>Add book</Link>
           </div>
         }

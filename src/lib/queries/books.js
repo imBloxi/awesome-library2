@@ -173,7 +173,7 @@ export async function restoreBook(id) {
 export async function listBooksForExport() {
   return db().query(
     `select b.id, b.title, b.author, b.isbn, b.published_year, b.total_copies,
-       ${AVAILABLE} as available, b.created_at
+       ${AVAILABLE} as available, b.genre, b.description, b.created_at
      from books b where b.deleted_at is null order by b.title, b.id`
   );
 }

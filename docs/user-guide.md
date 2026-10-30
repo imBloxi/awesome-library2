@@ -11,7 +11,7 @@ The home page (`/`) is the catalogue.
   - **On the shelf now**: hides books with no free copy.
   - **Published from / to**: a year range. If you enter them backwards (2000 to 1990) the site swaps them for you.
 - **Clear all filters** appears whenever a search or filter is active and takes you back to the full catalogue.
-- Results are sorted by title, 20 per page. **Next »** and **« Previous** keep your search and filters.
+- Results update as you type. With a search, the best matches come first; otherwise they're sorted by title. **Sort** also offers newest in the library and publication year, and **Genre** narrows to one genre. 20 per page. **Next »** and **« Previous** keep your search and filters.
 - Click an **author's name** to see all their books.
 
 Everything you search for is in the address bar (for example `/?q=river&available=1&from=1900`), so you can bookmark or share a search. Nonsense values in the URL are ignored instead of causing an error.
@@ -38,9 +38,19 @@ Click a title to open `/books/<id>`:
 - **Reserve box**:
   - Signed out: **Sign in to reserve**, or register.
   - Signed in with a copy free: **📖 Reserve this book**. A green ✔ message confirms it.
-  - No copy free: a note to check back later.
+  - No copy free: **Join the waitlist**. You see your place in the queue; when a copy comes back it's held for you for 7 days.
+  - **Save for later** keeps the book on your list without reserving it.
 - **About this book**: the description, if the library has added one.
-- **More by this author**: up to 6 other books by the same author. It loads just after the rest of the page.
+- **More by this author** and **Readers also borrowed**: up to 6 books each. They load just after the rest of the page.
+- **Babel Editions**: imagined versions of the book, written by the library's story generator. See below.
+
+## Babel Editions
+
+- **Read a Babel Edition** opens edition 1; **Roll a random edition** opens another. Each edition has its own characters and plot, built from the book's title and description, about 2,500 words in ten chapters. The same edition number always reads the same, so you can share the link.
+- In the reader: **←/→** turn chapters; **A− A A+**, **Serif/Sans** and **Light/Sepia/Dark** change the page and are remembered on this device; the book page offers **Continue reading** where you left off.
+- **Download for offline** saves one HTML file you can open anywhere.
+- **Babel** in the header (`/babel`) invents whole books that don't exist, from a number.
+- These are original stories, not the real books.
 
 ## Your account
 
@@ -54,7 +64,7 @@ Click a title to open `/books/<id>`:
 | Status | What it means | What you can do |
 |---|---|---|
 | Ready for pickup · Nd left | The library is holding a copy for you for N more days | **Cancel** |
-| Borrowed | You've picked it up | **Return** |
+| Borrowed · due date | You've picked it up | **Renew 4 weeks** (once, if nobody is waiting and it isn't overdue), **Return** |
 | Returned / Cancelled / Expired | Finished | **Delete** it from your list |
 
 Rules:
@@ -62,6 +72,8 @@ Rules:
 - **At most 10** active reservations (holds plus borrowed books) at a time.
 - **One copy per book** per person.
 - **7 days to pick up.** After that the hold lapses and the copy goes back on the shelf.
+- **Waitlist**: up to 20 books at once. You keep your place if you're at the 10-book limit when your turn comes; the copy goes to the next person and you get the following one.
+- **Notices**: a number on **My reservations** in the header counts books ready to collect, holds ending within 24 hours and overdue loans. The page explains each one.
 - If you try to break a rule (say, reserving an 11th book) you get a red ⚠ message explaining why. Nothing is half-done.
 
 ## Keyboard and accessibility

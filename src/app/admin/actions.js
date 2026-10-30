@@ -7,6 +7,8 @@ import { requireAdmin } from "@/lib/dal";
 import { createBook, updateBook, deleteBook, restoreBook, bookTag } from "@/lib/queries/books";
 import { markPickedUp, returnBook, cancelHold, extendHold, promoteWaitlist } from "@/lib/queries/reservations";
 import { setUserRole } from "@/lib/queries/users";
+import { importBooks, logAdminEvent } from "@/lib/queries/admin";
+import { parseBookCsv, IMPORT_MAX_BYTES } from "@/lib/book-import.mjs";
 
 const idSchema = z.coerce.number().int().positive();
 const emptyToNull = (v) => (v === "" ? null : v);
@@ -47,12 +49,14 @@ function dbError(err) {
 }
 
 export async function createBookAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const { data, error, values } = parseBook(formData);
   if (error) return { error, values };
   try {
     // A visit to this id before it existed may have cached "not found".
-    updateTag(bookTag(await createBook(data)));
+    const bookId = await createBook(data);
+    updateTag(bookTag(bookId));
+    await logAdminEvent(admin, "book.create", { bookId, detail: data.title });
     updateTag("genres");
   } catch (err) {
     return { error: dbError(err), values };
@@ -61,7 +65,7 @@ export async function createBookAction(_prev, formData) {
 }
 
 export async function updateBookAction(id, _prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const { data, error, values } = parseBook(formData);
   if (error) return { error, values };
 
@@ -71,7 +75,8 @@ export async function updateBookAction(id, _prev, formData) {
     updateTag(bookTag(id));
     updateTag("genres");
     // More copies may serve the waitlist.
-    await promoteWaitlist(id);
+    const promoted = await promoteWaitlist(id);
+    await logAdminEvent(admin, "book.update", { bookId: id, detail: promoted ? `${promoted} waitlist hold(s) created` : null });
   } catch (err) {
     return { error: dbError(err), values };
   }
@@ -79,65 +84,71 @@ export async function updateBookAction(id, _prev, formData) {
 }
 
 export async function deleteBookAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Invalid book." };
   const ok = await deleteBook(id.data);
   if (!ok) return { error: "Can't delete: someone has this book reserved or borrowed." };
   updateTag(bookTag(id.data));
   updateTag("genres");
+  await logAdminEvent(admin, "book.delete", { bookId: id.data });
   refresh();
   return {};
 }
 
 export async function markPickedUpAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Invalid reservation." };
   const ok = await markPickedUp(id.data);
   if (!ok) return { error: "Only active holds can be marked as picked up." };
+  await logAdminEvent(admin, "loan.pickup", { reservationId: id.data });
   refresh();
   return {};
 }
 
 export async function adminReturnAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Invalid reservation." };
   const ok = await returnBook(id.data);
   if (!ok) return { error: "Only picked-up books can be returned." };
+  await logAdminEvent(admin, "loan.return", { reservationId: id.data });
   refresh();
   return {};
 }
 
 export async function cancelHoldAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Invalid reservation." };
   const ok = await cancelHold(id.data);
   if (!ok) return { error: "Only holds that are still waiting for pickup can be cancelled." };
+  await logAdminEvent(admin, "hold.cancel", { reservationId: id.data });
   refresh();
   return {};
 }
 
 export async function extendHoldAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Invalid reservation." };
   const ok = await extendHold(id.data);
   if (!ok) return { error: "Only holds that haven't lapsed can be extended." };
+  await logAdminEvent(admin, "hold.extend", { reservationId: id.data });
   refresh();
   return {};
 }
 
 export async function restoreBookAction(_prev, formData) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const id = idSchema.safeParse(formData.get("id"));
   if (!id.success) return { error: "Invalid book." };
   const ok = await restoreBook(id.data);
   if (!ok) return { error: "This book isn't deleted." };
   updateTag(bookTag(id.data));
   updateTag("genres");
+  await logAdminEvent(admin, "book.restore", { bookId: id.data });
   refresh();
   return {};
 }
@@ -152,9 +163,30 @@ async function changeRole(formData, role) {
   if (id.data === String(me.id)) return { error: "You can't change your own role." };
   const ok = await setUserRole(id.data, role);
   if (!ok) return { error: "User not found." };
+  await logAdminEvent(me, "user.role", { targetUser: id.data, detail: role });
   refresh();
   return { message: "Saved. Applies at their next sign-in." };
 }
 
 export const makeAdminAction = async (_prev, formData) => changeRole(formData, "admin");
 export const removeAdminAction = async (_prev, formData) => changeRole(formData, "user");
+
+// CSV import in two steps: "preview" validates and reports; "import" re-validates the same
+// text and inserts the valid rows in one statement. Existing ISBNs are skipped.
+export async function importBooksAction(_prev, formData) {
+  const admin = await requireAdmin();
+  const file = formData.get("file");
+  let text = typeof formData.get("csv") === "string" ? formData.get("csv") : "";
+  if (file && typeof file === "object" && file.size > 0) {
+    if (file.size > IMPORT_MAX_BYTES) return { error: "The file is larger than 1 MB. Split it into smaller files." };
+    text = await file.text();
+  }
+  const { rows, errors, total } = parseBookCsv(text);
+  if (formData.get("mode") !== "import") return { csv: text, preview: rows.slice(0, 20), count: rows.length, errors, total };
+  if (rows.length === 0) return { csv: text, errors, total, error: "Nothing to import." };
+  const { inserted, skipped } = await importBooks(rows);
+  updateTag("genres");
+  await logAdminEvent(admin, "book.import", { detail: `${inserted} added, ${skipped} skipped (ISBN already in catalog), ${errors.length} invalid` });
+  refresh();
+  return { done: { inserted, skipped, invalid: errors.length } };
+}

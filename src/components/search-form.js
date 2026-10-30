@@ -11,7 +11,7 @@ const DELAY = { search: 300, text: 300, number: 700 };
 // GET search form. Without JavaScript it is a plain form; with it, results update as you type.
 // `values` are the params currently in the URL: the inputs follow them (Back, "Clear filters")
 // without remounting, so the field you're typing in keeps its focus and caret.
-export function SearchForm({ action, q = "", values, placeholder = "Search by title, author or ISBN", children }) {
+export function SearchForm({ action, q = "", values, placeholder = "Search by title, author or ISBN", autoFocus = false, children }) {
   const router = useRouter();
   const formRef = useRef(null);
   const timer = useRef(null);
@@ -69,7 +69,7 @@ export function SearchForm({ action, q = "", values, placeholder = "Search by ti
       data-pending={pending ? "" : undefined}
       className="search-form mb-10 flex flex-wrap items-center gap-2"
     >
-      <input name="q" type="search" defaultValue={q} placeholder={placeholder} aria-label="Search" className="field min-w-0 flex-1" />
+      <input name="q" type="search" defaultValue={q} placeholder={placeholder} aria-label="Search" autoFocus={autoFocus} className="field min-w-0 flex-1" />
       {children}
       <button type="submit" className="btn btn-primary py-[0.6rem]">Search</button>
       <span role="status" aria-live="polite" className="sr-only">{pending ? "Searching…" : ""}</span>

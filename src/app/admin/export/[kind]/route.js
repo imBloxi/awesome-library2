@@ -7,7 +7,7 @@ const EXPORTS = {
   books: {
     columns: [
       ["ID", "id"], ["Title", "title"], ["Author", "author"], ["ISBN", "isbn"],
-      ["Year", "published_year"], ["Copies", "total_copies"], ["Available", "available"], ["Added", "created_at"],
+      ["Year", "published_year"], ["Copies", "total_copies"], ["Available", "available"], ["Genre", "genre"], ["Description", "description"], ["Added", "created_at"],
     ],
     rows: () => listBooksForExport(),
   },

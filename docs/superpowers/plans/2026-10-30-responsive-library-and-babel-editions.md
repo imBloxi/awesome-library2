@@ -86,3 +86,13 @@ Phase 0 → 1 → 2 → 3 → 4.1 to 4.2 → 5.1 → the rest.
 Phase 1 is what users feel on every click. Phase 2 is cheap and already diagnosed. Phase 3 is the headline feature and touches no reservation logic. The waitlist and desk mode are the most useful functional upgrades but carry the most concurrency risk, so they come after the safer wins.
 
 Each phase ships as its own commit series with tests and a changelog entry.
+
+## Status (2026-10-30)
+
+Implemented on this branch, phase by phase, with tests. Differences from the plan:
+
+- **Phase 0:** the app needs Neon's HTTP endpoint and Neon Auth, so it couldn't run end to end in the build sandbox. Verified with all test suites on a local Postgres, `next build`, and a production server for the database-free Babel pages (25–100 ms responses, screenshots on desktop and phone). Real-user timings still need measuring on a Vercel preview.
+- **1.5 `loading.js`:** skipped. Every page already streams a static shell with skeletons, so it would add nothing.
+- **Babel Editions:** about 2,500 words in ten chapters, not 8–12k. Longer output from the current banks would repeat itself; length should grow with the phrase banks.
+- **ISBN autofill (Open Library):** dropped, since no external services were wanted.
+- **Found along the way:** returns failed in Postgres (untyped `$2 is null`). Fixed with a regression test.
