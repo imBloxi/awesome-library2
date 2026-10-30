@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:migrate": "node --env-file=.env.local scripts/migrate.mjs",
     "db:seed": "node --env-file=.env.local db/seed.mjs",
+    "db:seed-wild": "node --env-file=.env.local db/seed-wild.mjs",
     "test:reserve": "node scripts/test-reserve.mjs",
     "test:books": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-books.mjs",
     "test:admin": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-admin-reservations.mjs",
