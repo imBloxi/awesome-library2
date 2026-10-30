@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { markPickedUpAction, adminReturnAction, cancelHoldAction, extendHoldAction } from "@/app/admin/actions";
+import { markPickedUpAction, adminReturnAction, cancelHoldAction, extendHoldAction } from "@/app/(library)/admin/actions";
 import { ActionButton } from "@/components/action-button";
 import { StatusBadge } from "@/components/ui";
 import { utcTimestamp } from "@/lib/circulation-format.mjs";

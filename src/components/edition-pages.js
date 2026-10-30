@@ -69,16 +69,21 @@ function BackLink({ href, label }) {
 
 export function ReadingLocked({ signedIn, bookId }) {
   return (
-    <section className="ctos-access" aria-labelledby="reader-access-heading">
-      <p className="ctos-eyebrow">ctOS / Reader authorization</p>
-      <h1 id="reader-access-heading">Reading access is locked</h1>
+    <section className="reading-locked" aria-labelledby="reader-access-heading">
+      <div className="reading-locked-slip" aria-hidden="true">
+        <span>Date due</span><span>Borrower</span>
+        <span className="reading-locked-stamp">On loan only</span>
+      </div>
+      <h1 id="reader-access-heading" className="page-heading">Borrow it to read it</h1>
       <p>{signedIn
         ? bookId ? "Reserve this book and collect it from the library to unlock its editions. Access lasts while your loan is checked out." : "Collect a reserved book from the library to unlock Babel. Access lasts while you have at least one checked-out loan."
         : "Sign in to check your reading access. A confirmed library pickup is required to unlock the reader."}</p>
-      <Link className="btn btn-primary" href={signedIn ? bookId ? `/books/${bookId}` : "/reservations" : "/auth/sign-in"}>
-        {signedIn ? bookId ? "View book and reserve" : "Open my library" : "Sign in"}
-      </Link>
-      <Link className="btn" href="/">Browse the catalogue</Link>
+      <div className="reading-locked-actions">
+        <Link className="btn btn-primary" href={signedIn ? bookId ? `/books/${bookId}` : "/reservations" : "/auth/sign-in"}>
+          {signedIn ? bookId ? "View book and reserve" : "Open my library" : "Sign in"}
+        </Link>
+        <Link className="btn" href="/">Browse the catalogue</Link>
+      </div>
     </section>
   );
 }

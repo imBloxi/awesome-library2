@@ -1,0 +1,225 @@
+/* My library: each section is a shelf; holds wear paper bands, loans carry date-due slips. */
+@layer components {
+  .library-capacity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    margin-bottom: 1rem;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+  /* One small spine per allowed reservation; used ones are bound in cloth. */
+  .library-capacity-meter {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 1.1rem;
+    padding-bottom: 2px;
+    border-bottom: 3px solid #d4c6ab;
+  }
+  .library-capacity-meter span {
+    width: 5px;
+    height: 70%;
+    border-radius: 1px 1px 0 0;
+    background: #d9dbd4;
+    transition: height var(--dur-settle) var(--ease-spring), background-color var(--dur-settle);
+  }
+  .library-capacity-meter span[data-used] {
+    height: 100%;
+    background: var(--color-cloth);
+  }
+  .library-capacity-meter span[data-used]:nth-child(3n + 2) { background: #603640; height: 88%; }
+  .library-capacity-meter span[data-used]:nth-child(3n) { background: #2c493d; height: 94%; }
+
+  .library-overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1.5rem 0 2.5rem;
+  }
+  .library-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 7rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    background: var(--color-board);
+    font-size: 0.875rem;
+    transition: border-color var(--dur-quick), translate var(--dur-settle) var(--ease-spring), box-shadow var(--dur-settle);
+  }
+  .library-stat:hover {
+    border-color: #c4c7bf;
+    translate: 0 -2px;
+    box-shadow: 0 8px 18px -12px rgb(27 31 42 / 30%);
+  }
+  .library-stat-count {
+    font-family: var(--font-serif);
+    font-size: 2.25rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .library-shelf {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+    background: var(--color-board);
+    scroll-margin-top: 1rem;
+  }
+  .library-shelf h2 {
+    font-family: var(--font-serif);
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .library-shelf-description {
+    margin: 0.25rem 0 1rem;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+  .library-empty {
+    padding: 1rem 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+  .library-shelf li,
+  .library-history li { overflow-wrap: anywhere; }
+  .library-shelf .btn,
+  .library-history .btn { min-height: 44px; }
+  .library-history {
+    margin-top: 2rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-line);
+  }
+  .library-history summary {
+    padding: 1rem 0;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .library-title {
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+  .library-title:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  .loan-list > li + li { border-top: 1px solid var(--color-line); }
+  .loan-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding-block: 0.9rem;
+  }
+  .loan-cover {
+    position: relative;
+    flex-shrink: 0;
+  }
+  /* The text column keeps a readable width; actions wrap underneath on phones. */
+  .loan-row > .min-w-0 { flex: 1 1 14rem; }
+  /* A ribbon bookmark hangs from saved books. */
+  .loan-cover-saved::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: 9px;
+    width: 6px;
+    height: 1.25rem;
+    background: var(--color-bad);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%);
+    transform-origin: top;
+  }
+  :root[data-fx="full"] .loan-cover-saved::after {
+    animation: ribbon-drop var(--dur-travel) var(--ease-spring) both;
+  }
+
+  /* The paper band libraries wrap around a book on the hold shelf. */
+  .hold-band {
+    display: block;
+    width: fit-content;
+    margin-top: 0.4rem;
+    padding: 0.2rem 0.65rem 0.2rem 0.55rem;
+    border: 1px solid #e3d3ae;
+    border-left: 3px solid var(--color-gilt);
+    background: repeating-linear-gradient(90deg, #fbf6e8 0 6px, #f7f0dc 6px 7px);
+    color: var(--color-gilt-ink);
+    font-size: 0.8125rem;
+    font-weight: 500;
+  }
+  /* The card in the book's pocket with the date due. */
+  .due-slip {
+    display: flex;
+    flex-wrap: wrap;
+    width: fit-content;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+    padding: 0.15rem 0.6rem;
+    border: 1px solid #d6dde6;
+    background: repeating-linear-gradient(to bottom, #fbfcfd 0 1.15rem, #dfe7f0 1.15rem 1.2rem);
+    color: var(--color-cloth);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .due-slip-late {
+    border-color: #efc7c2;
+    color: var(--color-bad);
+  }
+  .overdue-stamp {
+    display: inline-block;
+    padding: 0 0.35rem;
+    border: 2px solid currentColor;
+    border-radius: 3px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    rotate: -4deg;
+    text-transform: uppercase;
+    white-space: nowrap;
+    mix-blend-mode: multiply;
+  }
+  :root[data-fx="full"] .overdue-stamp {
+    animation: stamp var(--dur-ceremony) var(--ease-thunk) both;
+  }
+  .queue-ticket {
+    display: inline-block;
+    padding: 0 0.4rem;
+    border: 1px dashed #b9bdb5;
+    border-radius: 2px;
+    background: #fbfbf8;
+    color: var(--color-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Optimistic actions: a list row fades the moment its button is clicked. */
+  li:has(> * form[data-done][data-fade]),
+  li:has(> form[data-done][data-fade]) {
+    opacity: 0.5;
+    transition: opacity var(--dur-quick);
+  }
+  :root[data-fx="full"] li:has(> * form[data-done][data-fade]),
+  :root[data-fx="full"] li:has(> form[data-done][data-fade]) {
+    translate: 0.75rem 0;
+    transition: opacity var(--dur-quick), translate var(--dur-settle) var(--ease-out);
+  }
+
+  @media (max-width: 640px) {
+    .library-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .library-stat { padding: 1rem; }
+    .library-shelf { padding: 1rem; }
+  }
+}
+
+@keyframes stamp {
+  0% { opacity: 0; scale: 1.8; }
+  60% { opacity: 1; scale: 0.96; }
+  100% { opacity: 1; scale: 1; }
+}
+@keyframes ribbon-drop {
+  from { scale: 1 0; }
+}

@@ -7,25 +7,27 @@ Everything a visitor or member can do. Staff tasks are in the [admin guide](admi
 The home page (`/`) is the catalogue.
 
 - **Search** matches title, author and ISBN together, so `orwell 1984` works. Case doesn't matter. `%` and `_` are matched literally, not as wildcards.
-- **Narrow your search** (the group box under the search bar):
-  - **On the shelf now**: hides books with no free copy.
+- **Filters** sit as tabs along the search drawer:
+  - **Available now**: hides books with no free copy.
   - **Published from / to**: a year range. If you enter them backwards (2000 to 1990) the site swaps them for you.
-- **Clear all filters** appears whenever a search or filter is active and takes you back to the full catalogue.
-- Results update as you type. With a search, the best matches come first; otherwise they're sorted by title. **Sort** also offers newest in the library and publication year, and **Genre** narrows to one genre. 20 per page. **Next »** and **« Previous** keep your search and filters.
+  - **Genre** and **Sort** (best match, title, newest in the library, publication year).
+- **Clear filters** appears whenever a search or filter is active and takes you back to the full catalogue.
+- Results update as you type. With a search, the best matches come first; otherwise they're sorted by title. 20 per page. **Next page** and **Previous page** keep your search and filters.
+- **Shelf or List**: browsing shows the catalogue as book spines on shelves; point at a spine (or Tab to it) to read its catalogue card under the shelf. Searches show a list you can scan. The toggle above the results switches either way and is kept in the address (`?view=list`).
 - Click an **author's name** to see all their books.
 
 Everything you search for is in the address bar (for example `/?q=river&available=1&from=1900`), so you can bookmark or share a search. Nonsense values in the URL are ignored instead of causing an error.
 
 ### This week's top books
 
-On the plain first page of the catalogue (no search, no filters) a yellow **★ This week's top books ★** shelf shows up to 6 books chosen by the librarians, newest first. A book stays there for 7 days after it's picked. Top picks also carry a blinking red **NEW!** in the results table. The blinking stops if your device asks for reduced motion.
+On the plain first page of the catalogue (no search, no filters) a shelf of up to 6 covers shows the books chosen by the librarians, newest first. A book stays there for 7 days after it's picked. Top picks carry a gilt **Top pick** label in the list.
 
 ### Reading the status column
 
 | Shows | Means |
 |---|---|
 | ● 2 of 3 available (green) | 2 copies are free to reserve right now |
-| ○ None available (red) | Every copy is on hold or out on loan |
+| ● None available (grey) | Every copy is on hold or out on loan |
 
 Holds that weren't picked up within 7 days stop counting automatically, so the numbers are always current.
 
@@ -57,8 +59,11 @@ Click a title to open `/books/<id>`:
 
 ## Your account
 
-- **Register** (top right) with name, email and a password of at least 8 characters, then **Sign in**.
-- **Sign out** is in the toolbar. Hover over it to see which email you're signed in with.
+Accounts run on **ctOS**, the library's account system. Sign-in, registration, the account console and the legal pages use its dark interface; **Exit to Library** goes back.
+
+- **Register** with name, email and a password of at least 8 characters. You must accept the [Terms of service](/legal/terms) and confirm you've read the [Privacy policy](/legal/privacy). The register and sign-in pages show what your browser reveals to any website and mark what is stored with your session.
+- **Account** (in the header) opens the account console: your subject file (account details, this request's address and device, your full circulation record including records you removed from view, reservation patterns, staff actions on your record), display name, password, sessions with their recorded address, and browser data.
+- **Sign out** is in the header. Hover over it to see which email you're signed in with.
 
 ## Reservations
 
@@ -82,6 +87,7 @@ Rules:
 ## Keyboard and accessibility
 
 - Press **Tab** on any page to reveal **Skip to content**.
-- Every control shows a dotted focus outline, like Windows 95 did.
-- Text contrast meets WCAG AA. The "window" decorations are hidden from screen readers.
+- Every control shows a gilt focus outline (lime in ctOS).
+- Text contrast meets WCAG AA. Decorative covers, spines, slips and stamps are hidden from screen readers; their meaning is always in text.
+- **Motion** (in the footer): Auto follows your system's reduced-motion setting and keeps admin pages calm; Full, Calm (feedback only, pages cross-fade) or Off (no animation). Remembered in this browser.
 - Inputs use 16px text, so phones don't zoom in when you tap them.

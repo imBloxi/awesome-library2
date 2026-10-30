@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-10-30: Bindery redesign and ctOS accounts
+
+**Library (Bindery)**
+- New design built from book materials: paper, navy cloth actions, gilt focus and top picks, stamp red for overdue. Literata (variable serif, self-hosted) for titles, covers and reading; system sans for interface text.
+- The catalogue browses as spines on shelves (pull one out to read its catalogue card), with a list view for searches. Top picks stand on a shelf.
+- Covers lean toward the pointer and catch the light; clicking one carries it into the book page (view transitions). Pages slide forward and back; the header ribbon follows the current section; content rises in as it loads.
+- My library: covers on every row, hold bands, date-due slips, an overdue stamp, a capacity meter and notice slips. Locked editions show the book's stamped date-due slip.
+- Footer motion setting: Auto, Full, Calm or Off. Admin pages are calm by default.
+
+**ctOS (accounts)**
+- Sign-in, registration, the account console and the legal pages run in ctOS, a separate dark interface with its own mono type.
+- Registration requires accepting the new Terms of service and Privacy policy (checked on the server).
+- The account console opens with a subject file built only from real records: account details, this request's address and device, the full circulation record (including records hidden from My library), reservation patterns, and staff actions on the account. Sessions list the address recorded at sign-in.
+- Sign-in and register pages show what the browser reveals and which items are stored.
+
 ## 2026-10-30: Better Babel writing and reading
 
 - Mandatory discoveries, injuries, revelations and recoveries now stay in order. Supporting scenes respect the current location and whether the object has been discovered or stolen.

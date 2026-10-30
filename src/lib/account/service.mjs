@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { cleanAddress } from "../ctos/profile.mjs";
 
 const profileSchema = z.object({ name: z.string().trim().min(1, "Enter a display name.").max(100, "Use 100 characters or fewer.").refine((value) => !/[\u0000-\u001f\u007f]/u.test(value), "Remove control characters from your name.") });
 const passwordSchema = z.object({
@@ -10,7 +11,7 @@ const passwordSchema = z.object({
 
 // Only these allowlisted fields reach a browser. A session token is a credential,
 // even when Neon returns it in listSessions; resolve it only during server actions.
-function deviceLabel(agent = "") {
+export function deviceLabel(agent = "") {
   const text = String(agent).slice(0, 512);
   const browser = /Edg\//.test(text) ? "Edge" : /Firefox\//.test(text) ? "Firefox" : /Chrome\//.test(text) ? "Chrome" : /Safari\//.test(text) ? "Safari" : "Browser";
   const platform = /Android/.test(text) ? "Android" : /iPhone|iPad/.test(text) ? "iOS" : /Windows/.test(text) ? "Windows" : /Macintosh|Mac OS/.test(text) ? "macOS" : /Linux/.test(text) ? "Linux" : "unknown device";
@@ -30,7 +31,7 @@ async function ownedSessions(auth, identity) {
 export async function accountSessions(auth, identity) {
   try {
     const rows = await ownedSessions(auth, identity);
-    return { sessions: rows.map((s) => ({ id: s.id, current: s.id === identity.session.id, device: deviceLabel(s.userAgent), createdAt: date(s.createdAt), expiresAt: date(s.expiresAt) })) };
+    return { sessions: rows.map((s) => ({ id: s.id, current: s.id === identity.session.id, device: deviceLabel(s.userAgent), address: cleanAddress(s.ipAddress), createdAt: date(s.createdAt), expiresAt: date(s.expiresAt) })) };
   } catch (error) {
     return { sessions: [], error: error.message === "reauthenticate" ? "For session controls, sign out and sign in again to confirm your identity." : "Session information is unavailable. Please try again." };
   }

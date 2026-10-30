@@ -1,6 +1,6 @@
 # Bindery: a living redesign of the Library
 
-Status: plan, not started. Written against `main` at `56e100c`.
+Status (30 October 2026). Shipped: tokens, Literata, motion levels, living covers, shared-element morphs, page turns, spine shelf and list view, My library slips and stamps, 404, and the ctOS account zone. Not built yet: site-wide dark mode, the reserve stamp and availability ticks on the book page, rolling numbers, the Babel endless shelf and invent-a-book ceremony, reader ribbon and lamplight theme switch, admin counters. Scope change: accounts, sign-in and legal pages are ctOS-branded; the library keeps the Bindery design.
 
 ## 1. The idea in one paragraph
 

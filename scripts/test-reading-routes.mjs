@@ -3,8 +3,8 @@ import { beforeEach, after, test } from 'node:test';
 import { pool } from './helpers/test-db.mjs';
 import { setUser } from './helpers/reading-session.mjs';
 import { catalogEdition, inventedEdition } from '../src/lib/babel-book/sources.js';
-import { GET as catalogDownload } from '../src/app/books/[id]/read/[edition]/download/route.js';
-import { GET as babelDownload } from '../src/app/babel/[seed]/download/route.js';
+import { GET as catalogDownload } from '../src/app/(library)/books/[id]/read/[edition]/download/route.js';
+import { GET as babelDownload } from '../src/app/(library)/babel/[seed]/download/route.js';
 beforeEach(async()=>{
  setUser(null);
  await pool.query('truncate waitlist, wishlist, admin_events, reservations, books, neon_auth."user" restart identity cascade');

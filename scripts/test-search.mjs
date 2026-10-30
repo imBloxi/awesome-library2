@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildSearchQuery, AVAILABLE_SQL, TOP_PICK_ACTIVE_SQL } from "../src/lib/queries/search-sql.mjs";
-import { parseSearchParams, filtersToParams, parsePage, hasFilters } from "../src/lib/search-params.mjs";
+import { parseSearchParams, filtersToParams, parsePage, hasFilters, defaultView } from "../src/lib/search-params.mjs";
 
 const none = { q: "", available: false, yearFrom: null, yearTo: null, limit: 21, offset: 0 };
 
@@ -56,6 +56,7 @@ test("parses a full query string", () => {
     q: "hi",
     page: 2,
     filters: { available: true, yearFrom: 1990, yearTo: 2000, genre: "", sort: "relevance" },
+    view: "list",
   });
 });
 
@@ -91,6 +92,7 @@ test("ignores junk params", () => {
     q: "",
     page: 1,
     filters: { available: false, yearFrom: null, yearTo: null, genre: "", sort: "title" },
+    view: "shelf",
   });
   assert.equal(parseSearchParams({ from: "19.5" }).filters.yearFrom, null);
   assert.deepEqual(parseSearchParams({}).filters, { available: false, yearFrom: null, yearTo: null, genre: "", sort: "title" });
@@ -121,4 +123,25 @@ test("shared page parsing bounds query numbers and malformed URL values", () => 
   for (const page of [NaN, -Infinity, -1, null, undefined, ["2", "3"], "junk"]) assert.equal(parsePage(page), 1);
   assert.equal(parsePage(2.8), 2);
   assert.equal(parsePage("3"), 3);
+});
+
+test("view: shelf for browsing, list for searching, explicit choices kept", () => {
+  assert.equal(parseSearchParams({}).view, "shelf");
+  assert.equal(parseSearchParams({ sort: "year" }).view, "shelf", "sorting is still browsing");
+  assert.equal(parseSearchParams({ q: "dune" }).view, "list");
+  assert.equal(parseSearchParams({ genre: "Poetry" }).view, "list");
+  assert.equal(parseSearchParams({ q: "dune", view: "shelf" }).view, "shelf");
+  assert.equal(parseSearchParams({ view: "list" }).view, "list");
+  assert.equal(parseSearchParams({ view: "grid" }).view, "shelf", "unknown views fall back");
+  assert.equal(parseSearchParams({ view: ["list", "shelf"] }).view, "shelf");
+  assert.equal(defaultView(parseSearchParams({ available: "1" })), "list");
+});
+
+test("view only reaches the URL when it isn't the default, and is not a filter", () => {
+  assert.deepEqual(filtersToParams(parseSearchParams({ view: "shelf" })), {});
+  assert.deepEqual(filtersToParams(parseSearchParams({ view: "list" })), { view: "list" });
+  assert.deepEqual(filtersToParams(parseSearchParams({ q: "x", view: "list" })), { q: "x" });
+  assert.deepEqual(filtersToParams(parseSearchParams({ q: "x", view: "shelf" })), { q: "x", view: "shelf" });
+  assert.equal(hasFilters(parseSearchParams({ view: "list" })), false, "top picks stay on a list view");
+  assert.deepEqual(filtersToParams({ q: "", filters: { available: false, yearFrom: null, yearTo: null } }), {}, "callers without a view still work");
 });

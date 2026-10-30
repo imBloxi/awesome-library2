@@ -67,11 +67,13 @@ export function SearchForm({ action, q = "", values, placeholder = "Search by ti
       onInput={onInput}
       onSubmit={() => clearTimeout(timer.current)}
       data-pending={pending ? "" : undefined}
-      className="search-form mb-10 flex flex-wrap items-center gap-2"
+      className="search-form catalog-drawer"
     >
-      <input name="q" type="search" defaultValue={q} placeholder={placeholder} aria-label="Search" autoFocus={autoFocus} className="field min-w-0 flex-1" />
+      <div className="catalog-drawer-row">
+        <input name="q" type="search" defaultValue={q} placeholder={placeholder} aria-label="Search" autoFocus={autoFocus} className="field catalog-search" />
+        <button type="submit" className="btn btn-primary">Search</button>
+      </div>
       {children}
-      <button type="submit" className="btn btn-primary py-[0.6rem]">Search</button>
       <span role="status" aria-live="polite" className="sr-only">{pending ? "Searching…" : ""}</span>
     </Form>
   );

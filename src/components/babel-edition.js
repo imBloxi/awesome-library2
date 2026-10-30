@@ -30,7 +30,7 @@ export function EditionContents({ basePath, bookKey, edition, byline, backCover,
     <ReaderFrame bookKey={bookKey} basePath={basePath} chapterCount={chapterCount} label="Babel Editions">
       <div className="reader-frontmatter">
         <header className="reader-jacket">
-          {cover && <div className="reader-cover"><BookCover book={cover} /></div>}
+          {cover && <div className="reader-cover"><BookCover book={cover} vtName={`${invented ? "babel" : "book"}-${cover.id}`} /></div>}
           <div className="reader-title">
             <p className="eyebrow">Babel Edition No. {edition.edition}</p>
             <h1>{edition.title}</h1>

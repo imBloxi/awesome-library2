@@ -1,4 +1,4 @@
-// Catalog URL params: ?q=&available=1&from=&to=&page=
+// Catalog URL params: ?q=&available=1&from=&to=&genre=&sort=&view=&page=
 // Anything malformed is ignored rather than turned into an error.
 
 // Beyond this the SQL offset would overflow; nobody pages through 200k books.
@@ -19,6 +19,12 @@ function year(v) {
 }
 
 export const SORTS = ["relevance", "title", "newest", "year"];
+export const VIEWS = ["shelf", "list"];
+
+// Browsing shows spines on shelves; a search or filter shows scannable rows.
+export function defaultView({ q, filters }) {
+  return hasFilters({ q, filters }) ? "list" : "shelf";
+}
 
 export function parseSearchParams(sp) {
   const q = str(sp.q).trim().slice(0, 100);
@@ -29,11 +35,14 @@ export function parseSearchParams(sp) {
   let yearFrom = year(sp.from);
   let yearTo = year(sp.to);
   if (yearFrom != null && yearTo != null && yearFrom > yearTo) [yearFrom, yearTo] = [yearTo, yearFrom];
-  return { q, page, filters: { available: str(sp.available) === "1", yearFrom, yearTo, genre, sort } };
+  const filters = { available: str(sp.available) === "1", yearFrom, yearTo, genre, sort };
+  const view = VIEWS.includes(sp.view) ? sp.view : defaultView({ q, filters });
+  return { q, page, filters, view };
 }
 
 // Inverse of parseSearchParams, minus the page: for pagination links.
-export function filtersToParams({ q, filters }) {
+// The view only appears when it differs from what the other params would choose.
+export function filtersToParams({ q, filters, view }) {
   const params = {};
   if (q) params.q = q;
   if (filters.available) params.available = "1";
@@ -42,10 +51,11 @@ export function filtersToParams({ q, filters }) {
   if (filters.genre) params.genre = filters.genre;
   // Default sorts stay out of the URL.
   if (filters.sort && filters.sort !== (q ? "relevance" : "title")) params.sort = filters.sort;
+  if (VIEWS.includes(view) && view !== defaultView({ q, filters })) params.view = view;
   return params;
 }
 
-// Sorting alone isn't a filter: the top picks still belong on a re-sorted first page.
+// Sorting and the view aren't filters: the top picks still belong on a re-sorted first page.
 export function hasFilters({ q, filters }) {
-  return Object.keys(filtersToParams({ q, filters })).some((key) => key !== "sort");
+  return Object.keys(filtersToParams({ q, filters })).some((key) => key !== "sort" && key !== "view");
 }

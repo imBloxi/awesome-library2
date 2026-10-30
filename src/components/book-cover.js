@@ -1,24 +1,18 @@
-// Clothbound hardcovers drawn in CSS: no images, fonts or client JavaScript.
-// Colour comes from the book id, so a book always looks the same.
-const TONES = [
-  ["#243c54", "#f1dfb4"],
-  ["#603640", "#f3dfb8"],
-  ["#2c493d", "#e8ddb9"],
-  ["#594334", "#f2dfba"],
-  ["#433c5b", "#e9dfc3"],
-  ["#60502f", "#f3e5be"],
-  ["#2d5057", "#eadfbd"],
-  ["#3f4247", "#eee4cc"],
-];
+import { ViewTransition } from "react";
+import { bookTone, spineShape } from "@/lib/book-shape.mjs";
 
-export function BookCover({ book, size = "md" }) {
-  const [cloth, foil] = TONES[Number(book.id) % TONES.length];
+// Clothbound hardcovers drawn in CSS: no images, fonts or extra requests.
+// Colour comes from the book id, so a book always looks the same.
+// vtName: the shared-element name this cover morphs by between pages (null for none).
+export function BookCover({ book, size = "md", vtName = null }) {
+  const [cloth, foil] = bookTone(book.id);
   const compact = size === "sm";
   const dims = compact ? "h-12 w-9" : size === "lg" ? "w-44 sm:w-56" : "w-full";
-  return (
+  const cover = (
     <span
       aria-hidden="true"
       className={`book-cover book-cover--${size} ${dims}`}
+      data-tilt={compact ? undefined : ""}
       style={{ "--cover-cloth": cloth, "--cover-foil": foil }}
     >
       <span className="book-cover__pages" />
@@ -35,6 +29,35 @@ export function BookCover({ book, size = "md" }) {
           </>
         )}
       </span>
+      {!compact && <span className="book-cover__glint" />}
     </span>
+  );
+  if (!vtName) return cover;
+  return (
+    <ViewTransition name={vtName} share="morph" default="none">
+      {cover}
+    </ViewTransition>
+  );
+}
+
+// The same book standing on a shelf. Decorative: the link around it carries the words.
+export function BookSpine({ book, available, vtName = null }) {
+  const [cloth, foil] = bookTone(book.id);
+  const { height, width } = spineShape(book);
+  const spine = (
+    <span
+      aria-hidden="true"
+      className="book-spine"
+      style={{ "--spine-cloth": cloth, "--spine-foil": foil, "--spine-h": `${height}%`, "--spine-w": `${width}rem` }}
+    >
+      <span className="book-spine-title">{book.title}</span>
+      <span className="book-spine-dot" data-available={available > 0 ? "" : undefined} />
+    </span>
+  );
+  if (!vtName) return spine;
+  return (
+    <ViewTransition name={vtName} share="morph" default="none">
+      {spine}
+    </ViewTransition>
   );
 }

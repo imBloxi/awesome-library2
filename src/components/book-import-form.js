@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { importBooksAction } from "@/app/admin/actions";
+import { importBooksAction } from "@/app/(library)/admin/actions";
 
 // Upload or paste a CSV, check the preview, then import. Nothing is written until "Import".
 export function BookImportForm() {
