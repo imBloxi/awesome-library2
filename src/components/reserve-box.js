@@ -6,32 +6,66 @@ import { reserveAction, joinWaitlistAction, leaveWaitlistAction, saveBookAction 
 import { ActionButton } from "@/components/action-button";
 import { Availability } from "@/components/ui";
 
+const HOLD_DAYS = 7; // matches the reservations.expires_at default
+
+// One small block per copy: free copies are bound in green cloth, the rest stay grey.
+// Reserving turns one grey the moment you click.
+function CopyTicks({ available, total }) {
+  const count = Math.min(Math.max(0, total), 12);
+  if (count < 1) return null;
+  return (
+    <span className="copy-ticks" aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => <span key={i} data-free={i < available ? "" : undefined} />)}
+    </span>
+  );
+}
+
+// The date stamp that lands when a reservation goes through.
+function ReservedStamp({ due }) {
+  if (!due) return null;
+  return (
+    <span className="reserve-stamp" aria-hidden="true">
+      <span>Reserved</span>
+      <small>Pick up by {due}</small>
+    </span>
+  );
+}
+
 // Live availability and what the member can do with this book: reserve it, join or leave
 // its waitlist, or save it for later. Reserve updates the count the instant you click;
 // if the server refuses, both roll back and the reason shows.
 // member: null when signed out, else { holding, saved, position, queueLength }.
 export function ReserveBox({ bookId, available, total, member }) {
-  const [optimistic, setOptimistic] = useOptimistic({ available, reserved: false });
+  const [optimistic, setOptimistic] = useOptimistic({ available, reserved: false, due: null });
   const [state, formAction, pending] = useActionState(async (prev, formData) => {
-    setOptimistic((s) => ({ available: s.available - 1, reserved: true }));
-    return reserveAction(prev, formData);
+    // The pickup deadline is fixed at the moment of the click, for the stamp.
+    const due = new Date(Date.now() + HOLD_DAYS * 86400000).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    setOptimistic((s) => ({ available: s.available - 1, reserved: true, due }));
+    const result = await reserveAction(prev, formData);
+    return result?.error ? result : { ...result, due };
   }, {});
   const reserved = optimistic.reserved || Boolean(state?.message);
   const holding = member?.holding;
 
   return (
     <div className="flex flex-col gap-3">
-      <div><Availability available={optimistic.available} total={total} /></div>
+      <div className="flex flex-wrap items-center gap-3">
+        <CopyTicks available={optimistic.available} total={total} />
+        <Availability available={optimistic.available} total={total} />
+      </div>
       {!member ? (
         <p className="flex flex-wrap items-center gap-3 text-sm text-muted">
           <Link href="/auth/sign-in" className="btn btn-primary">Sign in to reserve</Link>
           <span>or <Link href="/auth/sign-up" className="link">create an account</Link></span>
         </p>
       ) : reserved || holding ? (
+        <>
+        {reserved && !holding && <ReservedStamp due={optimistic.due ?? state?.due} />}
         <p role="status" className="text-sm text-ok">
           {holding === "picked_up" ? "You're borrowing this book." : "Reserved. Pick it up at the library within 7 days."}{" "}
           <Link href="/reservations" className="link">See your reservations</Link>
         </p>
+        </>
       ) : available > 0 ? (
         <form action={formAction} className="flex flex-col gap-2">
           <input type="hidden" name="id" value={bookId} />

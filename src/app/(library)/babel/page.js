@@ -4,6 +4,8 @@ import { BookCover } from "@/components/book-cover";
 import { RandomEditionButton } from "@/components/reader-frame";
 import { PageTitle } from "@/components/ui";
 import { PageTurn, FORWARD } from "@/components/page-turn";
+import { BabelDrift } from "@/components/babel-drift";
+import { DRIFT_SEEDS } from "@/lib/babel-shelf.mjs";
 
 export const metadata = { title: "Babel: invented books · Library" };
 
@@ -12,6 +14,10 @@ const SHELF = [7, 42, 108, 256, 1999, 31415];
 
 export default function BabelPage() {
   const books = SHELF.map((seed) => ({ seed, ...inventBook(seed) }));
+  const drifting = DRIFT_SEEDS.map((seed) => {
+    const { title, author } = inventBook(seed);
+    return { seed, title, author };
+  });
   return (
     <PageTurn>
       <PageTitle>The Babel shelf</PageTitle>
@@ -25,6 +31,13 @@ export default function BabelPage() {
         </p>
         <div className="pt-2"><RandomEditionButton basePath="/babel" max={MAX_INVENTED_SEED} label="Invent a book" className="btn btn-primary" /></div>
       </div>
+      <section aria-labelledby="endless-shelf" className="mb-14">
+        <div className="section-intro">
+          <h2 id="endless-shelf" className="section-heading">The endless shelf</h2>
+          <p>Every spine is written in the library&apos;s 25 symbols. Point at one to read its title.</p>
+        </div>
+        <BabelDrift books={drifting} />
+      </section>
       <h2 className="section-heading mb-6">From the shelf</h2>
       <ul className="cover-shelf">
         {books.map((b) => (

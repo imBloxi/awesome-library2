@@ -7,7 +7,7 @@ Two worlds share one app:
 
 Each lives in its own route group with its own layout: `src/app/(library)` and `src/app/(ctos)`. ctOS styles load only on ctOS routes. The full plan is in [`superpowers/specs/2026-10-30-bindery-redesign-design.md`](superpowers/specs/2026-10-30-bindery-redesign-design.md).
 
-> Screenshots: `bindery-shelf.png`, `bindery-404.png` and `ctos-register-desktop.png` show the current design. Older full-page screenshots in `docs/screenshots/` show earlier themes.
+> Screenshots: `bindery-shelf.png`, `bindery-babel-shelf.png`, `bindery-404.png` and `ctos-register-desktop.png` show the current design. Older full-page screenshots in `docs/screenshots/` show earlier themes.
 
 ## Bindery tokens (`@theme` in `src/app/globals.css`)
 
@@ -52,6 +52,8 @@ The footer **Motion** switch stores `auto` / `full` / `calm` / `off` in `localSt
 | Search drawer | lifts while focused; old results dim while new ones load |
 | Notices | slips slide out from under the title |
 | Overdue | stamp lands with `--ease-thunk` |
+| Reserve | copy blocks grey out as you reserve; a "Reserved" date stamp lands |
+| Babel endless shelf | spines drift (90s loop, Full only), pause on hover or focus; titles decode from Borges' 25 symbols (`src/lib/babel-shelf.mjs`, `BabelDrift`) |
 | Saved books | ribbon drops from the cover |
 | Skeletons | fanned page edges that riffle |
 | Disclosures | open to auto height (`interpolate-size`, `::details-content`) where supported |

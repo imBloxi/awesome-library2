@@ -1,6 +1,6 @@
 # Bindery: a living redesign of the Library
 
-Status (30 October 2026). Shipped: tokens, Literata, motion levels, living covers, shared-element morphs, page turns, spine shelf and list view, My library slips and stamps, 404, and the ctOS account zone. Not built yet: site-wide dark mode, the reserve stamp and availability ticks on the book page, rolling numbers, the Babel endless shelf and invent-a-book ceremony, reader ribbon and lamplight theme switch, admin counters. Scope change: accounts, sign-in and legal pages are ctOS-branded; the library keeps the Bindery design.
+Status (30 October 2026). Shipped: tokens, Literata, motion levels, living covers, shared-element morphs, page turns, spine shelf and list view, My library slips and stamps, 404, and the ctOS account zone. Also shipped: the reserve stamp and copy ticks, the Babel endless shelf with decoding titles. Not built yet: site-wide dark mode, rolling numbers, the invent-a-book ceremony, reader ribbon and lamplight theme switch, admin counters. Scope change: accounts, sign-in and legal pages are ctOS-branded; the library keeps the Bindery design.
 
 ## 1. The idea in one paragraph
 

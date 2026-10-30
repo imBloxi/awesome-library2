@@ -390,3 +390,90 @@
   .related-shelf .section-heading { margin-bottom: 1.5rem; }
 }
 :root { interpolate-size: allow-keywords; }
+
+/* Reserve box: copies as small bound blocks, and the stamp that lands on a reservation. */
+@layer components {
+  .copy-ticks {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 1rem;
+  }
+  .copy-ticks > span {
+    width: 6px;
+    height: 100%;
+    border-radius: 1px 1px 0 0;
+    background: #c9ccc4;
+    transition: background-color var(--dur-settle), translate var(--dur-settle) var(--ease-spring);
+  }
+  .copy-ticks > span[data-free] {
+    background: var(--color-ok);
+  }
+  .copy-ticks > span:not([data-free]) {
+    translate: 0 2px;
+  }
+  .reserve-stamp {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: flex-start;
+    padding: 0.35rem 0.9rem 0.3rem;
+    border: 3px double var(--color-cloth);
+    border-radius: 4px;
+    color: var(--color-cloth);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    line-height: 1.1;
+    rotate: -5deg;
+    text-transform: uppercase;
+    mix-blend-mode: multiply;
+  }
+  .reserve-stamp small {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+  :root[data-fx="full"] .reserve-stamp,
+  :root[data-fx="calm"] .reserve-stamp {
+    animation: stamp var(--dur-ceremony) var(--ease-thunk) both;
+  }
+}
+
+/* Babel: the endless shelf -------------------------------------------------- */
+@layer components {
+  .babel-drift {
+    display: flex;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 4rem, #000 calc(100% - 4rem), transparent);
+  }
+  .babel-drift-track {
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    padding-inline: 0 3px;
+    /* The plank: one row only, so the shelf background is a single band. */
+    --row: 12rem;
+  }
+  :root[data-fx="full"] .babel-drift-track {
+    animation: babel-drift 90s linear infinite;
+  }
+  .babel-drift:hover .babel-drift-track,
+  .babel-drift:focus-within .babel-drift-track {
+    animation-play-state: paused;
+  }
+  /* Calm and Off: the shelf stands still and scrolls by hand instead. */
+  :root:not([data-fx="full"]) .babel-drift {
+    overflow-x: auto;
+    mask-image: none;
+  }
+  :root:not([data-fx="full"]) .babel-drift-track[aria-hidden] {
+    display: none;
+  }
+  .babel-cipher {
+    font-variant-ligatures: none;
+    letter-spacing: 0.02em;
+  }
+}
+@keyframes babel-drift {
+  to { translate: -100% 0; }
+}

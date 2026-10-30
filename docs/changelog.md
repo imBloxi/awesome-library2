@@ -8,6 +8,8 @@
 - Covers lean toward the pointer and catch the light; clicking one carries it into the book page (view transitions). Pages slide forward and back; the header ribbon follows the current section; content rises in as it loads.
 - My library: covers on every row, hold bands, date-due slips, an overdue stamp, a capacity meter and notice slips. Locked editions show the book's stamped date-due slip.
 - Footer motion setting: Auto, Full, Calm or Off. Admin pages are calm by default.
+- Book page: one small block per copy; reserving greys one out at once and lands a "Reserved, pick up by …" stamp.
+- Babel: an endless shelf of invented books drifts past, spines written in Borges' 25 symbols. Point at or Tab to a spine and its real title resolves; the shelf pauses while you read. It stands still (and scrolls by hand) unless motion is Full.
 
 **ctOS (accounts)**
 - Sign-in, registration, the account console and the legal pages run in ctOS, a separate dark interface with its own mono type.
