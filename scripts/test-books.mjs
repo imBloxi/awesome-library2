@@ -317,3 +317,19 @@ test("hold expiry uses wall time even when commands share one protocol message",
     client.release();
   }
 });
+
+test("deleting a book clears its top pick so a restore doesn't revive it", async () => {
+  const id = await addBook();
+  await pool.query("update books set top_pick_at = now() where id = $1", [id]);
+  assert.equal(await deleteBook(id), true);
+  const { rows } = await pool.query("select top_pick_at from books where id = $1", [id]);
+  assert.equal(rows[0].top_pick_at, null);
+});
+
+test("an edit form shown before its pick expired doesn't restart it", async () => {
+  const id = await addBook();
+  await pool.query("update books set top_pick_at = now() - interval '8 days' where id = $1", [id]);
+  const { rows: [{ seen }] } = await pool.query("select top_pick_at::text as seen from books where id = $1", [id]);
+  assert.deepEqual(await updateBook(id, { ...bookData(1), top_pick: true, top_pick_seen: seen }), { ok: true });
+  assert.equal((await getBook(id)).is_top_pick, false);
+});

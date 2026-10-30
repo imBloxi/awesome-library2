@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-10-30: Instant UI, Babel Editions, waitlists and admin tools
+
+**Faster**
+- Search updates as you type and keeps the old results (dimmed) until the new ones arrive. Typing never loses focus; Back and "Clear filters" still reset the inputs.
+- Searches put the best matches first: exact title, then titles that start with the words, then the closest title or author.
+- Reserve, cancel, return, renew and the admin circulation buttons respond the moment you click. If the server refuses, the button rolls back and says why.
+- Book pages are prerendered and cached per book. Only the reserve box (availability, your hold or queue place) is fetched live. Admin edits clear the cache immediately.
+
+**Babel Editions** (no AI service, no keys)
+- Every book can be read as an imagined "Babel Edition": ten short chapters, about 2,500 words, written by the library's own story generator. Each edition number is a different story; the same number always reads the same.
+- Reader with contents, chapter pages, ←/→ keys, text size, serif/sans and light/sepia/dark, remembered on your device, plus "Continue reading" and an offline HTML download.
+- `/babel` invents entire books (title, author, cover, back cover and text) from a number.
+
+**Members**
+- Waitlist when every copy is out. When a copy comes back (return, cancelled hold, extra copies, or a lapsed hold), the next person in line gets a normal 7-day hold.
+- Renew a loan once for another 4 weeks, unless it's overdue or someone is waiting.
+- Save books for later; genres and a genre filter; sort by best match, title, newest or year; "Readers also borrowed".
+- In-app notices instead of email: a badge on **My reservations** and banners for books ready to collect, holds ending within 24 hours, overdue loans and waitlist holds.
+
+**Admins**
+- **Desk**: one box for a scanned ISBN, a title, a name or an email, with pickup/return buttons right there.
+- **Import CSV** for books, with a preview and per-line errors. The books export (now with genre and description) imports as-is.
+- **Activity** log of every admin action; **member pages** with active items, waitlists and history; **Stats** for loans per week, most borrowed, never borrowed and waitlist demand.
+- Top picks: the Books page names the hidden picks; a stale edit form can't restart an expired pick; deleting a book clears its pick; the form label follows `TOP_PICK_DAYS`.
+
+**Fixed**
+- Returning a book failed in Postgres with "could not determine data type of parameter $2", for members and admins. Covered by a regression test now.
+
+**Database**: migration `004_waitlist_wishlist_genres.sql` (waitlist, wishlist, admin_events, `reservations.from_waitlist` and `renewals`, `books.genre`, indexes, and a re-created `active_reservations` view).
+
 ## 2026-10-29: Admin circulation desk
 
 - Overview now leads with overdue loans and holds expiring within 24 hours, ordered by urgency and deadline. Count tiles open the matching circulation filters.
@@ -57,7 +87,6 @@
 
 | Issue | Impact | Fix |
 |---|---|---|
-| Admin sees how many top picks are hidden, not which ones | Admin can't tell which picks are off the home page | Return pick ids in order and mark the ones after the 6th |
-| A stale edit form can restart an expired top pick | A pick can run 7 more days unintentionally | Send the shown `top_pick_at` with the form |
-| Restoring a deleted book within 7 days revives its pick | Surprise top pick | Clear `top_pick_at` on delete |
-| "7 days" is hard-coded in the book form label | Label goes wrong if `TOP_PICK_DAYS` changes | Use the constant |
+| A copy freed only by a lapsed hold reaches the waitlist at the next reserve attempt, return or cancellation for that book, or the daily job | A queued member can wait up to a day for a lapsed copy | Run promotion from a more frequent job if that matters |
+| The cached "Top pick" badge on a book page can outlast the 7 days by up to an hour | Cosmetic | Shorter cache life on book details |
+| Babel Editions are template-based | Prose is consistent but can feel formulaic across many editions | Grow the phrase banks in `src/lib/babel-book/` |

@@ -44,6 +44,10 @@ src/app/
   actions.js             member server actions
   admin/actions.js       admin server actions
   not-found.js           retro 404 dialog
+  babel/                 invented books (/babel/[seed]/[chapter])
+  books/[id]/read/       Babel Editions reader and offline download
+  admin/desk|stats|activity|users/[id]|books/import
+src/lib/babel-book/      Babel Editions generator (pure: worlds, beats, realizer, HTML export)
 src/components/          UI pieces (see design-system.md)
 ```
 
@@ -87,7 +91,9 @@ The book page works the same way. The book and the session load in parallel, and
   - Partial indexes on active reservations.
 - **Parallel fetching:** the top picks and the catalogue page come from one `Promise.all`. Filtered and searched pages skip the top-picks query entirely.
 - **One extra row instead of `count(*)`:** pagination fetches 21 rows to know whether there's a next page.
-- **No caching of live data:** availability must be exact, so no `"use cache"` on catalogue data. The queries are cheap enough not to need it.
+- **Cache what rarely changes, never availability:** book details (`getBookDetails`) and the genre list use `"use cache"` with tags (`book-<id>`, `genres`) that admin actions clear with `updateTag`. That makes book pages and Babel Edition pages prerendered per URL after the first visit. Availability, the session and anything member-specific stay in their own `<Suspense>` and are read per request.
+- **Optimistic UI:** buttons and the reserve box update on click with `useOptimistic` and roll back on a server refusal.
+- **Live search without remounts:** `SearchForm` debounces typing, updates the URL in a transition, and syncs its inputs to the URL instead of being re-keyed, so focus survives.
 
 ## Correctness of reservations
 
@@ -103,3 +109,13 @@ The book page works the same way. The book and the session load in parallel, and
 Parallel clicks can't beat the limits. `scripts/test-reserve.mjs` proves it against a real database.
 
 "Active" is a view (`active_reservations`): borrowed books, plus holds whose 7-day window hasn't passed. Lapsed holds stop counting the moment they lapse, with no job needed.
+
+## Babel Editions
+
+`src/lib/babel-book/` generates a whole book with no I/O. A seed made from the title, description, book id and edition number drives:
+
+1. **Story bible** (`buildBible`): world (picked with the same keyword scoring as the back cover), hero, ally, rival and elder with pronouns, home and away places, a central object and a secret, a want and a flaw. Names and a place found in a real description are reused.
+2. **Structure** (`beats.mjs`): crossing, mystery or homecoming, each ten beats long.
+3. **Realizer** (`fill`): templates with slots for cast, places and pronouns (with verb agreement for they/them), detail decks that don't repeat until exhausted, and callbacks to earlier chapters.
+
+Routes only parse params and render; `sources.js` turns params into an edition, and the pages are prerendered per URL because their only data is cached book details.

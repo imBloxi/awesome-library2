@@ -6,8 +6,19 @@ import { likePattern } from "./search-sql.mjs";
 export const DISPLAY_STATUS_SQL = `case when r.status = 'reserved' and r.expires_at <= now()
   then 'expired' else r.status::text end`;
 export const DAYS_LEFT_SQL = `greatest(0, ceil(extract(epoch from (r.expires_at - now())) / 86400))::int`;
-export const DUE_AT_SQL = `case when r.status = 'picked_up' then r.picked_up_at + interval '${LOAN_DAYS} days' end`;
-export const IS_OVERDUE_SQL = `(r.status = 'picked_up' and r.picked_up_at < now() - interval '${LOAN_DAYS} days')`;
+// Each renewal adds one more loan period.
+export const MAX_RENEWALS = 1;
+export const DUE_AT_SQL = `case when r.status = 'picked_up' then r.picked_up_at + interval '${LOAN_DAYS} days' * (1 + r.renewals) end`;
+export const IS_OVERDUE_SQL = `(r.status = 'picked_up' and r.picked_up_at < now() - interval '${LOAN_DAYS} days' * (1 + r.renewals))`;
+
+// Renew a member's loan once, while it isn't overdue and nobody is waiting for the book.
+export const renewLoanQuery = {
+  text: `update reservations r set renewals = r.renewals + 1
+    where r.id = $1 and r.user_id = $2 and r.status = 'picked_up'
+      and r.renewals < ${MAX_RENEWALS} and not ${IS_OVERDUE_SQL}
+      and not exists (select 1 from waitlist w where w.book_id = r.book_id)
+    returning r.id`,
+};
 export const IS_EXPIRING_SQL = `(r.status = 'reserved' and r.expires_at > now() and r.expires_at < now() + interval '1 day')`;
 
 function boundedInteger(value, fallback, max) {

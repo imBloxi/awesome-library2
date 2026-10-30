@@ -4,7 +4,7 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import pg from "pg";
-import { TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery, topPicksQuery, byAuthorQuery } from "../src/lib/queries/search-sql.mjs";
+import { TOP_PICK_ACTIVE_SQL, topPickAtSql, buildSearchQuery, topPicksQuery, hiddenTopPicksQuery, byAuthorQuery } from "../src/lib/queries/search-sql.mjs";
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const tag = `test-${Date.now()}`;
@@ -143,4 +143,58 @@ test("more by author: same author only, excludes this book and deleted ones", as
   const { rows } = await pool.query(text, values);
   assert.deepEqual(rows.map((r) => r.title), [`${tag} a other`]);
   assert.equal(typeof rows[0].available, "number");
+});
+
+// Same SET expression updateBook uses, with the value the edit form showed.
+async function saveSeen(id, ticked, seen) {
+  const { rows } = await pool.query(
+    `update books b set top_pick_at = ${topPickAtSql("$2", "$3")} where b.id = $1 returning top_pick_at`,
+    [id, ticked, seen]
+  );
+  return rows[0].top_pick_at;
+}
+
+async function pickText(id) {
+  const { rows } = await pool.query("select top_pick_at::text as t from books where id = $1", [id]);
+  return rows[0].t;
+}
+
+test("a stale edit form can't restart a pick that expired while it was open", async () => {
+  const set = daysAgo(8);
+  const id = await addBook(set);
+  const seen = await pickText(id);
+  const at = await saveSeen(id, true, seen);
+  assert.equal(at.getTime(), set.getTime());
+  assert.equal(await isActive(id), false);
+});
+
+test("ticking with no shown pick still starts one; a different shown value is ignored", async () => {
+  const id = await addBook(daysAgo(8));
+  assert.ok(Math.abs((await saveSeen(id, true, null)) - Date.now()) < 60000);
+  const other = await addBook(daysAgo(9));
+  assert.ok(Math.abs((await saveSeen(other, true, "2001-01-01 00:00:00+00")) - Date.now()) < 60000);
+  const current = await addBook(daysAgo(2));
+  assert.equal(await saveSeen(current, false, await pickText(current)), null);
+});
+
+test("search ranks exact and prefix title matches first", async () => {
+  const word = `zq${Date.now() % 100000}`;
+  await addBook(null, { title: `zz about ${word}` });
+  await addBook(null, { title: `aa ${word} side` });
+  const { rows } = await pool.query(
+    "insert into books (title, author) values ($1, 'Test'), ($2, 'Test') returning id",
+    [word, `${word} begins`]
+  );
+  const { text, values } = buildSearchQuery({ q: word, limit: 10, offset: 0 });
+  const found = (await pool.query(text, values)).rows.map((r) => r.title);
+  await pool.query("delete from books where id = any($1)", [rows.map((r) => r.id)]);
+  assert.deepEqual(found.slice(0, 2), [word, `${word} begins`]);
+  assert.equal(found.length, 4);
+});
+
+test("hidden top picks are the ones after the home page limit", async () => {
+  const { text, values } = topPicksQuery(1000);
+  const all = (await pool.query(text, values)).rows.map((r) => r.id);
+  const hidden = await pool.query(hiddenTopPicksQuery(2).text, hiddenTopPicksQuery(2).values);
+  assert.deepEqual(hidden.rows.map((r) => r.id), all.slice(2, 102));
 });

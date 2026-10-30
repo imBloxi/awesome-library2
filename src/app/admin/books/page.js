@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { requireAdmin } from "@/lib/dal";
-import { searchBooks, listDeletedBooks, countTopPicks } from "@/lib/queries/books";
+import { searchBooks, listDeletedBooks, listHiddenTopPicks } from "@/lib/queries/books";
 import { TOP_PICKS_LIMIT } from "@/lib/constants";
 import { parseSearchParams } from "@/lib/search-params.mjs";
 import { deleteBookAction, restoreBookAction } from "@/app/admin/actions";
@@ -18,6 +18,7 @@ export default function AdminBooksPage({ searchParams }) {
             {/* A file download, not a page: <Link> would prefetch it as one. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
             <a href="/admin/export/books" className="btn">Export CSV</a>
+            <Link href="/admin/books/import" className="btn">Import CSV</Link>
             <Link href="/admin/books/new" className={buttonClass}>Add book</Link>
           </div>
         }
@@ -36,16 +37,24 @@ async function BookTable({ searchParams }) {
   const sp = await searchParams;
   if (sp.show === "deleted") return <DeletedBooks />;
   const { q, page } = parseSearchParams(sp);
-  const [{ books, hasNext }, topPicks] = await Promise.all([searchBooks({ q, page }), countTopPicks()]);
+  const [{ books, hasNext }, hiddenPicks] = await Promise.all([searchBooks({ q, page }), listHiddenTopPicks()]);
 
   return (
     <>
       <Tabs current="active" />
       <SearchForm action="/admin/books" q={q} />
-      {topPicks > TOP_PICKS_LIMIT && (
-        <p className="mb-4 rounded-lg bg-[#fff7e6] px-4 py-3 text-sm text-[#8a5a00]">
-          {topPicks} top picks, only the {TOP_PICKS_LIMIT} newest show on the home page.
-        </p>
+      {hiddenPicks.length > 0 && (
+        <div className="mb-4 rounded-lg bg-[#fff7e6] px-4 py-3 text-sm text-[#8a5a00]">
+          <p>
+            {TOP_PICKS_LIMIT + hiddenPicks.length} top picks, only the {TOP_PICKS_LIMIT} newest show on the home page.
+            Not shown:
+          </p>
+          <ul className="mt-1 list-disc pl-5">
+            {hiddenPicks.map((b) => (
+              <li key={b.id}><Link href={`/admin/books/${b.id}/edit`} className="underline">{b.title}</Link></li>
+            ))}
+          </ul>
+        </div>
       )}
       {books.length === 0 ? (
         <p className="text-muted">No books found.</p>
@@ -61,7 +70,7 @@ async function BookTable({ searchParams }) {
               <div className="flex items-start gap-3">
                 <Availability available={b.available} total={b.total_copies} />
                 <Link href={`/admin/books/${b.id}/edit`} className="btn btn-sm">Edit</Link>
-                <ActionButton action={deleteBookAction} id={b.id} label="Delete" pendingLabel="Deleting…" variant="danger" confirm={`Delete “${b.title}”?`} />
+                <ActionButton action={deleteBookAction} id={b.id} label="Delete" pendingLabel="Deleting…" doneLabel="Deleted" fadeRow variant="danger" confirm={`Delete “${b.title}”?`} />
               </div>
             </li>
           ))}
@@ -96,7 +105,7 @@ async function DeletedBooks() {
                   <p className="font-medium">{b.title}</p>
                   <p className="text-sm text-muted">{b.author} · deleted {formatDate(b.deleted_at)}</p>
                 </div>
-                <ActionButton action={restoreBookAction} id={b.id} label="Restore" pendingLabel="Restoring…" />
+                <ActionButton action={restoreBookAction} id={b.id} label="Restore" pendingLabel="Restoring…" doneLabel="Restored ✓" fadeRow />
               </li>
             ))}
           </ul>

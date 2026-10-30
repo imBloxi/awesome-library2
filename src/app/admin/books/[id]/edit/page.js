@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/dal";
 import { getBook } from "@/lib/queries/books";
@@ -30,6 +31,10 @@ async function EditBook({ params }) {
   return (
     <>
       <BookForm action={updateBookAction.bind(null, book.id)} book={book} submitLabel="Save changes" />
+      <p className="mt-6 text-sm text-muted">
+        Preview: <Link href={`/books/${book.id}`} className="link">book page</Link> ·{" "}
+        <Link href={`/books/${book.id}/read/1`} className="link">Babel Edition No. 1</Link>
+      </p>
       <section className="mt-12">
         <h2 className="mb-3 text-lg font-semibold">Reserved or borrowed now</h2>
         {holders.length === 0 ? (

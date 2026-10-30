@@ -14,7 +14,8 @@ Neon Postgres. The schema is in `db/migrations/*.sql`. `scripts/migrate.mjs` app
 | `description` | text | |
 | `published_year` | int | 0–2100, validated in the admin action |
 | `total_copies` | int ≥ 0 | can't go below the active reservation count (checked in the action) |
-| `top_pick_at` | timestamptz | when an admin flagged it as a top pick; null = not a pick (migration 002) |
+| `top_pick_at` | timestamptz | when an admin flagged it as a top pick; null = not a pick (migration 002); cleared on delete |
+| `genre` | text, 1–60 chars | optional (migration 004) |
 | `deleted_at` | timestamptz | soft delete; keeps reservation history intact |
 | `created_at`, `updated_at` | timestamptz | |
 
@@ -29,10 +30,18 @@ Neon Postgres. The schema is in `db/migrations/*.sql`. `scripts/migrate.mjs` app
 | `reserved_at`, `expires_at` | timestamptz | `expires_at` defaults to now + 7 days |
 | `picked_up_at`, `returned_at` | timestamptz | |
 | `hidden_by_user` | boolean | |
+| `from_waitlist` | boolean | the hold was created by waitlist promotion (migration 004) |
+| `renewals` | int ≥ 0 | each adds `LOAN_DAYS` to the due date (migration 004) |
+
+### `waitlist`, `wishlist`, `admin_events` (migration 004)
+
+- `waitlist (id, user_id, book_id, created_at)`, unique per member and book. Queue order is `created_at, id`.
+- `wishlist (user_id, book_id, created_at)`, primary key on the pair.
+- `admin_events (id, actor_id, actor_email, action, book_id, reservation_id, target_user, detail, created_at)`. The actor is stored as text so the log survives user deletion.
 
 ### `active_reservations` (view)
 
-These rows count against copies and the 10-book limit:
+These rows count against copies and the 10-book limit. Views fix their column list when created, so a migration that adds `reservations` columns must re-create the view (004 does):
 
 - `picked_up` rows, and
 - `reserved` rows whose `expires_at` is still in the future.
@@ -50,6 +59,9 @@ This table is managed by Neon Auth. The app reads `id`, `name`, `email` and `rol
 | `books_author` | `author`, where not deleted | "More by this author" (migration 003) |
 | `res_user_active`, `res_book_active` | partial on active statuses | availability and the 10-book limit |
 | `res_user_all` | `(user_id, reserved_at desc)` | "My reservations" |
+| `waitlist_queue` | `(book_id, created_at, id)` | queue order and positions |
+| `res_book_user` | `(book_id, user_id)` | "Readers also borrowed" |
+| `books_genre` | `lower(genre)`, where set and not deleted | genre filter |
 
 ## Migrations
 
@@ -58,6 +70,7 @@ This table is managed by Neon Auth. The app reads `id`, `name`, `email` and `rol
 | `001_init.sql` | pg_trgm, books, reservation enum and table (user id type copied from Neon Auth), indexes, `active_reservations` view |
 | `002_top_pick.sql` | `books.top_pick_at` and `books_top_pick` partial index |
 | `003_books_author.sql` | `books_author` index |
+| `004_waitlist_wishlist_genres.sql` | waitlist, wishlist, admin_events, reservation `from_waitlist`/`renewals`, `books.genre`, indexes, re-created `active_reservations` |
 
 ### Writing a new migration
 
@@ -75,7 +88,10 @@ All of these are in `src/lib/queries/*.mjs`, so tests run the same SQL:
 - **Reserve:** a per-user lock, a book row lock, then an insert. The insert only happens when the user has fewer than 10 active reservations, a copy is free, and they don't already hold the book.
 - **Top pick active** = `top_pick_at > now() − 7 days`.
 - **Saving a book** keeps `top_pick_at` if the pick is still current and the box is ticked. If ticked but expired or never set, it becomes `now()`. Unticked clears it to `null`.
-- **Deleting a book** is refused while any active reservation exists.
+- **Deleting a book** is refused while any active reservation exists, and clears its top pick.
+- **Waitlist promotion** (`waitlist-sql.mjs`): member advisory locks for the first 50 in the queue (in hash order), then the book row lock, then one statement that gives each free copy to the next eligible member and removes them from the queue. Same lock order as reserve, so the 10-book limit stays exact and promotions can't deadlock each other.
+- **Renew**: once (`MAX_RENEWALS`), only a picked-up loan that isn't overdue and has no queue.
+- **A stale edit form** can't restart an expired top pick: the form sends the `top_pick_at` it showed, and an unchanged value is kept as-is.
 
 ## Sample data
 

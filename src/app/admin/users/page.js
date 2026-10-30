@@ -38,7 +38,7 @@ async function UserTable({ searchParams }) {
               <li key={u.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
                   <p className="font-medium">
-                    {u.name || u.email}
+                    <Link href={`/admin/users/${encodeURIComponent(String(u.id))}`} className="hover:underline">{u.name || u.email}</Link>
                     {isMe && <span className="ml-2 text-xs font-normal text-muted">(you)</span>}
                   </p>
                   <p className="text-sm text-muted [overflow-wrap:anywhere]">

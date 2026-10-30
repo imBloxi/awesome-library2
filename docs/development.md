@@ -50,9 +50,11 @@ Then [make yourself an admin](admin-guide.md#making-someone-an-admin).
 | `pnpm lint` | ESLint |
 | `pnpm db:migrate` | applies new migrations using `.env.local` |
 | `pnpm db:seed` | adds sample books |
-| `pnpm test:env` | unit tests: env parsing, CSV, search, Babel, reservation URL params and UTC timestamps. No database needed. |
-| `pnpm test:admin` | circulation filters, exact deadlines, member IDs and paging against a **throwaway** DB (`TEST_DATABASE_URL=... pnpm test:admin`, Node 24+) |
-| `pnpm test:books` | book/hold mutation races and dashboard counts against a **throwaway** DB (`TEST_DATABASE_URL=... pnpm test:books`, Node 24+) |
+| `pnpm test:env` | unit tests: env parsing, CSV read/write and book import, search, Babel back covers, Babel Editions (determinism, grammar, names, escaping, speed), reservation URL params and UTC timestamps. No database needed. |
+| `pnpm test:waitlist` | waitlist promotion (order, limits, fairness, parallel runs, no deadlocks), returns, renewals, saved books, notices, genres and "also borrowed" against a **throwaway** DB (`TEST_DATABASE_URL=...`, Node 22.15+) |
+| `pnpm test:admin-tools` | CSV import, activity log, desk ISBN lookup, member page and stats against a **throwaway** DB |
+| `pnpm test:admin` | circulation filters, exact deadlines, member IDs and paging against a **throwaway** DB (`TEST_DATABASE_URL=... pnpm test:admin`, Node 22.15+) |
+| `pnpm test:books` | book/hold mutation races and dashboard counts against a **throwaway** DB (`TEST_DATABASE_URL=... pnpm test:books`, Node 22.15+) |
 | `pnpm test:search-db` | search, filter, top-pick and author SQL against a **throwaway** DB (`DATABASE_URL=... pnpm test:search-db`) |
 | `pnpm test:reserve` | reserve concurrency rules against a **throwaway** DB |
 

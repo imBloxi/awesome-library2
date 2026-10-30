@@ -11,8 +11,10 @@
     "db:seed": "node --env-file=.env.local db/seed.mjs",
     "test:reserve": "node scripts/test-reserve.mjs",
     "test:books": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-books.mjs",
+    "test:waitlist": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-waitlist.mjs",
+    "test:admin-tools": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-admin-tools.mjs",
     "test:admin": "node --import ./scripts/helpers/register-test-db.mjs --test scripts/test-admin-reservations.mjs",
-    "test:env": "node --test scripts/test-env.mjs scripts/test-csv.mjs scripts/test-search.mjs scripts/test-babel.mjs scripts/test-reservation-params.mjs scripts/test-circulation-format.mjs",
+    "test:env": "node --test scripts/test-env.mjs scripts/test-csv.mjs scripts/test-search.mjs scripts/test-babel.mjs scripts/test-babel-book.mjs scripts/test-reservation-params.mjs scripts/test-circulation-format.mjs",
     "test:search-db": "node --test scripts/test-search-db.mjs"
   },
   "dependencies": {
